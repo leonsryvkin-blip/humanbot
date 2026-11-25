@@ -101,6 +101,7 @@
  #arrow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
  #info{font-size:13px;color:#cfcbc0;margin-top:10px;line-height:1.5}
  .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:6px;margin-top:10px}
+ .gmtag{display:inline-block;background:#7c2929;color:#fff;font:700 10px/1 sans-serif;letter-spacing:.3px;padding:2.5px 3.5px 2px;border-radius:3px;margin-right:5px;vertical-align:2px}
  .bottag{display:inline-block;background:#5865f2;color:#fff;font:700 9.5px/1 sans-serif;letter-spacing:.4px;padding:2.5px 4px 2px;border-radius:4px;margin-left:5px;vertical-align:2px}
  #comm{font-size:13.5px;line-height:1.45;margin-top:8px}
  #comm .cl{background:var(--card);border-radius:8px;padding:7px 9px;margin-top:6px;color:#e4e1d8}
@@ -1071,7 +1072,7 @@ function addRecent(v){if(v=='none')return;const r=tcRecent().filter(x=>x!=v);r.u
 buildTcs();
 $('tcbtn').onclick=()=>{const s=$('tcs').style;s.display=s.display=='block'?'none':'block'};
 if(!BOTS.some(b=>b[0]==opts.bot))opts.bot='humanbot';
-const BOTTAG='<span class="bottag">BOT</span>';
+const BOTTAG='<span class="bottag">BOT</span>',GMTAG='<span class="gmtag">GM</span>';
 const BOTINFO={humanbot:['♞','#5d8a35','Plays like a real person'],magnus:['♚','#b8102e','Unofficial · plays like him'],maia1:['M1','#2f7d8c','Levels 1100–1900'],maia2:['M2','#3b6ea5','Newer, PC only'],stockfish:['SF','#a8473a','The strongest engine'],leela:['Lc0','#ffffff','Neural engine'],gm:['♔','#8a6d3b',''],worstfish:['WF','#7a3b8c','Always the worst move']};
 function icon(v){return IMG.icons&&(IMG.icons[v]||(/^maia/.test(v)&&IMG.icons.maia)||(v=='worstfish'&&IMG.icons.stockfish))}
 // Magnus Carlsen bot avatars: a Santa-mask character drawn here (a nod to a festive chess.com avatar; not a photo,
@@ -1126,7 +1127,7 @@ function avHTML(v){if(v=='me')return '🙂';if(/^magnus/.test(v))return IMG.icon
 function avBg(v){return v=='me'?'#555':/^magnus/.test(v)?(IMG.icons&&IMG.icons.magnus?'#fff':'none'):(v=='leela'||/^maia/.test(v))&&icon(v)?'#fff':icon(v)?'none':BOTINFO[v][1]}
 function setAv(el,v){el.innerHTML=avHTML(v);el.style.background=avBg(v)}
 BOTS.forEach(([v,t])=>{const c=document.createElement('div');c.className='card'+(opts.bot==v?' on':'');c.dataset.v=v;const [ic,col,tg]=BOTINFO[v];
- c.innerHTML='<div class="av" style="background:'+avBg(v)+'">'+avHTML(v)+'</div><div class="nm">'+t+(v=='magnus'?BOTTAG:'')+'</div><div class="tg">'+tg+'</div>';
+ c.innerHTML='<div class="av" style="background:'+avBg(v)+'">'+avHTML(v)+'</div><div class="nm">'+(v=='magnus'?GMTAG:'')+t+(v=='magnus'?BOTTAG:'')+'</div><div class="tg">'+tg+'</div>';
  c.onclick=()=>{opts.bot=v;localStorage.setItem('hb_bot',v);document.querySelectorAll('#bots .card').forEach(x=>x.classList.toggle('on',x.dataset.v==v));botUI()};$('bots').appendChild(c)});
 chips($('magera'),[['prime','👑 Prime · 2013–2019'],['now','⚡ Now · 2023–2026']],'era');
 $('bots').style.gridTemplateColumns='repeat('+(BOTS.length>5?3:BOTS.length)+',1fr)';
@@ -1401,7 +1402,7 @@ function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
   const av=$('a'+k),v=avv(who);if(av.dataset.v!=v){setAv(av,v);av.dataset.v=v}
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
 // a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
-function nameEl(el,txt,tag){el.textContent=txt;if(tag)el.insertAdjacentHTML('beforeend',BOTTAG)}
+function nameEl(el,txt,tag){el.textContent=txt;if(tag){el.insertAdjacentHTML('afterbegin',GMTAG);el.insertAdjacentHTML('beforeend',BOTTAG)}}
 function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!(GAME&&GAME.bvb)}
 function sideOf(color){return GAME&&GAME.bvb?(color=='white'?'me':'bot'):(color==S.you?'me':'bot')}
 function click(sq,p){if(!myTurn())return;const mine=p&&((p==p.toUpperCase())==(S.you=='white'));
@@ -1445,7 +1446,7 @@ function REC(){try{return JSON.parse(localStorage.getItem('hb_rec')||'{}')}catch
 function overUI(t,r,c){const h=$('ovhd');h.className='hd '+r;
  const why=t.replace(/^(You win|HumanBot wins|Draw)\s*/,'').replace(/[()]/g,'').replace('HumanBot',BNshort());
  h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':BNshort()+' won')+'<div class="why">'+(why||'')+'</div>';
- $('ovrec').innerHTML='Your record vs '+GAME.names.bot+(/^magnus/.test(GAME.av.bot)?BOTTAG:'')+'<br><b style="color:#81b64c">'+c.w+'</b>W<b>'+c.d+'</b>D<b style="color:#e05a4f">'+c.l+'</b>L';
+ $('ovrec').innerHTML='Your record vs '+(/^magnus/.test(GAME.av.bot)?GMTAG:'')+GAME.names.bot+(/^magnus/.test(GAME.av.bot)?BOTTAG:'')+'<br><b style="color:#81b64c">'+c.w+'</b>W<b>'+c.d+'</b>D<b style="color:#e05a4f">'+c.l+'</b>L';
  $('ovpgn').textContent='Copy PGN';$('over').style.display='flex'}
 $('over').onclick=e=>{if(e.target.id=='over')$('over').style.display='none'};
 $('ovrev').onclick=()=>{$('over').style.display='none'};
