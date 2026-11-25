@@ -101,6 +101,7 @@
  #arrow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
  #info{font-size:13px;color:#cfcbc0;margin-top:10px;line-height:1.5}
  .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:6px;margin-top:10px}
+ .bottag{display:inline-block;background:#5865f2;color:#fff;font:700 9.5px/1 sans-serif;letter-spacing:.4px;padding:2.5px 4px 2px;border-radius:4px;margin-left:5px;vertical-align:2px}
  #comm{font-size:13.5px;line-height:1.45;margin-top:8px}
  #comm .cl{background:var(--card);border-radius:8px;padding:7px 9px;margin-top:6px;color:#e4e1d8}
  #comm .cl b{color:#f0c75e}#comm .fact{border-left:3px solid #81b64c}#comm .mic{border-left:3px solid #ba0c2f}
@@ -1070,6 +1071,7 @@ function addRecent(v){if(v=='none')return;const r=tcRecent().filter(x=>x!=v);r.u
 buildTcs();
 $('tcbtn').onclick=()=>{const s=$('tcs').style;s.display=s.display=='block'?'none':'block'};
 if(!BOTS.some(b=>b[0]==opts.bot))opts.bot='humanbot';
+const BOTTAG='<span class="bottag">BOT</span>';
 const BOTINFO={humanbot:['♞','#5d8a35','Plays like a real person'],magnus:['♚','#b8102e','Unofficial · plays like him'],maia1:['M1','#2f7d8c','Levels 1100–1900'],maia2:['M2','#3b6ea5','Newer, PC only'],stockfish:['SF','#a8473a','The strongest engine'],leela:['Lc0','#ffffff','Neural engine'],gm:['♔','#8a6d3b',''],worstfish:['WF','#7a3b8c','Always the worst move']};
 function icon(v){return IMG.icons&&(IMG.icons[v]||(/^maia/.test(v)&&IMG.icons.maia)||(v=='worstfish'&&IMG.icons.stockfish))}
 // Magnus Carlsen bot avatars: a Santa-mask character drawn here (a nod to a festive chess.com avatar; not a photo,
@@ -1124,7 +1126,7 @@ function avHTML(v){if(v=='me')return '🙂';if(/^magnus/.test(v))return IMG.icon
 function avBg(v){return v=='me'?'#555':/^magnus/.test(v)?(IMG.icons&&IMG.icons.magnus?'#fff':'none'):(v=='leela'||/^maia/.test(v))&&icon(v)?'#fff':icon(v)?'none':BOTINFO[v][1]}
 function setAv(el,v){el.innerHTML=avHTML(v);el.style.background=avBg(v)}
 BOTS.forEach(([v,t])=>{const c=document.createElement('div');c.className='card'+(opts.bot==v?' on':'');c.dataset.v=v;const [ic,col,tg]=BOTINFO[v];
- c.innerHTML='<div class="av" style="background:'+avBg(v)+'">'+avHTML(v)+'</div><div class="nm">'+t+'</div><div class="tg">'+tg+'</div>';
+ c.innerHTML='<div class="av" style="background:'+avBg(v)+'">'+avHTML(v)+'</div><div class="nm">'+t+(v=='magnus'?BOTTAG:'')+'</div><div class="tg">'+tg+'</div>';
  c.onclick=()=>{opts.bot=v;localStorage.setItem('hb_bot',v);document.querySelectorAll('#bots .card').forEach(x=>x.classList.toggle('on',x.dataset.v==v));botUI()};$('bots').appendChild(c)});
 chips($('magera'),[['prime','👑 Prime · 2013–2019'],['now','⚡ Now · 2023–2026']],'era');
 $('bots').style.gridTemplateColumns='repeat('+(BOTS.length>5?3:BOTS.length)+',1fr)';
@@ -1140,7 +1142,7 @@ function BNshort(){return GAME?GAME.short.bot:shortName(opts.bot)}
 // a "spec" says which bot plays one side and how: bot, lvl (Lichess scale), opp, sfelo, nodes, rule
 function specFromMain(){const cc=$('cc').checked,y=+$('you').value;return Object.assign({bot:opts.bot,lvl:lvlLichess(),opp:cc?Math.round(0.8*y+550):y,shown:+$('lvl').value,
  sfelo:+$('sfelo').value,nodes:NODES[+$('lnodes').value],era:opts.era,calc:$('magcalc').checked},botRule())}
-function specName(s){if(s.bot=='magnus')return 'Magnus Carlsen bot · '+(s.era=='prime'?'2014':'2026');if(s.bot=='worstfish')return 'Worstfish';if(s.bot=='stockfish')return 'Stockfish '+(s.sfelo>=3200?'3200+':s.sfelo);if(s.bot=='leela')return 'Leela · '+s.nodes+(s.nodes==1?' node':' nodes');
+function specName(s){if(s.bot=='magnus')return 'Magnus Carlsen · '+(s.era=='prime'?'2014':'2026');if(s.bot=='worstfish')return 'Worstfish';if(s.bot=='stockfish')return 'Stockfish '+(s.sfelo>=3200?'3200+':s.sfelo);if(s.bot=='leela')return 'Leela · '+s.nodes+(s.nodes==1?' node':' nodes');
  if(s.bot=='maia1')return 'Maia-1 '+Math.min(1900,Math.max(1100,Math.round(s.lvl/100)*100));return shortName(s.bot)+' '+(s.shown||s.lvl)}
 let GAME=null; // {bvb, spec:{me,bot}, names:{me,bot}, short:{me,bot}, av:{me,bot}}  ('me' = bottom/White side in bot-vs-bot)
 // Stockfish 19 lite (stockfish.js, GPL-3.0) in a Web Worker made from the embedded script + wasm
@@ -1395,9 +1397,11 @@ document.addEventListener('keydown',e=>{if(!reviewOn()||/INPUT|SELECT|TEXTAREA/.
  const k={ArrowLeft:view-1,ArrowRight:view+1,Home:0,End:nPly(),ArrowUp:0,ArrowDown:nPly()}[e.key];if(k!=null){e.preventDefault();go(k)}});
 function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
  const nm=w=>GAME?GAME.names[w]:(w=='me'?'You':BN()),avv=w=>GAME?GAME.av[w]:(w=='me'?'me':opts.bot);
- [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];$('n'+k).textContent=nm(who);$('t'+k).textContent=hasC?fmt(t):'–';
+ [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),/^magnus/.test(avv(who)));$('t'+k).textContent=hasC?fmt(t):'–';
   const av=$('a'+k),v=avv(who);if(av.dataset.v!=v){setAv(av,v);av.dataset.v=v}
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
+// a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
+function nameEl(el,txt,tag){el.textContent=txt;if(tag)el.insertAdjacentHTML('beforeend',BOTTAG)}
 function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!(GAME&&GAME.bvb)}
 function sideOf(color){return GAME&&GAME.bvb?(color=='white'?'me':'bot'):(color==S.you?'me':'bot')}
 function click(sq,p){if(!myTurn())return;const mine=p&&((p==p.toUpperCase())==(S.you=='white'));
@@ -1441,7 +1445,7 @@ function REC(){try{return JSON.parse(localStorage.getItem('hb_rec')||'{}')}catch
 function overUI(t,r,c){const h=$('ovhd');h.className='hd '+r;
  const why=t.replace(/^(You win|HumanBot wins|Draw)\s*/,'').replace(/[()]/g,'').replace('HumanBot',BNshort());
  h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':BNshort()+' won')+'<div class="why">'+(why||'')+'</div>';
- $('ovrec').innerHTML='Your record vs '+GAME.names.bot+'<br><b style="color:#81b64c">'+c.w+'</b>W<b>'+c.d+'</b>D<b style="color:#e05a4f">'+c.l+'</b>L';
+ $('ovrec').innerHTML='Your record vs '+GAME.names.bot+(/^magnus/.test(GAME.av.bot)?BOTTAG:'')+'<br><b style="color:#81b64c">'+c.w+'</b>W<b>'+c.d+'</b>D<b style="color:#e05a4f">'+c.l+'</b>L';
  $('ovpgn').textContent='Copy PGN';$('over').style.display='flex'}
 $('over').onclick=e=>{if(e.target.id=='over')$('over').style.display='none'};
 $('ovrev').onclick=()=>{$('over').style.display='none'};
@@ -1463,7 +1467,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
  const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
- if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);$('vsname').textContent=bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot;$('vstc').innerHTML=$('tclabel').innerHTML}}
+ if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&/^magnus/.test(GAME.av.bot));$('vstc').innerHTML=$('tclabel').innerHTML}}
 $('newgame').onclick=()=>{if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
 async function newGame(white,black){ // white/black: spec, or null for you
  gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
