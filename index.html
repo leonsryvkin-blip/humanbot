@@ -1001,8 +1001,8 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
   const inst=pick(p.moves,1,'human');
   const think=p.time&&clk?Math.min(sampleTime(p.time),Math.max(0.1,clk[0]-0.05)):guessThink(g,p,clk?clk[0]:null,LG.inc||0);
   let m=inst,calc=null;
-  if(d.calc!==false&&p.moves.length>1){const nodes=Math.max(1,Math.min(400,Math.round(think*8)));
-   const r=await SX(g,era,2800,op,clk,inst,nodes,Math.max(250,Math.min(think*850,12000)),0.2);m=r.move;
+  if(d.calc!==false&&p.moves.length>1){const nodes=Math.max(64,Math.min(400,Math.round(think*8)));
+   const r=await SX(g,era,2800,op,clk,inst,nodes,Math.max(1200,Math.min(think*850,12000)),0.05);m=r.move;
    calc={nodes:r.nodes,changed:r.changed,instinct:g.san(inst),best:g.san(r.best),q_best:r.qBest,q_instinct:r.qInstinct}}
   const cands=p.moves.slice(0,5).map(([mm,q])=>[g.san(mm),Math.round(q*100)]);const san=g.san(m);LG.sans.push(san);g.push(m);
   return lstate({bot_move:g.uci(m),bot_san:san,think:Math.round(think*100)/100,cands,calc,win:Math.round(p.win*100),draw:Math.round(p.draw*100),loss:Math.round(p.loss*100)})}
