@@ -1,0 +1,16 @@
+Downloaded 24 Nov 2026 from https://github.com/lichess-org/lila (public/piece, public/images/board).
+Licenses as listed in lila's COPYING.md:
+
+pieces/staunty      sadsnake1                       CC BY-NC-SA 4.0
+pieces/maestro      sadsnake1                       CC BY-NC-SA 4.0
+pieces/california   Jerry S.                        CC BY-NC-SA 4.0
+pieces/cburnett     Colin M.L. Burnett              GPLv2+
+pieces/merida       Armando Hernandez Marroquin     GPLv2+
+board/*.jpg         the lila authors and pirouetti  AGPLv3+
+
+CC BY-NC-SA: non-commercial use only, with credit (shown in the app's "Look" section).
+icons/stockfish.png  Stockfish logo, from the official-stockfish GitHub organisation (used to identify the Stockfish engine)
+icons/leela.png  Leela Chess Zero logo, from the LeelaChessZero GitHub organisation
+icons/maia.png  Maia logo, from github.com/CSSLab/maia-platform-frontend (public/icons/icon-192.png), GPL-3.0
+leela/703810.pb.gz  Leela Chess Zero network 703810 (last T70 net, 10x128), training.lczero.org, GPL-3.0
+maia1/*.pb.gz  Maia-1 nets, CSSLab (github.com/CSSLab/maia-chess), GPL-3.0
