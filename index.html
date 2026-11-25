@@ -104,7 +104,7 @@
  .bottag{display:inline-block;background:#5865f2;color:#fff;font:700 9.5px/1 sans-serif;letter-spacing:.4px;padding:2.5px 4px 2px;border-radius:4px;margin-left:5px;vertical-align:2px}
  #comm{font-size:13.5px;line-height:1.45;margin-top:8px}
  #comm .cl{background:var(--card);border-radius:8px;padding:7px 9px;margin-top:6px;color:#e4e1d8}
- #comm .cl b{color:#f0c75e}#comm .fact{border-left:3px solid #81b64c}#comm .mic{border-left:3px solid #ba0c2f}
+ #comm .cl b{color:#f0c75e}#comm .fact{border-left:3px solid #81b64c}#comm .quote{border-left:3px solid #5865f2}#comm .mic{border-left:3px solid #ba0c2f}
  .clock{position:relative}
  .rx{position:absolute;right:118px;top:-3px;font-size:28px;line-height:1;background:#fff;border-radius:18px 18px 18px 4px;padding:3px 7px;
   box-shadow:0 3px 10px #0007;z-index:6;animation:rxpop 2.6s ease forwards;pointer-events:none}
@@ -229,7 +229,7 @@
     <div id="magopts" style="display:none">
      <div class="row" id="magera"></div>
      <label class="tog"><input type="checkbox" id="magcalc" checked> Calculation: instinct first, then a check for tactics</label>
-     <div class="small">Unofficial bot trained on about 27,000 of Magnus Carlsen's public games (chess.com, Lichess, tournaments). Not affiliated with or endorsed by him. The emoji reactions and the commentator are made up for fun; Magnus never said any of it.</div>
+     <div class="small">Unofficial bot trained on about 27,000 of Magnus Carlsen's public games (chess.com, Lichess, tournaments). Not affiliated with or endorsed by him. The emoji reactions and the 🎙️ commentator are made up for fun. Lines marked 💬 are real quotes of Magnus, with their source.</div>
     </div>
     <div id="leelaopts" style="display:none">
      <div class="big"><b id="lnv">8</b><span>positions searched per move</span></div>
@@ -1548,8 +1548,23 @@ const MGL={
  win:['You beat the Magnus Carlsen bot! Incredible game!','What a win! Screenshot this one!'],
  loss:['The Magnus bot takes it. Rematch?','Clinical. The bot converts. Want revenge?'],
  draw:['A draw against the Magnus bot. That\'s a respectable result!']};
-function mgStart(){MG.st={mat:0,inBook:true,left:false,eg:false,win:false,lose:false};$('comm').innerHTML='';if(!mgOn())return;
- mgBook();mgReact('👋');mgSay('🎙️ '+MGR(MGL.start))}
+// Real things Magnus Carlsen said, with their source (from en.wikiquote.org/wiki/Magnus_Carlsen, which links the originals).
+// Shown as clearly marked quotes at fitting moments, at most once each per game.
+const MGQ={
+ start:[['I love the game, and I love to compete, but I am not obsessed with the struggle.','TIME, 2009'],
+  ['I am not some sort of freak. I might be very good at chess but I\'m just a normal person.','TIME, 2009']],
+ berlin:[['He played the Berlin, I played the most solid line, yada yada yada, let\'s go to the doping control.','press conference, World Championship 2013, game 8']],
+ threats:[['According to Garry [Kasparov], if you make 10 threats in a row, your opponent is gonna blunder eventually.','on his stream']],
+ draw:[['When did I understand it was a draw? I understood it immediately. That doesn\'t mean you shouldn\'t play.','press conference, World Championship 2018, game 9']],
+ win:[['I get more upset at losing at other things than chess. I always get upset when I lose at Monopoly.','The New York Times, 2008']],
+ loss:[['I feel sorry for players who are always lying awake at night, brooding over their games.','ChessBase, 2010']]};
+function mgQuote(k,chance){const st=MG.st;st.q=st.q||{};if(st.q[k]||Math.random()>(chance==null?1:chance))return;st.q[k]=1;const [t,src]=MGR(MGQ[k]);
+ mgSay('💬 <i>“'+t+'”</i><br><span style="color:#9fa8ff">— Magnus Carlsen, '+src+' (real quote)</span>','quote')}
+function mgStart(){MG.st={mat:0,inBook:true,left:false,eg:false,win:false,lose:false,checks:0};$('comm').innerHTML='';if(!mgOn())return;
+ mgBook();mgReact('👋');mgSay('🎙️ '+MGR(MGL.start));mgQuote('start',.5)}
+function mgQuoteCheck(r){const st=MG.st,s=S.sans||[];
+ if(['e4','e5','Nf3','Nc6','Bb5','Nf6'].every((m,i)=>s[i]==m))mgQuote('berlin');
+ st.checks=r&&r.bot_san&&/\+$/.test(r.bot_san)?st.checks+1:0;if(st.checks>=2)mgQuote('threats')}
 function mgFacts(){if(!mgOn()||!MG.book)return;const e=MG.book[mgKey()];
  if(!e){if(MG.st.inBook&&S.sans.length>2&&!MG.st.left){MG.st.left=true;MG.st.inBook=false;mgSay('🎙️ '+MGR(MGL.left))}return}
  const era=GAME.spec.bot.era=='prime'?0:1,tot=Object.values(e).reduce((a,c)=>a+c[2],0),te=Object.values(e).reduce((a,c)=>a+c[era],0);
@@ -1568,10 +1583,11 @@ function mgAfterBot(r){if(!mgOn())return;const st=MG.st,v=r.win!=null?r.win-r.lo
  else if(!said&&mat<=-3&&!st.lose){st.lose=true;mgReact('😬');mgSay('🎙️ '+MGR(MGL.losing))}
  if(!st.eg&&S.fen){const pcs=S.fen.split(' ')[0].replace(/[^qrbnQRBN]/g,'').length;if(pcs<=4&&S.sans.length>30){st.eg=true;mgSay('🎙️ '+MGR(MGL.endgame))}}
  if(r.bot_san&&/[+#]$/.test(r.bot_san)&&!said)mgReact(r.bot_san.endsWith('#')?'👑':'⚡');
- st.prevV=v}
+ mgQuoteCheck(r);st.prevV=v}
 function mgMat(){const V={p:1,n:3,b:3,r:5,q:9},bw=S.you=='black';let m=0;
  for(const ch of (S.fen||'').split(' ')[0]){const v=V[ch.toLowerCase()];if(!v)continue;m+=(ch==ch.toUpperCase())==bw?v:-v}return m}
 function mgBeforeBot(){if(!mgOn())return;MG.lastKey=mgKey();mgFacts()}
-function mgEnd(res){if(!mgOn())return;mgReact(res=='win'?'🫡':res=='draw'?'🤝':'👑');mgSay('🎙️ '+MGR(MGL[res]))}
+function mgEnd(res){if(!mgOn())return;mgReact(res=='win'?'🫡':res=='draw'?'🤝':'👑');mgSay('🎙️ '+MGR(MGL[res]));
+ mgQuote(res=='draw'?'draw':res=='win'?'win':'loss',res=='loss'?.5:1)}
 lookUI();
 </script><script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js')</script></body></html>
