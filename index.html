@@ -1072,70 +1072,43 @@ $('tcbtn').onclick=()=>{const s=$('tcs').style;s.display=s.display=='block'?'non
 if(!BOTS.some(b=>b[0]==opts.bot))opts.bot='humanbot';
 const BOTINFO={humanbot:['♞','#5d8a35','Plays like a real person'],magnus:['♚','#b8102e','Unofficial · plays like him'],maia1:['M1','#2f7d8c','Levels 1100–1900'],maia2:['M2','#3b6ea5','Newer, PC only'],stockfish:['SF','#a8473a','The strongest engine'],leela:['Lc0','#ffffff','Neural engine'],gm:['♔','#8a6d3b',''],worstfish:['WF','#7a3b8c','Always the worst move']};
 function icon(v){return IMG.icons&&(IMG.icons[v]||(/^maia/.test(v)&&IMG.icons.maia)||(v=='worstfish'&&IMG.icons.stockfish))}
-// Magnus Carlsen bot avatars: a made-up cartoon chess player (not a likeness of anyone), two looks + era badge.
-// Prime 2014: tournament suit and tie. Now 2026: hoodie and headphones (online blitz).
-function magAv(v){const prime=v=='magnus-prime',era=prime?'14':v=='magnus-now'?'26':'',id='mg'+(era||'x'),OL='#3b2418';
+// Magnus Carlsen bot avatars: a Santa-mask character drawn here (a nod to a festive chess.com avatar; not a photo,
+// not anyone's likeness). Prime 2014 on blue, Now 2026 on purple, with an era badge.
+function magAv(v){const prime=v=='magnus-prime',era=prime?'14':v=='magnus-now'?'26':'',id='mg'+(era||'x'),OL='#5a2a1e';
  const bg=prime?'#3d5f94':'#6c3aa8';
  const S=(d,f,w,x)=>'<path d="'+d+'" fill="'+f+'"'+(w?' stroke="'+(x||OL)+'" stroke-width="'+w+'" stroke-linejoin="round" stroke-linecap="round"':'')+'/>';
  const L=(d,c,w,o)=>'<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"'+(o?' opacity="'+o+'"':'')+'/>';
- let body;
- if(prime)body=S('M7 101c1-16 13-26 28-30l15 9 15-9c15 4 27 14 28 30z','#262b37',1.3)+
-  S('M37 70l13 15 13-15-4-3H41z','#fff',.6,'#c3c7cf')+
-  S('M42 66.5l-5.5 6 7.5 5.5 6-7.5zM58 66.5l5.5 6-7.5 5.5-6-7.5z','#fff',.9,'#aeb3bc')+
-  S('M47 71.5h6l-1 4.2h-4z','#9c0b24',.8,'#6d0718')+S('M48 75.7h4l2.6 14.3-4.6 5.2-4.6-5.2z','#c8102e',.8,'#6d0718')+
-  L('M48.6 80l3.6-1.6M48.2 85l4.4-2M48.6 90l3.4-1.5','#e04a63',.9)+
-  S('M35 71l9.5 8-4.2 4.2L50 97 34.5 84.5l3.3-4.3zM65 71l-9.5 8 4.2 4.2L50 97l15.5-12.5-3.3-4.3z','#353b4b',.9)+
-  L('M22 82c2 6 3 12 3 19M78 82c-2 6-3 12-3 19','#1b1f29',1.1,.8)+
-  S('M8 101c1-12 7-20 16-25-3 8-4 16-3 25z','#1c2029',0)+S('M92 101c-1-12-7-20-16-25 3 8 4 16 3 25z','#1c2029',0)+
-  L('M36.6 72.4l8 6.8M63.4 72.4l-8 6.8','#5a6275',.6,.9)+
-  L('M41 72l9 11 9-11','#d9dce2',.8)+
-  '<circle cx="50" cy="98.5" r="1.3" fill="#11141b"/><circle cx="50" cy="94.6" r="0" fill="none"/>'+
-  L('M49.3 76.5l1.4 0','#ff6f86',.6)+
-  '<g transform="translate(25.5 85)"><rect width="9" height="6.4" rx=".6" fill="#ba0c2f"/><rect x="2.5" width="2" height="6.4" fill="#fff"/><rect y="2.2" width="9" height="2" fill="#fff"/><rect x="3" width="1" height="6.4" fill="#00205b"/><rect y="2.7" width="9" height="1" fill="#00205b"/></g>';
- else body=S('M29 66c2-6 10.5-9.5 21-9.5s19 3.5 21 9.5l-4 9c-4-4.5-10-6.5-17-6.5s-13 2-17 6.5z','#1a3466',1.2)+
-  S('M6 101c1-17 13-28 30-32 4 5.5 9 7.5 14 7.5s10-2 14-7.5c17 4 29 15 30 32z','#24498f',1.3)+
-  L('M36 71c4 4 9 6 14 6s10-2 14-6','#1a3466',1.6)+
-  L('M44.5 77c-.8 6-.8 10 0 14M55.5 77c.8 6 .8 10 0 14','#f2f2f2',1.7)+S('M43.6 90.5h1.9v3.4h-1.9zM54.5 90.5h1.9v3.4h-1.9z','#c9c9c9')+
-  L('M16 86c3 4 5 9 6 15M84 86c-3 4-5 9-6 15','#1a3466',1.1,.8)+
-  S('M6 101c1-12 6-21 15-26-2 8-3 17-2 26z','#1d3d7a',0)+S('M94 101c-1-12-6-21-15-26 2 8 3 17 2 26z','#1d3d7a',0)+
-  L('M30 88c3 1 6 3 8 6M70 88c-3 1-6 3-8 6M37 97c4-1 8-1 12 0','#1a3466',.9,.7)+
-  L('M38 74c3 2 7 3.4 12 3.4s9-1.4 12-3.4','#3a63b0',.8,.7)+
-  L('M28.5 70c3.5 10 39.5 10 43 0','#1c1c1f',4.2)+
-  S('M21.8 69.5c0-5 3-8.5 6.5-8.5s6.5 3.5 6.5 8.5-3 8.5-6.5 8.5-6.5-3.5-6.5-8.5z','#1c1c1f',1)+
-  S('M65.2 69.5c0-5 3-8.5 6.5-8.5s6.5 3.5 6.5 8.5-3 8.5-6.5 8.5-6.5-3.5-6.5-8.5z','#1c1c1f',1)+
-  '<ellipse cx="28.3" cy="69.5" rx="3.6" ry="5.4" fill="#e0457b"/><ellipse cx="71.7" cy="69.5" rx="3.6" ry="5.4" fill="#e0457b"/>'+
-  L('M26.6 66.5c.6-1.2 1.5-2 2.5-2.2M70 66.5c.6-1.2 1.5-2 2.5-2.2','#fff',1,.7);
- const eye=x=>'<ellipse cx="'+x+'" cy="38.6" rx="3.5" ry="2.7" fill="#fff" stroke="'+OL+'" stroke-width=".7"/>'+
-  '<circle cx="'+(x+.3)+'" cy="38.8" r="2" fill="#4a72a8"/><circle cx="'+(x+.3)+'" cy="38.8" r="1.05" fill="#151515"/><circle cx="'+(x+.95)+'" cy="38.1" r=".6" fill="#fff"/>'+
-  L('M'+(x-3.6)+' 37.6q3.6-2.8 7.2 0',OL,1.4)+
-  L('M'+(x+3.4)+' 37.4l1.2-.9M'+(x-3.4)+' 37.4l-1.2-.9',OL,.8)+
-  L('M'+(x-2.6)+' 41.3q2.6 1 5.2 0','#c98d6c',.6,.8);
+ const W='#ffffff',WS='#d9dde3';
  return '<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block"><defs>'+
-  
-  
-  '<linearGradient id="'+id+'s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f8d7b8"/><stop offset=".6" stop-color="#f1c39f"/><stop offset="1" stop-color="#e3ab86"/></linearGradient>'+
-  '<linearGradient id="'+id+'h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a603b"/><stop offset="1" stop-color="#4f331e"/></linearGradient>'+
+  '<linearGradient id="'+id+'f" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7dcc3"/><stop offset=".55" stop-color="#f3cfb0"/><stop offset="1" stop-color="#e6b896"/></linearGradient>'+
+  '<linearGradient id="'+id+'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0303c"/><stop offset="1" stop-color="#a5121f"/></linearGradient>'+
   '<clipPath id="'+id+'c"><circle cx="50" cy="50" r="48"/></clipPath></defs>'+
   '<circle cx="50" cy="50" r="48" fill="'+bg+'"/><g clip-path="url(#'+id+'c)">'+
-  body+
-  S('M43 51v12.5c0 4.2 14 4.2 14 0V51z','url(#'+id+'s)',1.2)+S('M43 54.5c4 4.2 10 4.2 14 0v5.2c-4 3.2-10 3.2-14 0z','#d39874',0)+
-  S('M33.5 36.5c-4.2-1.4-6.6 1.8-5.6 6.2s3.6 6.6 6.6 6.2z','url(#'+id+'s)',1.2)+S('M66.5 36.5c4.2-1.4 6.6 1.8 5.6 6.2s-3.6 6.6-6.6 6.2z','url(#'+id+'s)',1.2)+
-  L('M31.3 40.5c1.2 2.2 1.2 4.4.4 6.4M68.7 40.5c-1.2 2.2-1.2 4.4-.4 6.4','#c98d6c',1)+
-  S('M33 35c0-12 7.5-19 17-19s17 7 17 19c0 8.5-2.6 15-6.6 19-3 3-6.4 4.6-10.4 4.6s-7.4-1.6-10.4-4.6C35.6 50 33 43.5 33 35z','url(#'+id+'s)',1.3)+
-  S('M62.6 28c3.2 6.5 3.2 17-1.2 23.5-2 3-4.8 5-8 6 6.4-5.5 9.2-16 9.2-29.5z','#dca07c',0)+
-  S('M32.4 36c-2.2-13 5-22 16.2-23.2 9.4-1 16.6 3.2 19 10.2 1.5 4.3 1.2 9.2.2 14-1.1-5-3.1-8.2-6.3-10.2-3.3 2.2-8.6 2.4-12.8.2-4 3.2-9.5 4.4-13.6 3.2-1.4 1.4-2.4 3.4-2.7 5.8z','url(#'+id+'h)',1.2)+
-  S('M33.3 37.5c-1.1-3-.6-6 .8-8.2.8 3 .9 5.4.6 8.4zM66.8 37.3c1-3 .7-5.8-.6-8 -.9 3-1 5.3-.7 8.2z','#5d3d24',0)+
-  L('M40 17.6c5-2.4 12.4-2.6 17 .6M44.5 21c4.6-1.4 9.2-.6 12.4 1.6M37.4 25.6c5 3 12.2 3.2 18.4-.6','#a87c52',1.2,.85)+
-  L('M35.5 30c1.5-5 4-8.5 8-10.5M60 17.6c3 2 5 4.6 6 8M48 15.8c2.5-.4 5-.2 7 .6M39.5 28.8c4 1.4 9 1.5 13.5-.4','#3f2716',.8,.6)+
-  L('M57 24.5c2.6 1 4.6 3 5.6 5.6','#b98a5e',.9,.7)+
-  L('M38.3 33q4-2.7 8.2-.4M53.5 32.6q4.2-2.3 8.2.4','#4a2f1c',2.1)+
-  eye(43)+eye(57)+
-  L('M50.6 39.6c.6 3 1.6 5.6 1.6 7.2-1 1-2.6 1.3-3.6.8','#c58a69',1.3)+
-  L('M49.6 41c.3 1.6.6 2.8.9 3.8','#fff',.8,.45)+L('M46.6 47.4c.6.4 1.2.5 1.8.4','#c58a69',.8)+
-  L('M36.2 43.5c.4 4 1.8 7.4 4 9.8','#e3ab86',1,.6)+
-  '<ellipse cx="38.8" cy="46.6" rx="3.2" ry="1.7" fill="#f09a86" opacity=".4"/><ellipse cx="61.2" cy="46.6" rx="3.2" ry="1.7" fill="#f09a86" opacity=".4"/>'+
-  (prime?L('M44.6 50.6q5.6 3.3 11-.4','#86402f',1.7)+L('M47.2 53q3 1.1 6 0','#d48d78',1)
-        :S('M43.8 49.6q6.2 6.6 12.4 0z','#7a2d25',1,'#5e2018')+S('M45.2 50.4h9.6q-.6 1.9-4.8 2.1-4.2-.2-4.8-2.1z','#fff'))+
+  // hat: red cone flopping to the right, pompom
+  S('M26 33c2-14 13-23 27-23 10 0 18 4 23 11 3 4 5 9 6 14-3-2-6-3-9-2-9-6-20-9-31-7-6 1-11 4-16 7z','url(#'+id+'r)',1.3,'#6d0a14')+
+  L('M40 13.5c8-2 17-1 24 3M33 20c4-3 9-5 14-6','#f05a64',1.1,.7)+
+  '<circle cx="81" cy="36" r="7.5" fill="'+W+'" stroke="'+WS+'" stroke-width="1"/>'+L('M77.6 33.6a4.5 4.5 0 0 1 4-1.6','#fff',1.4,.9)+
+  // face (mask)
+  S('M30 40c0-6 9-10 20-10s20 4 20 10v16c0 10-9 17-20 17s-20-7-20-17z','url(#'+id+'f)',1.2,'#b98463')+
+  // eye holes
+  S('M35.6 44.5c1.8-3 8.6-3.6 10.6.2-1.4 2.8-9.2 3.2-10.6-.2z','#1e1410',.9,'#6b4a3a')+
+  S('M53.8 44.7c2-3.8 8.8-3.2 10.6-.2-1.4 3.4-9.2 3-10.6.2z','#1e1410',.9,'#6b4a3a')+
+  // white bushy eyebrows
+  S('M33 40.5c2-4 6-5.5 10-5 2 .3 4 1 5 2.2-2.6-.2-4.2.4-6 1-3 1-6 1-9 1.8z','#fff',.8,WS)+
+  S('M67 40.5c-2-4-6-5.5-10-5-2 .3-4 1-5 2.2 2.6-.2 4.2.4 6 1 3 1 6 1 9 1.8z','#fff',.8,WS)+
+  // rosy cheeks + nose
+  '<ellipse cx="37" cy="52" rx="5" ry="3.4" fill="#f08a8a" opacity=".55"/><ellipse cx="63" cy="52" rx="5" ry="3.4" fill="#f08a8a" opacity=".55"/>'+
+  S('M46 52c0-4 1.8-7 4-7s4 3 4 7c0 2.6-1.8 4.2-4 4.2s-4-1.6-4-4.2z','#f2a48c',1,'#b9745c')+
+  L('M48.6 47.6c.6-.8 1.4-1.2 2.2-1','#fff',.9,.7)+
+  // beard (big, curly), mouth, moustache
+  S('M24 56c0 4 1 8 3 11-1 4 0 8 3 10-.4 4 2 7 5 8 1 4 5 6 9 5 2 3 4 4 6 4s4-1 6-4c4 1 8-1 9-5 3-1 5.4-4 5-8 3-2 4-6 3-10 2-3 3-7 3-11-3 3-7 5-11 5-4 4-9 6-15 6s-11-2-15-6c-4 0-8-2-11-5z','#fff',1.2,WS)+
+  L('M30 70c2 1 4 1 6 0M64 70c2 1 4 1 6 0M35 80c2 1 4 1 6 0M59 80c2 1 4 1 6 0M46 87c2.6 1 5.4 1 8 0M40 75c2 .8 3.6.8 5 0M55 75c1.4.8 3 .8 5 0','#c9ced6',1,.9)+
+  S('M45 63.5c1.6 3.4 8.4 3.4 10 0-1.6-.6-8.4-.6-10 0z','#c8202c',.8,'#7d0f17')+
+  S('M50 58.5c-3-2.6-8-3.2-12.4-1.6-3 1-5.4 3.2-6.8 5.6 3.4-.8 6.6-.4 9.2 1 3.4 1.8 7 1.4 10-1.6 3 3 6.6 3.4 10 1.6 2.6-1.4 5.8-1.8 9.2-1-1.4-2.4-3.8-4.6-6.8-5.6-4.4-1.6-9.4-1-12.4 1.6z','#fff',1.1,WS)+
+  L('M38 59.5c2.4-.6 5-.4 7.4.8M62 59.5c-2.4-.6-5-.4-7.4.8','#c9ced6',.9,.9)+
+  // hat's white fur band
+  S('M22 37c5-6 16-9 28-9s23 3 28 9c1.4 1.6 1 4-.8 5-1.6.8-3.4.4-4.6-.6-5-3.4-13-5.4-22.6-5.4s-17.6 2-22.6 5.4c-1.2 1-3 1.4-4.6.6-1.8-1-2.2-3.4-.8-5z','#fff',1.2,WS)+
+  L('M30 33.5c2 .6 3 1.6 3.4 2.8M44 30.4c1.6.8 2.4 1.8 2.6 3M58 30.6c1.4.6 2.2 1.6 2.4 2.8M69 33c1.4.8 2 1.8 2 3','#c9ced6',1,.9)+
   '</g>'+
   (era?'<g><circle cx="80" cy="80" r="14" fill="#ba0c2f" stroke="#fff" stroke-width="3"/><text x="80" y="85" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="14" fill="#fff">'+era+'</text></g>':'')+'</svg>'}
 function avHTML(v){if(v=='me')return '🙂';if(/^magnus/.test(v))return magAv(v);const i=icon(v);if(!i)return BOTINFO[v][0];
