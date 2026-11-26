@@ -57,6 +57,7 @@
  #custombox{display:none;background:#1f1e1c;border-radius:8px;padding:6px 12px 10px;margin-top:8px}
  button{font-family:inherit}
  .sq.lastol{outline:3px solid #f6d33cdd;outline-offset:-3px}
+ .sq.fogd::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,#24231f 0 6px,#2a2925 6px 12px);opacity:.97;pointer-events:none}
  .ck{width:80%;height:80%;pointer-events:none}
  #mvisdemo{display:grid;grid-template-columns:repeat(8,1fr);width:240px;margin:10px auto 2px;border-radius:5px;overflow:hidden;--sq:30px}#mvisdemo .sq{height:30px}
  .seg{display:flex;font-size:13px;background:#1f1e1c;border-radius:9px;padding:3px;margin-bottom:12px}
@@ -245,6 +246,7 @@
    <div id="online" style="display:none"></div>
    <div id="gmodes" style="display:none">
     <div class="lbl">Variant</div><div class="row" id="mvar"></div><div class="small" id="mvarhelp"></div>
+    <div class="lbl">Rule twist</div><div class="row" id="mrule"></div><div class="small" id="mrulehelp"></div>
     <div class="lbl">Visualization training</div><div class="row" id="mvis"></div><div class="small" id="mvishelp"></div>
     <div id="mvisdemo" class="set-staunty"></div>
     <button class="play" id="mgo">Play a bot →</button>
@@ -383,7 +385,11 @@ const isWhite = p => p && p === p.toUpperCase();
 const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 
 class Chess {
-  constructor(back) { // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
+  // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
+  // rule: null | "shape" (a capturing piece becomes the piece it took; kings stay kings)
+  //       | "fog" (fog of war: no check rules, you may move into check; capturing the king wins)
+  constructor(back, rule) {
+    this.rule = rule || null;
     this.b = new Array(64).fill(null);
     back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
@@ -405,7 +411,7 @@ class Chess {
   clone() {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
-    c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook;
+    c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule;
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
   }
@@ -430,12 +436,14 @@ class Chess {
       }
     return false;
   }
-  inCheck(color = this.turn) { return this.attacked(this.kingSq(color), color === "w" ? "b" : "w"); }
+  inCheck(color = this.turn) { const k = this.kingSq(color); return k >= 0 && this.attacked(k, color === "w" ? "b" : "w"); }
   pseudo() {
     const out = [], b = this.b, us = this.turn, W = us === "w";
     const add = (from, to) => {
-      if ((b[from] === "P" && rankOf(to) === 7) || (b[from] === "p" && rankOf(to) === 0))
+      if ((b[from] === "P" && rankOf(to) === 7) || (b[from] === "p" && rankOf(to) === 0)) {
+        if (this.rule === "shape" && b[to]) { out.push({ from, to, promo: "q" }); return; } // becomes what it takes
         for (const pr of "qrbn") out.push({ from, to, promo: pr });
+      }
       else out.push({ from, to, promo: null });
     };
     for (let s = 0; s < 64; s++) {
@@ -517,6 +525,11 @@ class Chess {
     if (t === "P" && m.to === this.ep && !b[m.to]) { u.epCap = m.to + (W ? -8 : 8); u.cap = b[u.epCap]; b[u.epCap] = null; }
     b[m.to] = m.promo ? (W ? m.promo.toUpperCase() : m.promo) : p;
     b[m.from] = null;
+    if (this.rule === "shape" && u.cap && t !== "K") { // Shapeshift: become the captured piece
+      let nt = u.cap.toUpperCase();
+      if (nt === "P" && rankOf(m.to) === (W ? 7 : 0)) nt = "Q"; // a pawn on the far rank promotes at once
+      u.orig = p; b[m.to] = W ? nt : nt.toLowerCase();
+    }
     if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { // rook jumps too
       const home = W ? 0 : 56;
       if (m.to === home + 6) { b[home + 5] = b[home + 7]; b[home + 7] = null; }
@@ -541,7 +554,7 @@ class Chess {
       this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
       return;
     }
-    b[m.from] = m.promo ? (W ? "P" : "p") : b[m.to];
+    b[m.from] = u.orig ? u.orig : m.promo ? (W ? "P" : "p") : b[m.to];
     b[m.to] = u.epCap >= 0 ? null : u.cap;
     if (u.epCap >= 0) b[u.epCap] = u.cap;
     const t = b[m.from].toUpperCase();
@@ -553,6 +566,7 @@ class Chess {
     this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
   }
   legal() {
+    if (this.rule === "fog") return this.kingSq("w") < 0 || this.kingSq("b") < 0 ? [] : this.pseudo(); // no check rules
     const us = this.turn, out = [];
     for (const m of this.pseudo()) {
       const u = this._apply(m);
@@ -624,6 +638,11 @@ class Chess {
     return false;
   }
   outcome() { // null, or {winner: 'w'|'b'|null, reason}
+    if (this.rule === "fog") {
+      if (this.kingSq("w") < 0) return { winner: "b", reason: "king captured" };
+      if (this.kingSq("b") < 0) return { winner: "w", reason: "king captured" };
+      if (this.legal().length === 0) return { winner: null, reason: "no moves" };
+    }
     const n = this.legal().length;
     if (n === 0) return this.inCheck() ? { winner: this.turn === "w" ? "b" : "w", reason: "checkmate" } : { winner: null, reason: "stalemate" };
     if (this.insufficient()) return { winner: null, reason: "insufficient material" };
@@ -974,14 +993,57 @@ function predictMaia(net, game) {
   return { moves: legal.map((m, i) => [m, ex[i] / z]).sort((a, b) => b[1] - a[1]) };
 }
 
+// Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
+// deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0 };
+function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
+  let s = 0;
+  for (let q = 0; q < 64; q++) {
+    const p = g.b[q]; if (!p) continue;
+    const t = p.toUpperCase(), f = fileOf(q), r = rankOf(q);
+    let v = VAL[t] + ((t === "N" || t === "P") ? 12 - 4 * (Math.abs(3.5 - f) + Math.abs(3.5 - r)) : 0);
+    if (t === "P") v += (p === "P" ? r : 7 - r) * 6;
+    s += colorOf(p) === g.turn ? v : -v;
+  }
+  return s;
+}
+function searchVariant(g, level, ms) {
+  const depth = level < 900 ? 1 : level < 1500 ? 2 : 3, noise = Math.max(0, (2400 - level) / 6);
+  const t0 = Date.now(); let nodes = 0, stop = false;
+  const order = list => list.map(m => [m, g.b[m.to] ? VAL[g.b[m.to].toUpperCase()] * 10 - VAL[g.b[m.from].toUpperCase()] : 0]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+  function ab(d, a, b) {
+    nodes++; if ((nodes & 1023) === 0 && Date.now() - t0 > ms) stop = true;
+    const kingsGone = g.kingSq(g.turn) < 0;
+    if (kingsGone) return -100000 - d;
+    const legal = g.legal();
+    if (!legal.length) return g.inCheck() ? -100000 - d : 0;
+    if (d === 0 || stop) return evalMaterial(g);
+    for (const m of order(legal)) {
+      g.push(m); const v = -ab(d - 1, -b, -a); g.pop();
+      if (v > a) a = v; if (a >= b) break;
+    }
+    return a;
+  }
+  const root = order(g.legal()), scored = [];
+  for (const m of root) {
+    g.push(m); const v = -ab(depth - 1, -1e9, 1e9); g.pop();
+    scored.push([m, v + (Math.random() - 0.5) * 2 * noise]);
+    if (stop && scored.length) break;
+  }
+  for (const m of root.slice(scored.length)) scored.push([m, -1e8]);
+  scored.sort((x, y) => y[1] - x[1]);
+  return { move: scored[0][0], depth, nodes, ranked: scored.slice(0, 5) };
+}
+
 // Web Worker side: the network runs off the page's main thread so clocks and taps stay smooth.
 if (typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope) {
   let net = null;
   self.onmessage = e => {
     const d = e.data;
     if (d.type === "init") { net = new HumanNet(d.bytes, d.meta); self.postMessage({ type: "ready" }); return; }
-    const g = new Chess(d.back || undefined);
+    const g = new Chess(d.back || undefined, d.rule || null);
     for (const u of d.moves) g.push(g.fromUci(u));
+    if (d.variant) { const r = searchVariant(g, d.level || 1500, d.ms || 1500); self.postMessage({ id: d.id, move: g.uci(r.move), ranked: r.ranked.map(([m, v]) => [g.uci(m), v]), depth: r.depth }); return; }
     if (d.leela) { // Leela: net arrives with the first request; search up to d.nodes nodes / d.ms milliseconds
       if (d.leelaBytes) self.leela = parseMaiaFile(d.leelaBytes);
       const r = searchLc0(self.leela, g, d.nodes, d.ms);
@@ -1030,7 +1092,7 @@ function loadNet(){ // network in a background thread when possible, else on the
   WK=new Worker(URL.createObjectURL(new Blob([document.getElementById('eng').textContent],{type:'text/javascript'})));
   WKready=new Promise((res,rej)=>{WK.onmessage=e=>{const d=e.data;if(d.type=='ready')return res();const f=WKwait[d.id];delete WKwait[d.id];f&&f(d)};WK.onerror=rej});
   WK.postMessage({type:'init',bytes,meta:META},[bytes.buffer]);
-  const pm=WK.postMessage.bind(WK);WK.postMessage=(m,t)=>pm(m&&m.moves?Object.assign(m,{back:LG&&LG.back}):m,t||[]); // Chess960 start
+  const pm=WK.postMessage.bind(WK);WK.postMessage=(m,t)=>pm(m&&m.moves?Object.assign(m,{back:LG&&LG.back,rule:LG&&LG.rule}):m,t||[]); // Chess960 start + rule twist
   return WKready.catch(()=>{WK=null;WKready=null;NET=new HumanNet(b64ToBytes(document.getElementById('w').textContent.trim()),META)});
  }catch(e){WK=null;NET=new HumanNet(bytes,META);return Promise.resolve()}
 }
@@ -1076,7 +1138,7 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
  const last=g.moves[g.moves.length-1];
  return Object.assign({ucis:g.moves.map(m=>g.uci(m)),fen:fenBoard(g)+' '+g.turn,turn:g.turn=='w'?'white':'black',legal:g.legal().map(m=>g.uci(m)),
   last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
-  start:LG.back?startFen960(LG.back):null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
+  start:LG.back?startFen960(LG.back):null,rule:LG.rule,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
 function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
  return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
 function guessThink(g,p,clock,inc){if(clock==null)return 0.7;const top=p.moves.length?p.moves[0][1]:1;
@@ -1090,10 +1152,17 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
   const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
-  LG={game:new Chess(back||undefined),back,sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
+  const rule=['shape','fog'].includes(d.rule)?d.rule:null;
+  LG={game:new Chess(back||undefined,rule),back,rule,sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
   return lstate({has_clock:true,level_lichess:lvl})}
  const g=LG.game;
  if(path=='/api/move'){const m=g.fromUci(d.uci);if(!m)return lstate({error:'illegal move'});LG.sans.push(g.san(m));g.push(m);return lstate()}
+ if(path=='/api/bot'&&d.variant){ // rules the nets never learned (Shapeshift): the small search engine plays
+  const lv=+d.level||1500,ms=Math.max(400,Math.min(2500,LG.base!=null?(+d.bot_clock/40)*1000:1500));let m,ranked;
+  if(WK){const id=++WKid;const r=await new Promise(res=>{WKwait[id]=res;WK.postMessage({id,moves:g.moves.map(x=>g.uci(x)),variant:1,level:lv,ms})});m=g.fromUci(r.move);ranked=r.ranked}
+  else{const r=searchVariant(g,lv,ms);m=r.move;ranked=r.ranked.map(([x,v])=>[g.uci(x),v])}
+  const cands=ranked.slice(0,3).map(([u])=>[g.san(g.fromUci(u)),0]);const san=g.san(m);LG.sans.push(san);g.push(m);
+  return lstate({bot_move:g.uci(m),bot_san:san,think:0.4+Math.random()*1.5,cands})}
  if(path=='/api/bot'&&d.bot=='leela'){const r=await PL(g,+d.nodes||8,(+d.secs||10)*1000);const m=r.moves[0][0];
   const cands=r.moves.slice(0,5).map(([mm,q])=>[g.san(mm),Math.round(q*100)]);const san=g.san(m);LG.sans.push(san);g.push(m);
   return lstate({bot_move:g.uci(m),bot_san:san,think:0,cands,leelainfo:'Leela\'s evaluation (its side): '+(r.q>=0?'+':'')+r.q.toFixed(2)+' (−1 lost … +1 won), '+r.nodes+' positions'})}
@@ -1322,6 +1391,9 @@ function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
  SF.postMessage('setoption name UCI_LimitStrength value false');SF.postMessage('setoption name MultiPV value 256');
  SF.postMessage(sfPos(ucis));SF.postMessage('go depth 8 movetime 1500')})}
 async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
+ if(S.rule=='fog'){const pos=parseFen(S.fen),kill=S.legal.find(u=>{const q=pos[u.slice(2,4)];return q&&q.toUpperCase()=='K'});
+  if(kill){const st=await api('/api/move',{uci:kill});if(st.error)return st;return Object.assign(st,{bot_move:kill,bot_san:st.sans[st.sans.length-1],think:0.8,cands:[]})}} // fog: an exposed king is taken
+ if(S.rule=='shape')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
  if(s.bot=='leela'){const secs=S.base!=null?Math.max(0.5,Math.min(10,clk[who]/30+inc*0.6)):10;
   return api('/api/bot',{bot:'leela',nodes:s.nodes,secs})}
  if(s.bot=='worstfish'){const t0=performance.now(),w=await sfWorst(S.ucis||[]);if(my!=gid)return{stale:true};
@@ -1410,7 +1482,10 @@ const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 function applyUci(b,u){const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
  if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
   const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
+ const was=b[t];let cap=was;if(!cap&&p.toUpperCase()=='P'&&f[0]!=t[0])cap='p';
  delete b[f];const k=p.toUpperCase();
+ if(S&&S.rule=='shape'&&cap&&k!='K'){ // Shapeshift: the capturer becomes what it took
+  let nt=cap.toUpperCase();if(nt=='P'&&t[1]==(p==k?'8':'1'))nt='Q';if(!was)delete b[t[0]+f[1]];b[t]=p==k?nt:nt.toLowerCase();return}
  if(k=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];
  if(k=='K'&&!(S&&S.start)&&Math.abs(f.charCodeAt(0)-t.charCodeAt(0))==2){const r=f[1],[a,c]=t[0]=='g'?['h','f']:['a','d'];b[c+r]=b[a+r];delete b[a+r]}
  b[t]=u[4]?(p==k?u[4].toUpperCase():u[4]):p}
@@ -1423,14 +1498,15 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  const pos=rv?posAt(view):S?parseFen(S.fen):parseFen(START),lastU=rv?(n?S.ucis[n-1]:''):(S&&S.last);
  const sanN=S&&n?S.sans[n-1]:'',inChk=rv?/[+#]$/.test(sanN||''):S&&S.check,turnW=rv?n%2==0:S&&S.turn=='white';
  const wb=(myColor()=='white')!=flip;const targets=!rv&&sel&&S?S.legal.filter(m=>m.startsWith(sel)).map(m=>m.slice(2,4)).concat(Object.entries(S.castles||{}).filter(([u])=>u.startsWith(sel)).map(([,d])=>d)):[];
- const V=visLevel();
+ const V=visLevel(),FOG=fogOn()?fogSquares(pos,S.you=='white'):null;
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const file=wb?f:7-f,rank=wb?7-r:r,sq='abcdefgh'[file]+(rank+1);
-  const d=document.createElement('div');d.className='sq '+((file+rank)%2?'l':'d');const p=pos[sq];
-  if(lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
+  const d=document.createElement('div');d.className='sq '+((file+rank)%2?'l':'d');const hid=FOG&&!FOG.has(sq),p=hid?null:pos[sq];
+  if(hid)d.classList.add('fogd');
+  if(!hid&&lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
   if(sq==sel&&!rv)d.classList.add('sel');
   if(targets.includes(sq))d.classList.add(p?'cap':'dot');
   if(p){d.innerHTML=visPiece(p,V);
-   if(inChk&&p.toUpperCase()=='K'&&((p=='K')==turnW))d.classList.add('chk')}
+   if(inChk&&!FOG&&p.toUpperCase()=='K'&&((p=='K')==turnW))d.classList.add('chk')}
   if(r==7){const c=document.createElement('span');c.className='coord cf';c.textContent='abcdefgh'[file];d.appendChild(c)}
   if(f==0){const c=document.createElement('span');c.className='coord cr';c.textContent=rank+1;d.appendChild(c)}
   if(PREM&&(PREM.f==sq||PREM.t==sq))d.classList.add('pre');if(MK.h.includes(sq))d.classList.add('mk');
@@ -1441,11 +1517,12 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  const arr=(rv&&RV.best[n]?[[RV.best[n],'#3d9c3fd0']]:[]).concat(MK.a.map(u=>[u,'#f0a020c8']));
  if(arr.length)B.insertAdjacentHTML('beforeend',arrowSvg(arr,wb));
  // slide the piece that just moved (one step forward only; not after a drag)
- const key=gid+':'+n;if(lastU&&ANIM.g==gid&&ANIM.n==n-1&&!noAnim&&!(S.start&&/^O-O/.test(sanN))){slide(B,lastU,wb);const k=pos[lastU.slice(2,4)];
+ const key=gid+':'+n;if(lastU&&ANIM.g==gid&&ANIM.n==n-1&&!noAnim&&!FOG&&!(S.start&&/^O-O/.test(sanN))){slide(B,lastU,wb);const k=pos[lastU.slice(2,4)];
   if(k&&!S.start&&k.toUpperCase()=='K'&&Math.abs(lastU.charCodeAt(0)-lastU.charCodeAt(2))==2){const r=lastU[3],g=lastU[2]=='g';slide(B,(g?'h':'a')+r+(g?'f':'d')+r,wb)}}
  noAnim=false;ANIM={g:gid,n};
  const mv=$('moves'),sn=S?S.sans:[];let h='';
- const ms=i=>i<sn.length?'<span class="m'+(rv&&view==i+1?' cur':'')+'" data-i="'+(i+1)+'">'+sn[i]+glyph(i+1)+'</span>':'<span></span>';
+ const theirs=i=>FOG&&(i%2==0)!=(S.you=='white'); // fog of war: their moves stay secret until the game ends
+ const ms=i=>i<sn.length?'<span class="m'+(rv&&view==i+1?' cur':'')+'" data-i="'+(i+1)+'">'+(theirs(i)?'?':sn[i]+glyph(i+1))+'</span>':'<span></span>';
  for(let i=0;i<sn.length;i+=2)h+='<div class="mr"><span class="n">'+(i/2+1)+'.</span>'+ms(i)+ms(i+1)+'</div>';
  mv.innerHTML=h;mv.classList.toggle('rv',rv);
  if(rv){const c=mv.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'});else if(view==0)mv.scrollTop=0}else mv.scrollTop=1e9;
@@ -1514,7 +1591,7 @@ function sfEval(ucis){return new Promise(res=>{let sc=null,best=null;
  SFh=l=>{const m=/ score (cp|mate) (-?\d+)/.exec(l);if(l.startsWith('info')&&m)sc=m[1]=='cp'?{cp:+m[2]}:{mate:+m[2]};
   if(l.startsWith('bestmove')){SFh=null;best=l.split(' ')[1];res({sc,best:best&&best!='(none)'?best:null})}};
  SF.postMessage(sfPos(ucis));SF.postMessage('go depth 14 movetime 600')})}
-async function analyse(){if(!IMG.sf)return;sfStart();const tok=++RV.tok,us=S.ucis.slice(),N=us.length;RV.ev=[];RV.best=[];
+async function analyse(){if(!IMG.sf)return;if(S&&S.rule){$('review').innerHTML='<div class="small">Stockfish review is off in this mode (it only knows normal chess). Use ◀ ▶ to replay the game.</div>';return}sfStart();const tok=++RV.tok,us=S.ucis.slice(),N=us.length;RV.ev=[];RV.best=[];
  SF.postMessage('setoption name UCI_LimitStrength value false');
  let done;RV.busy=new Promise(r=>done=r);
  try{for(let n=0;n<=N;n++){if(tok!=RV.tok)break;
@@ -1593,9 +1670,9 @@ async function botTurn(){if(!gameOn)return;const my=gid,who=sideOf(S.turn),spec=
  await sleep(wait);if(my!=gid)return;if(!gameOn){busy=false;return}
  settle();stopClock();if(S.base!=null){clk[who]=Math.max(0.05,clk[who])+inc}
  S=r;busy=false;draw();lastSnd();if(!GAME.bvb)mgAfterBot(r);
- msg(nm+' plays '+r.bot_san+(S.base!=null?'  ('+r.think.toFixed(1)+' s)':''));
+ msg(nm+(fogOn()?' has moved (hidden by the fog)':' plays '+r.bot_san)+(S.base!=null?'  ('+r.think.toFixed(1)+' s)':''));
  const info=r.sfinfo||r.leelainfo;
- if($('show').checked||GAME.bvb){if(info)$('info').textContent=info;
+ if(($('show').checked||GAME.bvb)&&!fogOn()){if(info)$('info').textContent=info;
   else $('info').innerHTML=nm+' considered: '+r.cands.map(([s,p])=>s+' '+p+'%').join(', ')+(r.win==null?'':'<br>Its view: win '+r.win+'% · draw '+r.draw+'% · loss '+r.loss+'%')}
  if(S.over){end(S.over);return}
  if(GAME.bvb){await sleep(fast?150:250);if(my==gid&&gameOn)botTurn()}else{startClock('me');if(PREM)setTimeout(()=>{if(my==gid)firePre()},60)}}
@@ -1630,7 +1707,7 @@ $('ovpgn').onclick=e=>copyPgn(e.currentTarget);$('pgnbtn').onclick=e=>copyPgn(e.
 let WL=null;async function wake(on){try{if(on&&!WL&&navigator.wakeLock){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>WL=null)}else if(!on&&WL){WL.release();WL=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&gameOn)wake(true)});
 function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
- const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')?'none':'');$('score').style.display=bvb?'block':'none';
+ const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')||(id=='hint'&&S&&S.rule)?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
  if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML;
   if(GAME.online){const g=GAME.online.g;$('vstc').textContent='🌐 '+tcInfo(g.tc)[1]+' · '+modeName(g.mode)}}}
@@ -1640,7 +1717,7 @@ $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this 
 async function newGame(white,black){ // white/black: spec, or null for you
  gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
  const bvb=!!(white&&black),youColor=bvb?'white':(white?'black':'white'),botSpec=bvb?black:(white||black);
- const d={level:botSpec.lvl||1500,you:botSpec.opp||1500,chesscom:false,tc:tcValue(),color:youColor,back:opts.variant=='960'?rand960():undefined};
+ const d={level:botSpec.lvl||1500,you:botSpec.opp||1500,chesscom:false,tc:tcValue(),color:youColor,back:opts.variant=='960'?rand960():undefined,rule:opts.rule&&opts.rule!='none'?opts.rule:undefined};
  S=await api('/api/new',d);if(S.error)return;
  const avOf=s=>s.bot=='magnus'?'magnus-'+(s.era=='prime'?'prime':'now'):s.bot;
  GAME=bvb?{bvb,spec:{me:white,bot:black},names:{me:specName(white),bot:specName(black)},short:{me:shortName(white.bot),bot:shortName(black.bot)},av:{me:avOf(white),bot:avOf(black)}}
@@ -1760,11 +1837,12 @@ async function onTop(){if(ON.topBusy)return;ON.topBusy=true;try{const {F,db}=ON.
 function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
-function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)}
-function modeName(k){const [v,s]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
+function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)+(opts.rule&&opts.rule!='none'?'|'+opts.rule:'')}
+function modeName(k){const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war'}[r]||r);
+ if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
  return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
-  mode:modeKey(),back:opts.variant=='960'?rand960():null,vis:+opts.vis||0,created:ON.fb.F.serverTimestamp()}}
+  mode:modeKey(),back:opts.variant=='960'?rand960():null,vis:+opts.vis||0,rule:opts.rule&&opts.rule!='none'?opts.rule:null,created:ON.fb.F.serverTimestamp()}}
 async function onQuick(){const {F,db}=ON.fb,tc=onTc(),me=onMe();
  const s=await F.getDocs(F.query(F.collection(db,'seeks'),F.where('tc','==',tc),F.limit(20)));
  for(const d of s.docs.sort((a,b)=>(a.data().t||0)-(b.data().t||0))){const x=d.data();
@@ -1808,7 +1886,7 @@ async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')retur
   end(dr?'Draw ('+g.reason+')':won?'You win ('+g.reason+')':O.opp.name+' wins ('+g.reason+')')}}
 async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();MATCH=null;$('info').innerHTML='';
  const my=g.white&&g.white.uid==ON.user.uid?'white':'black',me=g[my],opp=g[my=='white'?'black':'white'];
- S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,model:(document.getElementById('model')||{}).value});if(S.error)return;
+ S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,rule:g.rule||undefined,model:(document.getElementById('model')||{}).value});if(S.error)return;
  GAME={online:{id,color:my,opp,me,g},bvb:false,spec:{bot:{bot:'online'}},names:{me:me.name+' ('+me.rating+')',bot:opp.name+' ('+opp.rating+')'},short:{me:'You',bot:opp.name},av:{me:'me',bot:'opp'}};
  $('over').style.display='none';$('comm').innerHTML='';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);
  const mn=g.mode&&g.mode!='std|v0'?' ('+modeName(g.mode)+')':'';
@@ -1834,7 +1912,20 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
 function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
 if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
 // ---- Game modes: Chess960 (Fischer Random) and visualization training (pieces turn into checkers, then vanish)
-opts.variant=LS('variant','standard');opts.vis=LS('vis','0');
+opts.variant=LS('variant','standard');opts.vis=LS('vis','0');opts.rule=LS('rule','none');
+// fog of war: you see your own pieces and every square they could move to (rays stop at the first piece)
+function fogOn(){return !!(S&&S.rule=='fog'&&gameOn&&!S.over&&!(GAME&&(GAME.bvb||GAME.lib))&&!reviewOn())}
+function fogSquares(pos,white){const v=new Set(),F='abcdefgh',at=(f,r)=>f>=0&&f<8&&r>=0&&r<8?F[f]+(r+1):null;
+ for(const [sq,p] of Object.entries(pos)){if((p==p.toUpperCase())!=white)continue;v.add(sq);const f=F.indexOf(sq[0]),r=+sq[1]-1,t=p.toUpperCase();
+  const ray=(df,dr,one)=>{let ff=f+df,rr=r+dr;while(at(ff,rr)){const s=at(ff,rr);v.add(s);if(pos[s]||one)break;ff+=df;rr+=dr}};
+  if(t=='P'){const d=white?1:-1,s1=at(f,r+d);if(s1&&!pos[s1]){v.add(s1);const s2=at(f,r+2*d);if(r==(white?1:6)&&s2)v.add(s2)}[-1,1].forEach(x=>{const s=at(f+x,r+d);if(s)v.add(s)})}
+  else if(t=='N')[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]].forEach(([a,b])=>ray(a,b,1));
+  else{const dirs=t=='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t=='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];dirs.forEach(([a,b])=>ray(a,b,t=='K'))}}
+ return v}
+const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war']];
+const RULEHELP={none:'Normal rules.',
+ shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
+ fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
  const f=free();b[f[0]]='R';b[f[1]]='K';b[f[2]]='R';return b.join('')} // king always between the rooks
@@ -1853,14 +1944,15 @@ function visPiece(p,V){if(!V)return piece(p);if(V>=5)return '';return VISSET[V].
 function modesUI(){const ms=$('mvar');if(!ms.children.length){
   chips(ms,[['standard','Standard'],['960','Chess960 (Fischer Random)']],'variant',modesUI);
   chips($('mvis'),VISL,'vis',()=>{modesUI();draw()});
+  chips($('mrule'),RULES,'rule',modesUI);
   $('mgo').onclick=()=>{opts.vs='human';localStorage.setItem('hb_vs','human');vsUI()};
   $('mgon').onclick=()=>{opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}}
  $('mvarhelp').textContent=opts.variant=='960'?'Bobby Fischer\'s chess: the back pieces start in a random order (960 possible), so opening theory is useless. Bishops on opposite colours, king between the rooks. Castle by moving your king onto your rook (or to g/c). New position every game.':'Normal chess.';
- $('mvishelp').textContent=VISHELP[+opts.vis||0];
+ $('mvishelp').textContent=VISHELP[+opts.vis||0];$('mrulehelp').textContent=RULEHELP[opts.rule]||RULEHELP.none;
  const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
  const fen=[...row.toLowerCase(),...'pppppppp',...Array(32).fill(''),...'PPPPPPPP',...row];
  let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8;h+='<div class="sq '+((r+f)%2?'d':'l')+'">'+(fen[i]?visPiece(fen[i],+opts.vis||0):'')+'</div>'}demo.innerHTML=h;
- const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
+ const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
  const ml=$('modeline');ml.style.display=parts.length&&(opts.vs=='human'||opts.vs=='bots')?'block':'none';
  ml.innerHTML='Mode: <b>'+parts.join(' · ')+'</b> · <a href="#" style="color:#bab9b8" id="mlchg">change</a>';const c=$('mlchg');if(c)c.onclick=e=>{e.preventDefault();opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()}}
 // ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
@@ -1891,7 +1983,7 @@ if(new URLSearchParams(location.search).get('play'))$('home').style.display='non
 const MG={books:{},bookP:{},st:{},get book(){return this.books[mgWho()]||null}};
 const MGN={magnus:'Magnus',hikaru:'Hikaru'};PLAYERS.forEach(p=>MGN['p_'+p.id]=p.display);
 function mgWho(){return GAME&&GAME.spec&&GAME.spec.bot?GAME.spec.bot.bot:''}
-function mgOn(){return GAME&&!GAME.bvb&&!GAME.lib&&GAME.spec.bot&&PB.test(GAME.spec.bot.bot)}
+function mgOn(){return GAME&&!GAME.bvb&&!GAME.lib&&GAME.spec.bot&&PB.test(GAME.spec.bot.bot)&&!(S&&S.rule)}
 function mgBook(){const w=mgWho();if(MG.books[w]||MG.bookP[w])return MG.bookP[w];
  MG.bookP[w]=(async()=>{for(const u of [w+'/book.txt','https://leonsryvkin-blip.github.io/humanbot/'+w+'/book.txt']){try{const r=await fetch(u);if(r.ok){MG.books[w]=await r.json();return}}catch(e){}}})();return MG.bookP[w]}
 function mgKey(){return S&&S.fen?S.fen.split(' ').slice(0,2).join(' '):''}
