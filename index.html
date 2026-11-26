@@ -109,6 +109,7 @@
  #info{font-size:13px;color:#cfcbc0;margin-top:10px;line-height:1.5}
  .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:6px;margin-top:10px}
  .gmtag{display:inline-block;background:#7c2929;color:#fff;font:700 10px/1 sans-serif;letter-spacing:.3px;padding:2.5px 3.5px 2px;border-radius:3px;margin-right:5px;vertical-align:2px}
+ .modtag{display:inline-block;background:#1f8b4c;color:#fff;font:700 10px/1 sans-serif;letter-spacing:.3px;padding:2.5px 3.5px 2px;border-radius:3px;margin-right:5px;vertical-align:2px}
  .bottag{display:inline-block;background:#5865f2;color:#fff;font:700 9.5px/1 sans-serif;letter-spacing:.4px;padding:2.5px 4px 2px;border-radius:4px;margin-left:5px;vertical-align:2px}
  #comm{font-size:13.5px;line-height:1.45;margin-top:8px}
  #comm .cl{background:var(--card);border-radius:8px;padding:7px 9px;margin-top:6px;color:#e4e1d8}
@@ -1677,11 +1678,11 @@ document.addEventListener('keydown',e=>{if(!reviewOn()||/INPUT|SELECT|TEXTAREA/.
  const k={ArrowLeft:view-1,ArrowRight:view+1,Home:0,End:nPly(),ArrowUp:0,ArrowDown:nPly()}[e.key];if(k!=null){e.preventDefault();go(k)}});
 function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
  const nm=w=>GAME?GAME.names[w]:(w=='me'?'You':BN()),avv=w=>GAME?GAME.av[w]:(w=='me'?'me':opts.bot);
- [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),PB.test(avv(who))&&avv(who));$('t'+k).textContent=hasC?fmt(Math.max(0,t)):'–';
+ [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),GAME&&GAME.online?(isMod(GAME.online[who=='me'?'me':'opp'].uid)&&'mod'):PB.test(avv(who))&&avv(who));$('t'+k).textContent=hasC?fmt(Math.max(0,t)):'–';
   const av=$('a'+k),v=avv(who);if(av.dataset.v!=v){setAv(av,v);av.dataset.v=v}
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
 // a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
-function nameEl(el,txt,tag){el.textContent=txt;if(tag){el.insertAdjacentHTML('afterbegin',ttl(tag));el.insertAdjacentHTML('beforeend',BOTTAG)}}
+function nameEl(el,txt,tag){el.textContent=txt;if(tag=='mod'){el.insertAdjacentHTML('afterbegin',MODTAG);return}if(tag){el.insertAdjacentHTML('afterbegin',ttl(tag));el.insertAdjacentHTML('beforeend',BOTTAG)}}
 function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!HKP&&!(GAME&&GAME.bvb)&&hkReady()}
 function sideOf(color){return GAME&&GAME.bvb?(color=='white'?'me':'bot'):(color==S.you?'me':'bot')}
 function click(sq,p){if(!myTurn())return;const mine=p&&((p==p.toUpperCase())==(S.you=='white'));
@@ -1751,7 +1752,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
  const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')||(id=='hint'&&S&&S.rule)?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
- if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML;
+ if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,GAME.online?isMod(GAME.online.opp.uid)&&'mod':!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML;
   if(GAME.online){const g=GAME.online.g;$('vstc').textContent='🌐 '+tcInfo(g.tc)[1]+' · '+modeName(g.mode)}}}
 $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this game? It counts as resigning.'))return;end('you resigned')}
  if(GAME&&GAME.online)onLeave();
@@ -1820,6 +1821,9 @@ $('flip').onclick=()=>{flip=!flip;draw()};
 // Firebase web config: public by design (it only names the project); access is controlled by web/firestore.rules
 const FBCFG={apiKey:'AIzaSyDZq-joHgXMDGSPFGnjjwtMchkt7sGKtD8',authDomain:'humanbot-abbc6.firebaseapp.com',projectId:'humanbot-abbc6',
  storageBucket:'humanbot-abbc6.firebasestorage.app',messagingSenderId:'977229743782',appId:'1:977229743782:web:0d20754d25d3e23dc9d667'},FBV='10.12.2';
+// moderators: Firebase account IDs (not names, which anyone can pick); shown with a green MOD tag online
+const MODS=new Set([/*MODS*/]),MODTAG='<span class="modtag">MOD</span>',isMod=uid=>!!uid&&MODS.has(uid);
+const modName=(name,uid)=>(isMod(uid)?MODTAG:'')+esc(name);
 BOTINFO.opp=['👤','#5a5754',''];BOTINFO.modes=['960','#6b4fa3',''];
 const ON={fb:null,user:null,prof:null,err:'',seek:null,seekUnsub:null,seekBeat:null,chal:null,gref:null,gunsub:null,applying:false,top:null,busy:false};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -1850,8 +1854,8 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
   '<input id="onname" maxlength="20" placeholder="name" style="width:100%;box-sizing:border-box;padding:9px;border-radius:6px;border:0;margin:8px 0">'+
   '<button class="play" id="onsave">Save</button><div class="small" style="margin-top:8px"><a href="#" id="onout" style="color:#bab9b8">Sign out</a></div>';
  else{const p=ON.prof,tl=tcInfo(tcValue())[1];
-  h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+esc(p.name)+' <span style="color:#81b64c">'+p.rating+'</span></div>'+
-   '<div class="small">'+(p.w||0)+' wins · '+(p.d||0)+' draws · '+(p.l||0)+' losses · <a href="#" id="onout" style="color:#bab9b8">Sign out</a></div></div></div>';
+  h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+modName(p.name,ON.user.uid)+' <span style="color:#81b64c">'+p.rating+'</span></div>'+
+   '<div class="small">'+(p.w||0)+' wins · '+(p.d||0)+' draws · '+(p.l||0)+' losses · <a href="#" id="onout" style="color:#bab9b8">Sign out</a> · <a href="#" id="onuid" style="color:#bab9b8">copy my account ID</a></div></div></div>';
   const mk=modeKey();h+='<div class="small" style="margin-bottom:8px">Mode: <b>'+esc(modeName(mk))+'</b>'+(ON.seek||ON.chal?'':' · <a href="#" id="onmode" style="color:#bab9b8">change</a>')+'</div>';
   if(ON.seek)h+='<div class="small" style="margin:8px 0">🔎 Looking for an opponent ('+esc(tl)+', '+esc(modeName(mk))+')… it starts as soon as someone with the same time and mode joins.</div><button class="play" id="oncancel" style="background:#4b4847">Cancel</button>';
   else if(ON.chal)h+='<div class="small" style="margin:8px 0">Send this link to your friend. The game starts when they open it ('+esc(tcInfo(ON.chal.tc)[1])+', '+esc(modeName(ON.chal.mode))+'):</div>'+
@@ -1860,7 +1864,7 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
   else h+='<div class="small" style="margin-bottom:6px">Time: pick it under <b>Time</b> below (now '+esc(tl)+').</div>'+
    '<button class="play" id="onquick">Play online · '+esc(tl)+'</button>'+
    '<button class="play" id="onchal" style="background:#4b4847;margin-top:8px">Challenge a friend (link)</button>';
-  h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+esc(u.name)+' <b>'+u.rating+'</b>').join('<br>'):'…')+'</div>';
+  h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>').join('<br>'):'…')+'</div>';
   if(!ON.top)onTop()}
  if(ON.err)h+='<div class="small" style="color:#e05a4f;margin-top:10px">'+esc(ON.err)+'</div>';
  el.innerHTML=h;const B=(id,f)=>{const b=$(id);if(b)b.onclick=async e=>{e.preventDefault();if(ON.busy)return;ON.busy=true;ON.err='';try{await f()}catch(x){ON.err=authErr(x)}ON.busy=false;onUI()}};
@@ -1873,10 +1877,11 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  B('onsave',async()=>{const n=($('onname').value||'').trim();if(!/^[A-Za-z0-9_]{3,20}$/.test(n))throw new Error('Use 3–20 letters, numbers or _.');
   const {F,db}=ON.fb;await F.setDoc(F.doc(db,'users',ON.user.uid),{name:n,rating:1200,w:0,d:0,l:0,games:0,created:F.serverTimestamp()})});
  B('onquick',onQuick);B('onchal',onChallenge);B('oncancel',onStopSeek);
+ B('onuid',async()=>{const id=ON.user.uid;try{await navigator.clipboard.writeText(id);ON.err='Account ID copied: '+id}catch(e){ON.err='Your account ID: '+id}});
  B('onmode',()=>{opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()});
  B('oncopy',async()=>{const i=$('onlink');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();document.execCommand('copy')}})}
 async function onTop(){if(ON.topBusy)return;ON.topBusy=true;try{const {F,db}=ON.fb;const s=await F.getDocs(F.query(F.collection(db,'users'),F.orderBy('rating','desc'),F.limit(10)));
- ON.top=s.docs.map(d=>d.data());const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+esc(u.name)+' <b>'+u.rating+'</b>').join('<br>')}catch(e){}ON.topBusy=false}
+ ON.top=s.docs.map(d=>Object.assign({uid:d.id},d.data()));const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>').join('<br>')}catch(e){}ON.topBusy=false}
 function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
@@ -1958,7 +1963,7 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
  if(O.g.rule=='hidden'&&S.hk&&S.hk.mine)F.updateDoc(ON.gref,{['hk_'+my]:S.hk.mine,['hk0_'+my]:ON.hk0||'',['hs_'+my]:ON.hkSalt||''}).catch(()=>{}); // reveal
  const myg=gid;setTimeout(()=>{if(myg!=gid)return;const h=$('ovhd');h.className='hd '+r;
   h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':esc(O.opp.name)+' won')+'<div class="why">'+esc(REASON(t))+'</div>';
-  $('ovrec').innerHTML='vs '+esc(O.opp.name)+' ('+O.opp.rating+')'+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
+  $('ovrec').innerHTML='vs '+modName(O.opp.name,O.opp.uid)+' ('+O.opp.rating+')'+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
   $('ovre').textContent='New game';$('ovpgn').textContent='Copy PGN';$('over').style.display='flex'},700)}
 function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
 if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
