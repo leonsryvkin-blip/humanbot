@@ -56,7 +56,7 @@
  .small{font-size:12px;color:#9a9894;line-height:1.35;margin-top:4px}
  #custombox{display:none;background:#1f1e1c;border-radius:8px;padding:6px 12px 10px;margin-top:8px}
  button{font-family:inherit}
- .seg{display:grid;grid-template-columns:repeat(3,1fr);background:#1f1e1c;border-radius:9px;padding:3px;margin-bottom:12px}
+ .seg{display:grid;grid-template-columns:repeat(4,auto);font-size:13.5px;background:#1f1e1c;border-radius:9px;padding:3px;margin-bottom:12px}
  .seg span{text-align:center;padding:9px 4px;border-radius:7px;cursor:pointer;font-weight:700;color:var(--mut)}
  .seg span.on{background:var(--card2);color:#fff}
  #bvb{display:none}#lib{display:none}
@@ -195,7 +195,8 @@
  <div class="side">
   <div class="shead"><span class="ttl">♞ HumanBot</span><button class="iconbtn" id="lookbtn" title="Board &amp; pieces">⚙</button></div>
   <div class="sbody" id="setup">
-   <div class="seg" id="vsmode"><span data-v="human">Play a bot</span><span data-v="bots">Bot vs bot</span><span data-v="lib">Masters</span></div>
+   <div class="seg" id="vsmode"><span data-v="human">Play a bot</span><span data-v="online">Online</span><span data-v="bots">Bot vs bot</span><span data-v="lib">Masters</span></div>
+   <div id="online" style="display:none"></div>
    <div id="lib">
     <div class="lbl">Famous games</div>
     <label class="tog" style="margin:0 0 10px"><input type="checkbox" id="explain"> Explain moves (what each move does, the story, and Stockfish's view)</label>
@@ -1233,7 +1234,7 @@ async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
  const sc=/score (cp|mate) (-?\d+)/.exec(info),dep=/ depth (\d+)/.exec(info);
  const ev=sc?(sc[1]=='mate'?'mate in '+Math.abs(+sc[2]):((sc[2]>0?'+':'')+(+sc[2]/100).toFixed(1))):'?';
  return Object.assign(st,{bot_move:uci,bot_san:st.sans[st.sans.length-1],think:(performance.now()-t0)/1000,sfinfo:'Stockfish\'s evaluation (its side): '+ev+', depth '+(dep?dep[1]:'?')})}
-function tcUI(){$('tccustom').style.display=opts.tc=='custom'?'flex':'none';
+function tcUI(){$('tccustom').style.display=opts.tc=='custom'?'flex':'none';if(opts.vs=='online')setTimeout(()=>onUI());
  const v=opts.tc=='custom'?tcValue():opts.tc,[k,t]=v=='none'?['other','No clock']:tcInfo(v);
  $('tclabel').innerHTML=TCI[k]+'<span>'+t+'</span>'}
 function modeUI(){$('custombox').style.display=opts.mode=='custom'?'block':'none';$('modehelp').textContent=MODEHELP[opts.mode]}
@@ -1452,7 +1453,7 @@ document.addEventListener('keydown',e=>{if(!reviewOn()||/INPUT|SELECT|TEXTAREA/.
  const k={ArrowLeft:view-1,ArrowRight:view+1,Home:0,End:nPly(),ArrowUp:0,ArrowDown:nPly()}[e.key];if(k!=null){e.preventDefault();go(k)}});
 function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
  const nm=w=>GAME?GAME.names[w]:(w=='me'?'You':BN()),avv=w=>GAME?GAME.av[w]:(w=='me'?'me':opts.bot);
- [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),PB.test(avv(who))&&avv(who));$('t'+k).textContent=hasC?fmt(t):'–';
+ [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),PB.test(avv(who))&&avv(who));$('t'+k).textContent=hasC?fmt(Math.max(0,t)):'–';
   const av=$('a'+k),v=avv(who);if(av.dataset.v!=v){setAv(av,v);av.dataset.v=v}
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
 // a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
@@ -1466,13 +1467,15 @@ function promo(ms){const box=$('promo');const div=box.firstElementChild;div.inne
  ['q','r','b','n'].forEach(k=>{const sp=document.createElement('div');sp.className='sq';sp.innerHTML=piece(w?k.toUpperCase():k);sp.onclick=()=>{box.style.display='none';play(ms.find(m=>m.endsWith(k)))};div.appendChild(sp)});box.style.display='flex'}
 function startClock(who){stopClock();running=who;last=performance.now();
  tick=setInterval(()=>{const now=performance.now();const dt=(now-last)/1000;last=now;if(S.base==null)return;clk[who]-=dt;
-  if(clk[who]<=0){clk[who]=0;stopClock();const o=who=='me'?'bot':'me';
+  if(clk[who]<=(GAME&&GAME.online&&who=='bot'?-2:0)){clk[who]=0;stopClock(); // online: 2 s grace for a move on its wayconst o=who=='me'?'bot':'me';
    end(GAME&&GAME.bvb?GAME.short[who]+'\'s flag fell: '+GAME.short[o]+' wins on time':who=='me'?'your flag fell, '+BNshort()+' wins on time':BNshort()+'\'s flag fell, you win on time',
     {flag:who})}drawClocks()},100)}
 function stopClock(){if(tick)clearInterval(tick);tick=null;running=null}
 function settle(){if(running){const dt=(performance.now()-last)/1000;if(S.base!=null)clk[running]-=dt;last=performance.now()}}
 async function play(uci){settle();if(!gameOn)return;sel=null;stopClock();if(S.base!=null)clk.me+=inc;
- S=await api('/api/move',{uci});draw();lastSnd();if(S.over){end(S.over);return}botTurn()}
+ S=await api('/api/move',{uci});draw();lastSnd();
+ if(GAME&&GAME.online){await onSend();if(S.over){end(S.over);return}startClock('bot');msg('Waiting for '+GAME.short.bot+'…');return}
+ if(S.over){end(S.over);return}botTurn()}
 let gid=0;
 async function botTurn(){if(!gameOn)return;const my=gid,who=sideOf(S.turn),spec=GAME.spec[who],nm=GAME.short[who];
  busy=true;startClock(who);msg(nm+' is thinking…');if(!GAME.bvb)mgBeforeBot();
@@ -1492,6 +1495,7 @@ async function botTurn(){if(!gameOn)return;const my=gid,who=sideOf(S.turn),spec=
  if(GAME.bvb){await sleep(fast?150:250);if(my==gid&&gameOn)botTurn()}else{startClock('me');if(PREM)setTimeout(()=>{if(my==gid)firePre()},60)}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function end(t,o){gameOn=false;stopClock();PREM=null;sel=null;drawClocks();
+ if(GAME&&GAME.online){onEnd(t);return}
  if(GAME&&GAME.bvb){t=t.replace('You win','White wins').replace('HumanBot wins','Black wins');matchResult(t,o);if(!MATCH||MATCH.g>=MATCH.n)reviewStart();return}
  msg('Game over: '+t.replace('HumanBot',BNshort()));reviewStart();wake(false);
  if(GAME&&!GAME.lib){const r=/you win/i.test(t)?'win':/draw/i.test(t)?'draw':'loss';GAME.res=r;const k=GAME.names.bot,R=REC();R[k]=R[k]||{w:0,l:0,d:0};R[k][r[0]]++;
@@ -1504,7 +1508,7 @@ function overUI(t,r,c){const h=$('ovhd');h.className='hd '+r;
  $('ovpgn').textContent='Copy PGN';$('over').style.display='flex'}
 $('over').onclick=e=>{if(e.target.id=='over')$('over').style.display='none'};
 $('ovrev').onclick=()=>{$('over').style.display='none'};
-$('ovre').onclick=async()=>{$('over').style.display='none';const sp=GAME.spec.bot,wasWhite=S.you=='white';
+$('ovre').onclick=async()=>{$('over').style.display='none';if(GAME&&GAME.online){onLeave();draw();showView('setup');opts.vs='online';vsUI();onQuick();return}const sp=GAME.spec.bot,wasWhite=S.you=='white';
  S=await newGame(wasWhite?sp:null,wasWhite?null:sp);if(!S||S.error)return;msg('Rematch: you play '+S.you+'.');if(S.turn!=S.you)botTurn();else startClock('me')};
 function pgnText(){if(!S)return '';const L=GAME&&GAME.lib,bvb=GAME&&GAME.bvb,youW=S.you=='white';
  const res=L?L.result:GAME&&GAME.res?(GAME.res=='draw'?'1/2-1/2':(GAME.res=='win')==youW?'1-0':'0-1'):'*';
@@ -1520,10 +1524,12 @@ $('ovpgn').onclick=e=>copyPgn(e.currentTarget);$('pgnbtn').onclick=e=>copyPgn(e.
 let WL=null;async function wake(on){try{if(on&&!WL&&navigator.wakeLock){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>WL=null)}else if(!on&&WL){WL.release();WL=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&gameOn)wake(true)});
 function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
- const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)?'none':'');$('score').style.display=bvb?'block':'none';
+ const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
  if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML}}
-$('newgame').onclick=()=>{if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
+$('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this game? It counts as resigning.'))return;end('you resigned')}
+ if(GAME&&GAME.online)onLeave();
+ if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
 async function newGame(white,black){ // white/black: spec, or null for you
  gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
  const bvb=!!(white&&black),youColor=bvb?'white':(white?'black':'white'),botSpec=bvb?black:(white||black);
@@ -1559,7 +1565,8 @@ document.querySelectorAll('#bvbn .chip').forEach(c=>c.classList.toggle('on',+c.d
 function vsUI(){document.querySelectorAll('#vsmode span').forEach(s=>s.classList.toggle('on',s.dataset.v==opts.vs));
  const L=opts.vs=='lib';$('lib').style.display=L?'block':'none';['tcwrap','moreopts','start'].forEach(id=>$(id).style.display=L?'none':'');
  $('bvb').style.display=opts.vs=='bots'?'block':'none';$('pvb').style.display=$('colwrap').style.display=opts.vs=='human'?'block':'none';
- $('start').textContent=opts.vs=='bots'?'Start match':'Play'}
+ $('start').textContent=opts.vs=='bots'?'Start match':'Play';
+ const O=opts.vs=='online';$('online').style.display=O?'block':'none';if(O){$('moreopts').style.display=$('start').style.display='none';setTimeout(onOpen)}}
 opts.vs=LS('vs','human');document.querySelectorAll('#vsmode span').forEach(s=>s.onclick=()=>{opts.vs=s.dataset.v;localStorage.setItem('hb_vs',opts.vs);vsUI()});vsUI();
 async function startMatch(){MATCH={A:$('bvbA').spec(),B:$('bvbB').spec(),n:+opts.games,g:0,a:0,b:0,log:[]};await nextMatchGame()}
 async function nextMatchGame(){const M=MATCH;if(!M)return;const aWhite=M.g%2==0;
@@ -1578,6 +1585,138 @@ $('undo').onclick=async()=>{if(!S||busy)return;PREM=null;await reviewStop();S=aw
  if(S.turn==S.you)startClock('me');else botTurn()};
 $('resign').onclick=()=>{if(gameOn){end('you resigned')}};
 $('flip').onclick=()=>{flip=!flip;draw()};
+// ---- Online: accounts and games against other people (Firebase Auth + Firestore, loaded only when opened).
+// Each side checks moves with its own rules engine (the same /api/move as bot games) and sends them through the
+// game's document; clocks run on both devices, each player reports their own time left with every move.
+// Firebase web config: public by design (it only names the project); access is controlled by web/firestore.rules
+const FBCFG={apiKey:'AIzaSyDZq-joHgXMDGSPFGnjjwtMchkt7sGKtD8',authDomain:'humanbot-abbc6.firebaseapp.com',projectId:'humanbot-abbc6',
+ storageBucket:'humanbot-abbc6.firebasestorage.app',messagingSenderId:'977229743782',appId:'1:977229743782:web:0d20754d25d3e23dc9d667'},FBV='10.12.2';
+BOTINFO.opp=['👤','#5a5754',''];
+const ON={fb:null,user:null,prof:null,err:'',seek:null,seekUnsub:null,seekBeat:null,chal:null,gref:null,gunsub:null,applying:false,top:null,busy:false};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+async function fbLoad(){if(ON.fb)return ON.fb;if(!FBCFG)throw new Error('Online play is not switched on yet.');
+ const u=m=>'https://www.gstatic.com/firebasejs/'+FBV+'/firebase-'+m+'.js';
+ const [A,AU,F]=await Promise.all([import(u('app')),import(u('auth')),import(u('firestore'))]);
+ const app=A.initializeApp(FBCFG);ON.fb={A,AU,F,auth:AU.getAuth(app),db:F.getFirestore(app)};
+ AU.getRedirectResult(ON.fb.auth).catch(e=>{ON.err=authErr(e);onUI()});
+ AU.onAuthStateChanged(ON.fb.auth,u=>{ON.user=u;ON.prof=null;if(ON.profUnsub){ON.profUnsub();ON.profUnsub=null}
+  if(u){ON.loadingProf=true;ON.profUnsub=F.onSnapshot(F.doc(ON.fb.db,'users',u.uid),s=>{ON.loadingProf=false;ON.prof=s.exists()?s.data():null;onUI();onJoinFromLink()},e=>{ON.loadingProf=false;ON.err=e.message;onUI()})}
+  onUI()});
+ return ON.fb}
+function authErr(e){const c=(e&&e.code)||'';return {'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'No account with that email: press Create account.',
+ 'auth/email-already-in-use':'That email already has an account: press Sign in.','auth/weak-password':'Password must be at least 6 characters.','auth/invalid-email':'That email doesn\'t look right.',
+ 'auth/popup-closed-by-user':'','auth/cancelled-popup-request':'','auth/too-many-requests':'Too many tries. Wait a minute and try again.'}[c]??((e&&e.message)||String(e))}
+async function onOpen(){if(!FBCFG){onUI();return}if(ON.fb){onUI();return}ON.err='';onUI('Loading…');try{await fbLoad()}catch(e){ON.err='Couldn\'t load online play: '+e.message+' (are you offline?)'}onUI()}
+function onUI(loading){const el=$('online');if(!el)return;let h='';
+ if(!FBCFG)h='<div class="small" style="margin:10px 0">Online play (accounts, games against other people, ratings) is coming soon.</div>';
+ else if(loading||(!ON.fb&&!ON.err))h='<div class="small" style="margin:10px 0">Loading…</div>';
+ else if(!ON.user)h='<div class="lbl">Sign in to play people online</div>'+
+  '<button class="play" id="ongoogle" style="background:#fff;color:#222;margin:4px 0 12px">Sign in with Google</button>'+
+  '<div class="small" style="margin-bottom:6px">or with email</div>'+
+  '<input id="onemail" type="email" placeholder="email" autocomplete="email" style="width:100%;box-sizing:border-box;padding:9px;border-radius:6px;border:0;margin-bottom:6px">'+
+  '<input id="onpass" type="password" placeholder="password (6+ characters)" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:9px;border-radius:6px;border:0;margin-bottom:8px">'+
+  '<div class="row"><span class="chip" id="onsignin">Sign in</span><span class="chip" id="onsignup">Create account</span><span class="chip" id="onforgot">Forgot password</span></div>';
+ else if(ON.loadingProf)h='<div class="small" style="margin:10px 0">Loading your account…</div>';
+ else if(!ON.prof)h='<div class="lbl">Pick your player name</div><div class="small">Other players see this name. Letters, numbers and _ , 3–20 characters.</div>'+
+  '<input id="onname" maxlength="20" placeholder="name" style="width:100%;box-sizing:border-box;padding:9px;border-radius:6px;border:0;margin:8px 0">'+
+  '<button class="play" id="onsave">Save</button><div class="small" style="margin-top:8px"><a href="#" id="onout" style="color:#bab9b8">Sign out</a></div>';
+ else{const p=ON.prof,tl=tcInfo(tcValue())[1];
+  h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+esc(p.name)+' <span style="color:#81b64c">'+p.rating+'</span></div>'+
+   '<div class="small">'+(p.w||0)+' wins · '+(p.d||0)+' draws · '+(p.l||0)+' losses · <a href="#" id="onout" style="color:#bab9b8">Sign out</a></div></div></div>';
+  if(ON.seek)h+='<div class="small" style="margin:8px 0">🔎 Looking for an opponent ('+esc(tl)+')… it starts as soon as someone joins.</div><button class="play" id="oncancel" style="background:#4b4847">Cancel</button>';
+  else if(ON.chal)h+='<div class="small" style="margin:8px 0">Send this link to your friend. The game starts when they open it ('+esc(tcInfo(ON.chal.tc)[1])+'):</div>'+
+   '<input readonly id="onlink" value="'+esc(ON.chal.link)+'" style="width:100%;box-sizing:border-box;padding:8px;border-radius:6px;border:0;margin-bottom:8px">'+
+   '<div class="row"><span class="chip" id="oncopy">Copy link</span><span class="chip" id="oncancel">Cancel</span></div>';
+  else h+='<div class="small" style="margin-bottom:6px">Time: pick it under <b>Time</b> below (now '+esc(tl)+').</div>'+
+   '<button class="play" id="onquick">Play online · '+esc(tl)+'</button>'+
+   '<button class="play" id="onchal" style="background:#4b4847;margin-top:8px">Challenge a friend (link)</button>';
+  h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+esc(u.name)+' <b>'+u.rating+'</b>').join('<br>'):'…')+'</div>';
+  if(!ON.top)onTop()}
+ if(ON.err)h+='<div class="small" style="color:#e05a4f;margin-top:10px">'+esc(ON.err)+'</div>';
+ el.innerHTML=h;const B=(id,f)=>{const b=$(id);if(b)b.onclick=async e=>{e.preventDefault();if(ON.busy)return;ON.busy=true;ON.err='';try{await f()}catch(x){ON.err=authErr(x)}ON.busy=false;onUI()}};
+ const AU=ON.fb&&ON.fb.AU,au=ON.fb&&ON.fb.auth,em=()=>($('onemail').value||'').trim(),pw=()=>$('onpass').value||'';
+ B('ongoogle',async()=>{const pr=new AU.GoogleAuthProvider();try{await AU.signInWithPopup(au,pr)}catch(e){if(/popup-blocked|operation-not-supported/.test(e.code||''))await AU.signInWithRedirect(au,pr);else throw e}});
+ B('onsignin',()=>AU.signInWithEmailAndPassword(au,em(),pw()));
+ B('onsignup',()=>AU.createUserWithEmailAndPassword(au,em(),pw()));
+ B('onforgot',async()=>{if(!em())throw new Error('Type your email first.');await AU.sendPasswordResetEmail(au,em());ON.err='Password reset email sent.'});
+ B('onout',async()=>{await onStopSeek();await AU.signOut(au)});
+ B('onsave',async()=>{const n=($('onname').value||'').trim();if(!/^[A-Za-z0-9_]{3,20}$/.test(n))throw new Error('Use 3–20 letters, numbers or _.');
+  const {F,db}=ON.fb;await F.setDoc(F.doc(db,'users',ON.user.uid),{name:n,rating:1200,w:0,d:0,l:0,games:0,created:F.serverTimestamp()})});
+ B('onquick',onQuick);B('onchal',onChallenge);B('oncancel',onStopSeek);
+ B('oncopy',async()=>{const i=$('onlink');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();document.execCommand('copy')}})}
+async function onTop(){if(ON.topBusy)return;ON.topBusy=true;try{const {F,db}=ON.fb;const s=await F.getDocs(F.query(F.collection(db,'users'),F.orderBy('rating','desc'),F.limit(10)));
+ ON.top=s.docs.map(d=>d.data());const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+esc(u.name)+' <b>'+u.rating+'</b>').join('<br>')}catch(e){}ON.topBusy=false}
+function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}}
+function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
+function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
+ return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},created:ON.fb.F.serverTimestamp()}}
+async function onQuick(){const {F,db}=ON.fb,tc=onTc(),me=onMe();
+ const s=await F.getDocs(F.query(F.collection(db,'seeks'),F.where('tc','==',tc),F.limit(20)));
+ for(const d of s.docs.sort((a,b)=>(a.data().t||0)-(b.data().t||0))){const x=d.data();
+  if(x.uid==me.uid){F.deleteDoc(d.ref).catch(()=>{});continue}
+  if(x.gameId||Date.now()-(x.t||0)>90000)continue; // taken, or its owner left
+  try{const id=await F.runTransaction(db,async tx=>{const c=await tx.get(d.ref);if(!c.exists()||c.data().gameId)throw new Error('taken');
+    const g=F.doc(F.collection(db,'games')),meW=Math.random()<.5,them={uid:x.uid,name:x.name,rating:x.rating};
+    tx.set(g,onGameData(meW?me:them,meW?them:me,tc,'live'));tx.update(d.ref,{gameId:g.id});return g.id});
+   return onWatch(id)}catch(e){}}
+ // nobody waiting: wait for someone (the seek's time is refreshed while this page is open)
+ const ref=await F.addDoc(F.collection(db,'seeks'),{uid:me.uid,name:me.name,rating:me.rating,tc,t:Date.now(),gameId:null});
+ ON.seek=ref;ON.seekBeat=setInterval(()=>F.updateDoc(ref,{t:Date.now()}).catch(()=>{}),30000);
+ ON.seekUnsub=F.onSnapshot(ref,x=>{const g=x.exists()&&x.data().gameId;if(g){onStopSeek(true);onWatch(g)}})}
+async function onStopSeek(){const {F}=ON.fb||{};if(ON.seekUnsub){ON.seekUnsub();ON.seekUnsub=null}if(ON.seekBeat){clearInterval(ON.seekBeat);ON.seekBeat=null}
+ if(ON.seek){const r=ON.seek;ON.seek=null;F.deleteDoc(r).catch(()=>{})}
+ if(ON.chal){const c=ON.chal;ON.chal=null;if(ON.gunsub&&!(GAME&&GAME.online)){ON.gunsub();ON.gunsub=null}
+  F.getDoc(c.ref).then(s=>{if(s.exists()&&s.data().status=='waiting')F.updateDoc(c.ref,{status:'cancelled'})}).catch(()=>{})}
+ onUI()}
+addEventListener('pagehide',()=>{if(ON.seek&&ON.fb)ON.fb.F.deleteDoc(ON.seek).catch(()=>{})});
+async function onChallenge(){const {F,db}=ON.fb,tc=onTc(),me=onMe(),meW=Math.random()<.5;
+ const ref=await F.addDoc(F.collection(db,'games'),onGameData(meW?me:null,meW?null:me,tc,'waiting'));
+ ON.chal={ref,tc,link:location.origin+location.pathname+'?play='+ref.id};onWatch(ref.id)}
+async function onJoinFromLink(){const id=new URLSearchParams(location.search).get('play');if(!id||!ON.prof||ON.joined==id)return;ON.joined=id;
+ history.replaceState(null,'',location.pathname);const {F,db}=ON.fb,ref=F.doc(db,'games',id),me=onMe();
+ try{await F.runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('That game link doesn\'t exist.');const g=s.data();
+   if(g.players.includes(me.uid))return;if(g.status!='waiting')throw new Error(g.status=='cancelled'?'Your friend cancelled that challenge.':'That game has already started with someone else.');
+   const side=g.white?'black':'white';tx.update(ref,{[side]:me,players:g.players.concat(me.uid),status:'live'})});
+  onWatch(id)}catch(e){ON.err=e.message;onUI()}}
+function onWatch(id){const {F,db}=ON.fb;if(ON.gunsub)ON.gunsub();ON.gref=F.doc(db,'games',id);onUI();
+ ON.gunsub=F.onSnapshot(ON.gref,s=>{if(s.exists())onSnap(id,s.data())})}
+let ONQ=Promise.resolve();
+function onSnap(id,g){ONQ=ONQ.then(()=>onApply(id,g)).catch(e=>msg('Error: '+e.message))}
+async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')return;
+ if(!GAME||!GAME.online||GAME.online.id!=id){if(g.status!='live')return;if(ON.chal&&ON.chal.ref.id==id)ON.chal=null;await onStart(id,g)}
+ const O=GAME.online,my=O.color,op=my=='white'?'black':'white';O.g=g;
+ while(S.ucis.length<g.moves.length){const u=g.moves[S.ucis.length];settle();stopClock();
+  S=await api('/api/move',{uci:u});if(S.error)return;clk.me=g[my[0]+'t'];clk.bot=g[op[0]+'t'];draw();lastSnd();
+  if(S.over){end(S.over);return}
+  if(S.turn==S.you){startClock('me');msg('Your move.');if(PREM)setTimeout(firePre,60)}}
+ if(g.status=='over'&&gameOn){const won=g.result==(my=='white'?'1-0':'0-1'),dr=g.result=='1/2-1/2';
+  end(dr?'Draw ('+g.reason+')':won?'You win ('+g.reason+')':O.opp.name+' wins ('+g.reason+')')}}
+async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();MATCH=null;$('info').innerHTML='';
+ const my=g.white&&g.white.uid==ON.user.uid?'white':'black',me=g[my],opp=g[my=='white'?'black':'white'];
+ S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,model:(document.getElementById('model')||{}).value});if(S.error)return;
+ GAME={online:{id,color:my,opp,me,g},bvb:false,spec:{bot:{bot:'online'}},names:{me:me.name+' ('+me.rating+')',bot:opp.name+' ('+opp.rating+')'},short:{me:'You',bot:opp.name},av:{me:'me',bot:'opp'}};
+ $('over').style.display='none';$('comm').innerHTML='';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);
+ msg(S.turn==S.you?'You play '+my+'. Your move.':'You play '+my+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot')}
+async function onSend(){const O=GAME.online,{F}=ON.fb;
+ try{await F.updateDoc(ON.gref,{moves:S.ucis.slice(),[O.color[0]+'t']:Math.max(0,clk.me)})}catch(e){msg('Couldn\'t send your move: '+e.message)}}
+const REASON=t=>/resign/i.test(t)?'resignation':/flag|time/i.test(t)?'time':((/\(([^)]*)\)/.exec(t)||[])[1]||'game over');
+async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i.test(t)?'win':/draw/i.test(t)?'draw':'loss';GAME.res=r;
+ msg('Game over: '+t.replace('HumanBot',O.opp.name));reviewStart();wake(false);
+ const res=r=='draw'?'1/2-1/2':(r=='win')==(my=='white')?'1-0':'0-1';let delta=null;
+ try{delta=await F.runTransaction(db,async tx=>{const gs=await tx.get(ON.gref),us=await tx.get(F.doc(db,'users',ON.user.uid));const g=gs.data(),u=us.data();
+   const done=g.status=='over',fin=done?g.result:res;
+   const sc=fin=='1/2-1/2'?0.5:fin==(my=='white'?'1-0':'0-1')?1:0,mr=O.me.rating,orr=O.opp.rating;
+   const d=Math.round((u.games<20?40:20)*(sc-1/(1+Math.pow(10,(orr-mr)/400))));
+   if(!done)tx.update(ON.gref,{status:'over',result:res,reason:REASON(t)});
+   if(g.rated&&g.rated[my]!=null)return g.rated[my];
+   tx.update(F.doc(db,'users',ON.user.uid),{rating:u.rating+d,games:(u.games||0)+1,[sc==1?'w':sc==0?'l':'d']:(u[sc==1?'w':sc==0?'l':'d']||0)+1});
+   tx.update(ON.gref,{['rated.'+my]:d});return d})}catch(e){msg('Game over, but saving the result failed: '+e.message)}
+ const myg=gid;setTimeout(()=>{if(myg!=gid)return;const h=$('ovhd');h.className='hd '+r;
+  h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':esc(O.opp.name)+' won')+'<div class="why">'+esc(REASON(t))+'</div>';
+  $('ovrec').innerHTML='vs '+esc(O.opp.name)+' ('+O.opp.rating+')'+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
+  $('ovre').textContent='New game';$('ovpgn').textContent='Copy PGN';$('over').style.display='flex'},700)}
+function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
+if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
 // ---- Magnus Carlsen bot extras: emoji reactions (on its avatar), a commentator, and real facts from his games.
 // The reactions and commentator lines are invented for fun and are not things Magnus said.
 // player bots (Magnus, Hikaru) share these extras; {N} in a line = the player's first name
