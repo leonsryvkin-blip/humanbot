@@ -61,7 +61,7 @@
  .sq.hkt{box-shadow:inset 0 0 0 3px #e05a4f}
  .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
  .evb{position:absolute;right:4%;top:2%;min-width:36%;height:36%;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 calc(var(--sq)*.24)/1 sans-serif;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px #0008;z-index:2}
- .evA{background:#2f8f3f}.evG{background:#c48a12}
+ .evA{background:#2f8f3f}.evG{background:#c48a12}.evH{background:#2b6cc4}.evM{background:#8a3fc4}
  #evopick{position:fixed;inset:0;background:#000a;z-index:70;display:none;align-items:center;justify-content:center}
  #evopick .box{background:#262522;border-radius:12px;padding:18px;width:min(360px,92vw);color:#fff}
  #evopick button{display:block;width:100%;margin-top:8px;padding:11px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;text-align:left;cursor:pointer}
@@ -423,6 +423,9 @@ const sqName = s => "abcdefgh"[s & 7] + ((s >> 3) + 1);
 const sqFrom = n => "abcdefgh".indexOf(n[0]) + 8 * (parseInt(n[1]) - 1);
 const isWhite = p => p && p === p.toUpperCase();
 const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
+// Evolution tree: piece -> [[moves it must have made (counting the evolving move), [forms it may become]]]
+// A = Pawn+, G = Grand pawn, H = Arabian horse, M = Mustang
+const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]] };
 
 class Chess {
   // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
@@ -434,6 +437,7 @@ class Chess {
     this.rule = rule || null;
     this.hk = { w: -1, b: -1 }; this.hkLost = null;
     this.holes = new Set(); this.boss = null; // boss duel: deleted squares, and the boss side's powers
+    this.mc = new Array(64).fill(0); // Evolution: how many moves the piece on each square has made
     this.b = new Array(64).fill(null);
     back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
@@ -456,7 +460,7 @@ class Chess {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
     c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule; c.hk = { ...this.hk }; c.hkLost = this.hkLost;
-    c.holes = new Set(this.holes); c.boss = this.boss ? { ...this.boss } : null;
+    c.holes = new Set(this.holes); c.boss = this.boss ? { ...this.boss } : null; c.mc = this.mc.slice();
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
   }
@@ -479,6 +483,9 @@ class Chess {
       const A = W ? "A" : "a", G = W ? "G" : "g";
       for (const x of [at(f - 1, pr), at(f + 1, pr)]) if (x === A || x === G) return true;
       if (at(f, pr) === G || at(f - 1, r) === G || at(f + 1, r) === G) return true;
+      const H = W ? "H" : "h", M = W ? "M" : "m"; // Arabian horse / Mustang: knight jumps + one step straight / diagonal
+      for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x === H || x === M) return true; }
+      for (const [df, dr] of K_OFF) if (at(f + df, r + dr) === (df && dr ? M : H)) return true;
     }
     const kn = W ? "N" : "n", kg = W ? "K" : "k";
     for (const [df, dr] of N_OFF) if (at(f + df, r + dr) === kn) return true;
@@ -541,6 +548,14 @@ class Chess {
           if (t === "G" && enemy(r * 8 + ff)) add(s, r * 8 + ff); // Grand pawn: sideways captures
         }
         if (t === "G" && r1 >= 0 && r1 < 8 && enemy(r1 * 8 + f)) add(s, r1 * 8 + f); // and straight ahead
+      } else if (t === "H" || t === "M") { // Evolution: Arabian horse (+ straight step), Mustang (+ diagonal step)
+        const steps = N_OFF.concat(K_OFF.filter(([df, dr]) => t === "H" ? !(df && dr) : df && dr));
+        for (const [df, dr] of steps) {
+          const ff = f + df, rr = r + dr;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue;
+          const to = rr * 8 + ff;
+          if (!b[to] || colorOf(b[to]) !== us) out.push({ from: s, to, promo: null });
+        }
       } else if (t === "N" || t === "K") {
         for (const [df, dr] of t === "N" ? N_OFF : K_OFF) {
           const ff = f + df, rr = r + dr;
@@ -590,9 +605,12 @@ class Chess {
           !this.attacked(home + 3, them) && !this.attacked(home + 2, them))
         out.push({ from: home + 4, to: home + 2, promo: null });
     }
-    if (this.rule === "evo") // Evolution: a pawn that has just moved may evolve as part of that move
-      for (const m of out.slice()) if (!m.promo && !m.stay && b[m.from] && b[m.from].toUpperCase() === "P")
-        out.push({ ...m, evo: "A" }, { ...m, evo: "G" });
+    if (this.rule === "evo") // Evolution: a piece may evolve as part of the move that reaches its move count
+      for (const m of out.slice()) {
+        if (m.promo || m.stay || !b[m.from]) continue;
+        const t = b[m.from].toUpperCase(), n = this.mc[m.from] + 1; // moves made after this one
+        for (const [need, forms] of EVOLVE[t] || []) if (n >= need) for (const e of forms) out.push({ ...m, evo: e });
+      }
     if (!this.holes.size && !this.boss) return out;
     const res = out.filter(m => { // no landing on a deleted square, and no castling across one
       if (this.holes.has(m.to)) return false;
@@ -621,7 +639,19 @@ class Chess {
   _apply(m) { // no legality check; returns undo record
     const b = this.b, p = b[m.from], t = p ? p.toUpperCase() : "", W = this.turn === "w";
     const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
-      hk: { ...this.hk }, hkLost: this.hkLost };
+      hk: { ...this.hk }, hkLost: this.hkLost, mc: this.mc.slice() };
+    { // move counts follow the pieces (used by Evolution)
+      const mc = this.mc;
+      if (m.special) mc[m.sq] = 0;
+      else if (m.stay) { mc[m.to] = 0; mc[m.from]++; }
+      else if (m.castle) { const k = mc[m.from], r = mc[m.to]; mc[m.from] = mc[m.to] = 0; mc[m.kTo] = k + 1; mc[m.rTo] = r + 1; }
+      else {
+        const c = mc[m.from];
+        if (t === "P" && m.to === this.ep && !b[m.to]) mc[m.to + (W ? -8 : 8)] = 0;
+        mc[m.from] = 0; mc[m.to] = c + 1;
+        if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { const h = W ? 0 : 56, ks = m.to === h + 6, rf = ks ? h + 7 : h, rt = ks ? h + 5 : h + 3; mc[rt] = mc[rf] + 1; mc[rf] = 0; }
+      }
+    }
     if (m.stay) { // Evolution, Pawn+: capture without moving
       b[m.to] = null;
       for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.to === sq) this.castle[flag] = false;
@@ -679,6 +709,7 @@ class Chess {
   }
   _undo(u) {
     const m = u.m, b = this.b;
+    if (u.mc) this.mc = u.mc;
     if (m.special) { // the turn never passed
       b[m.sq] = u.cap; if (m.special === "del") this.holes.delete(m.sq);
       this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
@@ -743,7 +774,7 @@ class Chess {
   fromUci(s) {
     if (s[0] === "@") { const [k, q] = s.slice(1).split(":"), sq = sqFrom(q); return this.specials().find(m => m.special === k && m.sq === sq) || null; }
     if (s.length > 5 || /[!^]/.test(s)) {
-      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), ev = (rest.match(/\^([ag])/) || [])[1];
+      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), ev = (rest.match(/\^([a-z])/) || [])[1];
       const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), evo = ev ? ev.toUpperCase() : undefined;
       return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === pr && !!m.stay === stay && m.evo === evo) || null;
     }
@@ -774,7 +805,7 @@ class Chess {
         s = t + dis + (cap ? "x" : "") + sqName(m.to);
       }
     }
-    if (m.evo) s += "⇧" + (m.evo === "A" ? "P+" : "GP");
+    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang" })[m.evo];
     const u = this._apply(m);
     const chk = this.inCheck(), mate = chk && this.legal().length === 0;
     this._undo(u);
@@ -1155,7 +1186,7 @@ function predictMaia(net, game) {
 
 // Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
 // deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
-const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200 };
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420 };
 function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
   let s = 0;
   for (let q = 0; q < 64; q++) {
@@ -1627,8 +1658,13 @@ const ST={P:'<circle cx="22.5" cy="11.5" r="5.2"/><path d="M18 18.2h9c.6 0 .9.9.
  K:'<path d="M21.3 3.2h2.4v3h3v2.4h-3v3.6h-2.4V8.6h-3V6.2h3z"/><path d="M19.6 12.2h5.8l1.2 4.4h-8.2z"/><path d="M14.2 33.3c-2.6-4.8-3.4-9.6-1.4-13 1.6-2.6 4.8-3.7 9.7-3.7s8.1 1.1 9.7 3.7c2 3.4 1.2 8.2-1.4 13z"/><path class="h" d="M14.6 29.6c5.2-1.6 10.6-1.6 15.8 0"/>'};
 const STFOOT='<path d="M12.6 33.3h19.8c1.2 0 2.1.9 2.1 2v1.5H10.5v-1.5c0-1.1.9-2 2.1-2z"/><path d="M9.2 36.8h26.6c.9 0 1.6.7 1.6 1.6v2.2H7.6v-2.2c0-.9.7-1.6 1.6-1.6z"/>';
 const OUT={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙'};
-function piece(p,set){if(/[AaGg]/.test(p)){const w=p==p.toUpperCase(),A=p.toUpperCase()=='A'; // Evolution: pawn + badge
-  return piece(w?'P':'p',set).replace('</div>','<span class="evb '+(A?'evA':'evG')+'">'+(A?'+':'★')+'</span></div>')}
+// Evolution's evolved pieces: letter -> [drawn as, badge, badge colour class, name, what it does]
+var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time. Captures diagonally, and can capture without moving.'],
+ G:['P','★','evG','★ Grand pawn','Captures diagonally, straight ahead and to the left and right.'],
+ H:['N','✚','evH','✚ Arabian horse','Moves like a knight, and can also move or capture one square straight (up, down, left, right).'],
+ M:['N','✖','evM','✖ Mustang','Moves like a knight, and can also move or capture one square diagonally.']};
+function piece(p,set){const E=EVOP[p.toUpperCase()];if(E){const w=p==p.toUpperCase(); // Evolution: the base piece + a badge
+  return piece(w?E[0]:E[0].toLowerCase(),set).replace('</div>','<span class="evb '+E[2]+'">'+E[1]+'</span></div>')}
  set=set||opts.set;const k=p.toUpperCase(),w=p==k,cls='pc '+(w?'wht':'blk');
  if(set=='minimal'){const f=w?'#f7f5ef':'#2b2b2b',s=w?'#222':'#000',x=w?'#222':'#ddd';
   return '<div class="'+cls+'"><svg viewBox="0 0 45 45"><g fill="'+f+'" stroke="'+s+'" stroke-width="1.6" stroke-linejoin="round">'+
@@ -1657,7 +1693,7 @@ const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pawn'){const w=S&&S.boss&&S.boss.side=='white';b[q]=w?'P':'p'}else delete b[q];return} // boss powers
  const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
  if(u.includes('!')){delete b[t];return} // Evolution: Pawn+ captured without moving
- const ev=(u.match(/\^([ag])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
+ const ev=(u.match(/\^([a-z])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
  if(ev){if(f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];delete b[f];b[t]=p==p.toUpperCase()?ev.toUpperCase():ev;return} // the pawn evolved as it moved
  if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
   const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
@@ -2148,16 +2184,16 @@ let HKP=null;
 function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
-const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn'};
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang'};
 // ---- Evolution: after moving a pawn you may evolve it; Pawn+ may capture without moving
 function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el){el=document.createElement('div');el.id='evopick';document.body.appendChild(el)}
  el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.style.display='none';res(list[+b.dataset.i][0])})})}
 async function evoMove(f,t,u){
  if(S.legal.includes(f+t+'!')&&await pickBox('Pawn+ capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay')u=f+t+'!';
- if(S.legal.includes(u+'^a')){const c=await pickBox('Evolve this pawn?',[['','Keep it a pawn','You can evolve it after a later move.'],
-   ['a','➕ Pawn+','Moves 1 or 2 squares forward at any time. Captures diagonally, and can capture without moving.'],
-   ['g','★ Grand pawn','Captures diagonally, straight ahead and to the left and right.']]);if(c)u+='^'+c}
+ const forms=S.legal.filter(x=>x.startsWith(u+'^')).map(x=>x.slice(u.length+1)); // any piece that may evolve now
+ if(forms.length){const nm=PNAME[(CUR[f]||'p').toUpperCase()]||'piece';
+  const c=await pickBox('Evolve this '+nm+'?',[['','Keep it a '+nm,'You can evolve it after a later move.']].concat(forms.map(e=>{const E=EVOP[e.toUpperCase()];return [e,E[3],E[4]]})));if(c)u+='^'+c}
  play(u)}
 // ---- Boss duel (mods only, online): the boss has a king + one pawn and free powers on its own turn
 let ABIL=null,ABK='';
@@ -2205,7 +2241,7 @@ async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncod
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
  fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
- evo:'Evolution: after a pawn has made its first move, each time you move it you can evolve it. ➕ Pawn+ moves 1 or 2 squares forward any time, captures diagonally and can capture without moving. ★ Grand pawn captures diagonally, straight ahead and to the sides. More pieces will get evolutions later. Website only; bots play it with a small search engine.',
+ evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step straight) or ✖ Mustang (+ one step diagonally). More pieces coming. Website only; bots play it with a small search engine.',
  hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
