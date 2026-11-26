@@ -204,7 +204,7 @@
  .hbtn small{display:block;font-size:13px;font-weight:600;opacity:.85}.hbtn .ic{font-size:30px}
  .hbtn.alt{background:var(--card2);border-bottom-color:#3a3836}
  #hstats{margin-top:14px;color:var(--mut);font-size:14px}
- #home h2{font-size:20px;margin:28px 0 12px}
+ #home h2,#profile h2{font-size:20px;margin:28px 0 12px}
  .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
  .hcard{background:var(--card);border-radius:10px;padding:16px 12px;cursor:pointer;text-align:center;transition:transform .12s,background .12s}
  .hcard:hover{background:var(--card2);transform:translateY(-2px)}
@@ -212,6 +212,22 @@
  .hcard .nm{font-weight:800;font-size:16px}.hcard .tg{color:var(--mut);font-size:13px;margin-top:4px;line-height:1.35}
  .hfoot{color:#7f7d79;font-size:13px;margin-top:34px;line-height:1.5;border-top:1px solid #3a3836;padding-top:14px}
  #homebtn{margin-right:6px}
+ .hnr{display:flex;align-items:center}
+ .hnav a.hprof{display:inline-flex;align-items:center;gap:8px;background:var(--card);padding:5px 12px 5px 5px;border-radius:20px;color:#fff}
+ .hnav a.hprof:hover{background:var(--card2)}
+ .pav{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:#5a5754;color:#fff;flex:none}
+ #profile{position:fixed;inset:0;z-index:41;overflow:auto;background:var(--bg);display:none}
+ #profile .in{max-width:760px;margin:0 auto;padding:18px 22px 40px}
+ .pcard{background:var(--pn);border-radius:12px;padding:20px;display:flex;gap:18px;align-items:center;margin-bottom:16px}
+ .pcard .pav{width:84px;height:84px;font-size:38px;border-radius:14px}
+ .pname{font-size:26px;font-weight:800}.prt{font-size:15px;color:var(--mut);margin-top:4px}
+ .pstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+ .pstat{background:var(--card);border-radius:10px;padding:12px;text-align:center}.pstat b{display:block;font-size:24px}.pstat span{color:var(--mut);font-size:13px}
+ .pbar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#3a3836;margin:-6px 0 18px}
+ .pgames .pg{display:flex;justify-content:space-between;gap:10px;background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:14px}
+ .pg .r{font-weight:800}.pg .rw{color:#81b64c}.pg .rl{color:#e05a4f}.pg .rd{color:#bab9b8}
+ @media (max-width:560px){.hnr a[data-go]{display:none}.hnav .logo{white-space:nowrap}}
+ @media (max-width:900px){.hnav a.hprof span#hpname{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pstats{grid-template-columns:repeat(2,1fr)}.pcard .pav{width:64px;height:64px;font-size:28px}.pname{font-size:21px}}
  @media (max-width:900px){
   #home .in{padding:12px 12px 30px}.hnav{margin-bottom:16px}.hnav a{margin-left:12px;font-size:14px}
   .hero{flex-direction:column;gap:20px}#hboard{--sq:min(calc((100vw - 24px)/8),44px)}
@@ -221,7 +237,7 @@
 </style><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#302e2b"><link rel="apple-touch-icon" href="icon-192.png">
 </head><body>
 <div id="home"><div class="in">
- <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a></span></div>
+ <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span class="hnr"><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a><a id="hprof" class="hprof"><span class="pav" id="hpav">👤</span><span id="hpname">Sign in</span></a></span></div>
  <div class="hero">
   <div id="hboard"></div>
   <div class="htext">
@@ -235,6 +251,10 @@
  <h2>Play the pros</h2><div class="hcards" id="hpros"></div>
  <h2>More ways to play</h2><div class="hcards" id="hmore"></div>
  <div class="hfoot">HumanBot runs on your device: no account needed to play bots, and it works offline once opened. Player bots are unofficial: trained on public games, not made or endorsed by the players. Tip: install it from your browser's menu (“Install app” or “Add to Home screen”).</div>
+</div></div>
+<div id="profile"><div class="in">
+ <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span class="hnr"><a id="pback">← Home</a></span></div>
+ <div id="pbody"></div>
 </div></div>
 <div class="wrap">
  <div class="boardcol">
@@ -1833,8 +1853,8 @@ async function fbLoad(){if(ON.fb)return ON.fb;if(!FBCFG)throw new Error('Online 
  const app=A.initializeApp(FBCFG);ON.fb={A,AU,F,auth:AU.getAuth(app),db:F.getFirestore(app)};
  AU.getRedirectResult(ON.fb.auth).catch(e=>{ON.err=authErr(e);onUI()});
  AU.onAuthStateChanged(ON.fb.auth,u=>{ON.user=u;ON.prof=null;if(ON.profUnsub){ON.profUnsub();ON.profUnsub=null}
-  if(u){ON.loadingProf=true;ON.profUnsub=F.onSnapshot(F.doc(ON.fb.db,'users',u.uid),s=>{ON.loadingProf=false;ON.prof=s.exists()?s.data():null;onUI();onJoinFromLink()},e=>{ON.loadingProf=false;ON.err=e.message;onUI()})}
-  onUI()});
+  if(u){ON.loadingProf=true;ON.profUnsub=F.onSnapshot(F.doc(ON.fb.db,'users',u.uid),s=>{ON.loadingProf=false;ON.prof=s.exists()?s.data():null;onUI();onJoinFromLink();profSync()},e=>{ON.loadingProf=false;ON.err=e.message;onUI()})}
+  onUI();profSync()});
  return ON.fb}
 function authErr(e){const c=(e&&e.code)||'';return {'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'No account with that email: press Create account.',
  'auth/email-already-in-use':'That email already has an account: press Sign in.','auth/weak-password':'Password must be at least 6 characters.','auth/invalid-email':'That email doesn\'t look right.',
@@ -2043,6 +2063,44 @@ function homeGo(vs,bot){$('home').style.display='none';if(!gameOn)showView('setu
 function homeShow(){homeUI();$('home').style.display='block';$('home').scrollTop=0}
 document.querySelectorAll('#home [data-go]').forEach(b=>b.onclick=()=>homeGo(b.dataset.go));
 $('homebtn').onclick=homeShow;
+// ---- Profile: avatar + name button in the top bar, and the profile page it opens
+function avColor(uid){let h=7;for(const c of uid||'x')h=(h*31+c.charCodeAt(0))%360;return 'hsl('+h+',45%,40%)'}
+function profCached(){try{return JSON.parse(localStorage.getItem('hb_prof')||'null')}catch(e){return null}}
+function profNav(){const live=ON.user&&ON.prof,pr=live?{name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid}:(ON.fb?null:profCached()),av=$('hpav'),nm=$('hpname');
+ if(pr){av.textContent=pr.name[0].toUpperCase();av.style.background=avColor(pr.uid);nm.innerHTML=modName(pr.name,pr.uid)+' <span style="color:#81b64c">'+pr.rating+'</span>'}
+ else{av.textContent='👤';av.style.background='#5a5754';nm.textContent=ON.user&&!ON.prof&&!ON.loadingProf?'Pick a name':'Sign in'}}
+function profSync(){if(ON.user&&ON.prof)localStorage.setItem('hb_prof',JSON.stringify({name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid}));
+ else if(ON.fb&&!ON.user)localStorage.removeItem('hb_prof');profNav();
+ if($('profile').style.display=='block'){if(ON.fb&&!ON.user){$('profile').style.display='none';homeGo('online')}else profUI()}}
+$('hprof').onclick=()=>{if(ON.user&&ON.prof||(!ON.fb&&profCached()))profShow();else homeGo('online')};
+$('pback').onclick=()=>{$('profile').style.display='none'};
+function profShow(){$('profile').style.display='block';$('profile').scrollTop=0;profUI();if(!ON.fb&&FBCFG)fbLoad().catch(e=>{$('pbody').innerHTML='<div class="small">Couldn\'t load your profile: '+esc(e.message)+'</div>'})}
+function profUI(){const p=ON.prof,u=ON.user,el=$('pbody');if(!p||!u){el.innerHTML='<div class="small">Loading your profile…</div>';return}
+ const w=p.w||0,d=p.d||0,l=p.l||0,n=w+d+l,since=p.created&&p.created.toDate?p.created.toDate().toLocaleDateString():'';
+ let h='<div class="pcard"><span class="pav" style="background:'+avColor(u.uid)+'">'+esc(p.name[0].toUpperCase())+'</span><div><div class="pname">'+modName(p.name,u.uid)+'</div>'+
+  '<div class="prt">Online rating <b style="color:#81b64c;font-size:19px">'+p.rating+'</b>'+(since?' · member since '+since:'')+'</div></div></div>';
+ h+='<div class="pstats">'+[['Games',n],['Wins',w],['Draws',d],['Losses',l]].map(([k,v])=>'<div class="pstat"><b>'+v+'</b><span>'+k+'</span></div>').join('')+'</div>';
+ if(n)h+='<div class="pbar"><div style="width:'+100*w/n+'%;background:#81b64c"></div><div style="width:'+100*d/n+'%;background:#8b8987"></div><div style="width:'+100*l/n+'%;background:#e05a4f"></div></div>';
+ h+='<button class="play" id="pplay" style="max-width:340px">🌐 Play online</button>';
+ h+='<h2>Recent online games</h2><div class="pgames" id="pgames"><div class="small">Loading…</div></div>';
+ const R=REC(),bs=Object.entries(R).map(([k,c])=>[k,c.w,c.d,c.l]).sort((a,b)=>(b[1]+b[2]+b[3])-(a[1]+a[2]+a[3])).slice(0,6);
+ if(bs.length)h+='<h2>Against bots (on this device)</h2><div class="pgames">'+bs.map(([k,a,b,c])=>'<div class="pg"><span>'+esc(k)+'</span><span><b class="rw">'+a+'</b> W · '+b+' D · <b class="rl">'+c+'</b> L</span></div>').join('')+'</div>';
+ h+='<h2>Account</h2><div class="small" style="line-height:1.9">Signed in'+(u.email?' as '+esc(u.email):'')+'<br>Account ID: <code>'+esc(u.uid)+'</code> · <a href="#" id="pcopy" style="color:#bab9b8">copy</a> · <a href="#" id="pout" style="color:#bab9b8">Sign out</a></div>';
+ el.innerHTML=h;
+ $('pplay').onclick=()=>{$('profile').style.display='none';homeGo('online')};
+ $('pcopy').onclick=async e=>{e.preventDefault();try{await navigator.clipboard.writeText(u.uid);e.target.textContent='copied ✓'}catch(x){}};
+ $('pout').onclick=async e=>{e.preventDefault();await onStopSeek();await ON.fb.AU.signOut(ON.fb.auth);$('profile').style.display='none'};
+ profGames()}
+async function profGames(){const {F,db}=ON.fb,uid=ON.user.uid,el=$('pgames');
+ try{const s=await F.getDocs(F.query(F.collection(db,'games'),F.where('players','array-contains',uid),F.limit(40)));
+  const gs=s.docs.map(x=>x.data()).filter(g=>g.status=='over').sort((a,b)=>((b.created&&b.created.seconds)||0)-((a.created&&a.created.seconds)||0)).slice(0,10);
+  if(!el)return;if(!gs.length){el.innerHTML='<div class="small">No finished online games yet.</div>';return}
+  el.innerHTML=gs.map(g=>{const my=g.white&&g.white.uid==uid?'white':'black',op=g[my=='white'?'black':'white']||{},dr=g.result=='1/2-1/2',won=g.result==(my=='white'?'1-0':'0-1');
+   const dl=g.rated&&g.rated[my]!=null?g.rated[my]:null,dt=g.created&&g.created.toDate?g.created.toDate().toLocaleDateString():'';
+   return '<div class="pg"><span><b class="r '+(dr?'rd':won?'rw':'rl')+'">'+(dr?'½':won?'Won':'Lost')+'</b> vs '+modName(op.name||'?',op.uid)+' ('+(op.rating||'?')+')<br><span class="small">'+esc(tcInfo(g.tc)[1])+' · '+esc(modeName(g.mode))+(g.reason?' · '+esc(g.reason):'')+'</span></span>'+
+    '<span style="text-align:right">'+(dl==null?'':'<b class="'+(dl>=0?'rw':'rl')+'">'+(dl>=0?'+':'')+dl+'</b>')+'<br><span class="small">'+dt+'</span></span></div>'}).join('')}
+ catch(e){if(el)el.innerHTML='<div class="small">Couldn\'t load games: '+esc(e.message)+'</div>'}}
+profNav();if(FBCFG&&profCached())setTimeout(()=>fbLoad().catch(()=>{}),1200); // refresh the button in the background
 if(new URLSearchParams(location.search).get('play'))$('home').style.display='none';else setTimeout(homeUI)
 // ---- Magnus Carlsen bot extras: emoji reactions (on its avatar), a commentator, and real facts from his games.
 // The reactions and commentator lines are invented for fun and are not things Magnus said.
