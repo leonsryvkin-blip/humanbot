@@ -2118,15 +2118,16 @@ document.addEventListener('keydown',e=>{if(!ABIL||!bossMe()||/INPUT|SELECT|TEXTA
 // the thief: an original little masked bandit who sneaks in from the side, grabs the piece and runs off
 const THIEF='<svg viewBox="0 0 100 100"><ellipse cx="50" cy="93" rx="27" ry="5" fill="#0006"/>'+
  '<path d="M36 86l-4 8M64 86l4 8" stroke="#24183a" stroke-width="8" stroke-linecap="round"/>'+
- '<path d="M22 62c0-24 12-42 28-42s28 18 28 42c0 16-12 26-28 26S22 78 22 62z" fill="#6a45a8" stroke="#24183a" stroke-width="3.5"/>'+
+ '<path d="M22 62c0-24 12-42 28-42s28 18 28 42c0 16-12 26-28 26S22 78 22 62z" fill="TCOL" stroke="#24183a" stroke-width="3.5"/>'+
  '<path d="M30 24c6-10 34-10 40 0-12-4-28-4-40 0z" fill="#24183a"/>'+
  '<path d="M18 44c12-7 52-7 64 0v11c-12 6-52 6-64 0z" fill="#121016"/><path d="M82 46l10-5-2 10z" fill="#121016"/>'+
  '<ellipse cx="38" cy="49.5" rx="6.5" ry="4.6" fill="#fff"/><ellipse cx="62" cy="49.5" rx="6.5" ry="4.6" fill="#fff"/>'+
  '<circle cx="41" cy="50" r="2.6" fill="#111"/><circle cx="65" cy="50" r="2.6" fill="#111"/>'+
  '<path d="M42 68q8 6 16 0" stroke="#24183a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
+const TCOLS=['#2e7d32','#1e3fd8','#c4211a','#5fd916','#e357c9','#d6dcef','#ef7d0d','#4fe8d0']; // a random colour each time
 function thiefAnim(q){return new Promise(res=>{const B=$('board'),t=B.querySelector('[data-sq="'+q+'"]');if(!t){res();return}
  const sz=t.offsetWidth,W=B.clientWidth,x=t.offsetLeft,y=t.offsetTop,th=document.createElement('div');
- th.className='thief';th.style.width=th.style.height=sz+'px';th.innerHTML=THIEF;th.style.transform='translate('+(-sz)+'px,'+y+'px)';B.appendChild(th);
+ th.className='thief';th.style.width=th.style.height=sz+'px';th.innerHTML=THIEF.replace('TCOL',TCOLS[Math.floor(Math.random()*TCOLS.length)]);th.style.transform='translate('+(-sz)+'px,'+y+'px)';B.appendChild(th);
  const go=(tx,ms,cb)=>{th.style.transitionDuration=ms+'ms';requestAnimationFrame(()=>requestAnimationFrame(()=>{th.style.transform='translate('+tx+'px,'+y+'px)'}));setTimeout(cb,ms+30)};
  go(x,300+1200*(x+sz)/W,()=>{const pc=t.querySelector('.pc');let loot='';if(pc){loot=pc.outerHTML;pc.style.visibility='hidden'}
   th.insertAdjacentHTML('beforeend','<div style="position:absolute;width:48%;height:48%;right:-14%;top:18%;font-size:'+(sz*.4)+'px">'+loot+'</div>');snd(true);
