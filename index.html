@@ -62,6 +62,7 @@
  .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
  .evb{position:absolute;right:4%;top:2%;min-width:36%;height:36%;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 calc(var(--sq)*.24)/1 sans-serif;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px #0008;z-index:2}
  .evA{background:#2f8f3f}.evG{background:#c48a12}.evH{background:#2b6cc4}.evM{background:#8a3fc4}
+ .evS,.evC{border-color:#f2c94c;font-size:calc(var(--sq)*.17)}.evS{background:#1b4b94}.evC{background:#5f2296}
  #evopick{position:fixed;inset:0;background:#000a;z-index:70;display:none;align-items:center;justify-content:center}
  #evopick .box{background:#262522;border-radius:12px;padding:18px;width:min(360px,92vw);color:#fff}
  #evopick button{display:block;width:100%;margin-top:8px;padding:11px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;text-align:left;cursor:pointer}
@@ -424,8 +425,11 @@ const sqFrom = n => "abcdefgh".indexOf(n[0]) + 8 * (parseInt(n[1]) - 1);
 const isWhite = p => p && p === p.toUpperCase();
 const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 // Evolution tree: piece -> [[moves it must have made (counting the evolving move), [forms it may become]]]
-// A = Pawn+, G = Grand pawn, H = Arabian horse, M = Mustang
-const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]] };
+// A = Pawn+, G = Grand pawn, H = Arabian horse, M = Mustang, S = Stallion, C = Bronco.
+// A piece's move count restarts when it evolves, so "2" for H/M means two moves after becoming a horse.
+const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]], H: [[2, ["S"]]], M: [[2, ["C"]]] };
+// knight-family pieces: [extra step directions, how far they reach]
+const HORSE = { H: [R_DIR, 1], M: [B_DIR, 1], S: [R_DIR, 2], C: [B_DIR, 2] };
 
 class Chess {
   // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
@@ -483,9 +487,17 @@ class Chess {
       const A = W ? "A" : "a", G = W ? "G" : "g";
       for (const x of [at(f - 1, pr), at(f + 1, pr)]) if (x === A || x === G) return true;
       if (at(f, pr) === G || at(f - 1, r) === G || at(f + 1, r) === G) return true;
-      const H = W ? "H" : "h", M = W ? "M" : "m"; // Arabian horse / Mustang: knight jumps + one step straight / diagonal
-      for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x === H || x === M) return true; }
-      for (const [df, dr] of K_OFF) if (at(f + df, r + dr) === (df && dr ? M : H)) return true;
+      // knight-family evolutions: knight jumps + a short straight or diagonal reach (HORSE)
+      for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x && HORSE[x.toUpperCase()] && colorOf(x) === by) return true; }
+      for (const [t, [dirs, reach]] of Object.entries(HORSE)) {
+        const me = W ? t : t.toLowerCase();
+        for (const [df, dr] of dirs) for (let k = 1; k <= reach; k++) {
+          const ff = f + df * k, rr = r + dr * k, x = at(ff, rr);
+          if (x === undefined || this.holes.has(rr * 8 + ff)) break;
+          if (x === me) return true;
+          if (x) break;
+        }
+      }
     }
     const kn = W ? "N" : "n", kg = W ? "K" : "k";
     for (const [df, dr] of N_OFF) if (at(f + df, r + dr) === kn) return true;
@@ -548,13 +560,21 @@ class Chess {
           if (t === "G" && enemy(r * 8 + ff)) add(s, r * 8 + ff); // Grand pawn: sideways captures
         }
         if (t === "G" && r1 >= 0 && r1 < 8 && enemy(r1 * 8 + f)) add(s, r1 * 8 + f); // and straight ahead
-      } else if (t === "H" || t === "M") { // Evolution: Arabian horse (+ straight step), Mustang (+ diagonal step)
-        const steps = N_OFF.concat(K_OFF.filter(([df, dr]) => t === "H" ? !(df && dr) : df && dr));
-        for (const [df, dr] of steps) {
+      } else if (HORSE[t]) { // Evolution's horses: knight jumps + a short straight / diagonal reach
+        const [dirs, reach] = HORSE[t];
+        for (const [df, dr] of N_OFF) {
           const ff = f + df, rr = r + dr;
           if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue;
           const to = rr * 8 + ff;
           if (!b[to] || colorOf(b[to]) !== us) out.push({ from: s, to, promo: null });
+        }
+        for (const [df, dr] of dirs) for (let k = 1; k <= reach; k++) {
+          const ff = f + df * k, rr = r + dr * k;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7) break;
+          const to = rr * 8 + ff;
+          if (this.holes.has(to)) break;
+          if (b[to]) { if (colorOf(b[to]) !== us) out.push({ from: s, to, promo: null }); break; }
+          out.push({ from: s, to, promo: null });
         }
       } else if (t === "N" || t === "K") {
         for (const [df, dr] of t === "N" ? N_OFF : K_OFF) {
@@ -648,7 +668,7 @@ class Chess {
       else {
         const c = mc[m.from];
         if (t === "P" && m.to === this.ep && !b[m.to]) mc[m.to + (W ? -8 : 8)] = 0;
-        mc[m.from] = 0; mc[m.to] = c + 1;
+        mc[m.from] = 0; mc[m.to] = m.evo ? 0 : c + 1; // evolving restarts the count
         if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { const h = W ? 0 : 56, ks = m.to === h + 6, rf = ks ? h + 7 : h, rt = ks ? h + 5 : h + 3; mc[rt] = mc[rf] + 1; mc[rf] = 0; }
       }
     }
@@ -805,7 +825,7 @@ class Chess {
         s = t + dis + (cap ? "x" : "") + sqName(m.to);
       }
     }
-    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang" })[m.evo];
+    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang", S: "Stallion", C: "Bronco" })[m.evo];
     const u = this._apply(m);
     const chk = this.inCheck(), mate = chk && this.legal().length === 0;
     this._undo(u);
@@ -1186,7 +1206,7 @@ function predictMaia(net, game) {
 
 // Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
 // deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
-const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420 };
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420, S: 560, C: 520 };
 function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
   let s = 0;
   for (let q = 0; q < 64; q++) {
@@ -1662,7 +1682,9 @@ const OUT={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙'};
 var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time. Captures diagonally, and can capture without moving.'],
  G:['P','★','evG','★ Grand pawn','Captures diagonally, straight ahead and to the left and right.'],
  H:['N','✚','evH','✚ Arabian horse','Moves like a knight, and can also move or capture one square straight (up, down, left, right).'],
- M:['N','✖','evM','✖ Mustang','Moves like a knight, and can also move or capture one square diagonally.']};
+ M:['N','✖','evM','✖ Mustang','Moves like a knight, and can also move or capture one square diagonally.'],
+ S:['N','✚²','evS','✚² Stallion','Moves like a knight, and can also move or capture 1 or 2 squares straight (a short rook move).'],
+ C:['N','✖²','evC','✖² Bronco','Moves like a knight, and can also move or capture 1 or 2 squares diagonally (a short bishop move).']};
 function piece(p,set){const E=EVOP[p.toUpperCase()];if(E){const w=p==p.toUpperCase(); // Evolution: the base piece + a badge
   return piece(w?E[0]:E[0].toLowerCase(),set).replace('</div>','<span class="evb '+E[2]+'">'+E[1]+'</span></div>')}
  set=set||opts.set;const k=p.toUpperCase(),w=p==k,cls='pc '+(w?'wht':'blk');
@@ -2184,7 +2206,7 @@ let HKP=null;
 function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
-const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang'};
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang',S:'Stallion',C:'Bronco'};
 // ---- Evolution: after moving a pawn you may evolve it; Pawn+ may capture without moving
 function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el){el=document.createElement('div');el.id='evopick';document.body.appendChild(el)}
  el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
@@ -2241,7 +2263,7 @@ async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncod
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
  fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
- evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step straight) or ✖ Mustang (+ one step diagonally). More pieces coming. Website only; bots play it with a small search engine.',
+ evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step straight) or ✖ Mustang (+ one step diagonally); two moves later they evolve again: ✚² Stallion (+ 1–2 squares straight) or ✖² Bronco (+ 1–2 squares diagonally). More pieces coming. Website only; bots play it with a small search engine.',
  hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
