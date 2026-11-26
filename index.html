@@ -1285,14 +1285,14 @@ const MAGNOTE={magnus:'Unofficial bot trained on about 27,000 of Magnus Carlsen\
 const BOTTAG='<span class="bottag">BOT</span>',GMTAG='<span class="gmtag">GM</span>',PB=/^(magnus|hikaru|p_)/;
 const BOTINFO={humanbot:['♞','#5d8a35','Plays like a real person'],magnus:['♚','#b8102e','Unofficial · plays like him'],hikaru:['♚','#3c3a36','Unofficial · plays like him'],maia1:['M1','#2f7d8c','Levels 1100–1900'],maia2:['M2','#3b6ea5','Newer, PC only'],stockfish:['SF','#a8473a','The strongest engine'],leela:['Lc0','#ffffff','Neural engine'],gm:['♔','#8a6d3b',''],worstfish:['WF','#7a3b8c','Always the worst move']};
 // bots made from someone's username (python -m hce.makebot); the PC app fills these in when it serves the page
-const PLAYERS=[{"id": "gotham", "display": "GothamChess", "rating": 2917, "title": "IM", "chesscom": ["GothamChess"], "lichess": [], "games": 30950, "top1_after": 0.56067}, {"id": "leoniiy", "display": "leoniiy", "rating": 684, "title": "", "chesscom": ["leoniiy"], "lichess": [], "games": 681, "top1_after": 0.51731}],PC=/*PC*/false,PT={};
+const PLAYERS=[{"id": "gotham", "display": "GothamChess", "rating": 2917, "title": "IM", "chesscom": ["GothamChess"], "lichess": [], "games": 30950, "top1_after": 0.56067}, {"id": "leoniiy", "display": "leoniiy", "rating": 684, "title": "MOD", "chesscom": ["leoniiy"], "lichess": [], "games": 681, "top1_after": 0.51731}],PC=/*PC*/false,PT={};
 PLAYERS.forEach(p=>{const v='p_'+p.id,n=p.games.toLocaleString('en'),acc=p.top1_after?' Guesses their real move about '+Math.round(p.top1_after*100)+'% of the time on games it never saw.':'';
  BOTS.splice(BOTS.findIndex(b=>b[0]=='maia1'),0,[v,p.display]);PT[v]=p.title||'';
  BOTINFO[v]=[p.display.replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase()||'?','hsl('+[...p.id].reduce((a,c)=>a*31+c.charCodeAt(0),7)%360+',45%,38%)','Plays like them · ~'+p.rating];
  BOTHELP[v]=p.display+' bot: our model fine-tuned on '+n+' of their public games (rating about '+p.rating+').'+acc;
  MAGNOTE[v]='Bot trained on '+n+' of '+p.display+'\'s public games ('+[p.chesscom.length?'chess.com':'',p.lichess.length?'Lichess':''].filter(x=>x).join(', ')+'). Not made by or endorsed by them. The emoji reactions and the 🎙️ commentator are made up for fun.'});
 if(!BOTS.some(b=>b[0]==opts.bot))opts.bot='humanbot';
-function ttl(v){const t=/^(magnus|hikaru)/.test(v)?'GM':PT[v]||'';return t?'<span class="gmtag">'+t+'</span>':''}
+function ttl(v){const t=/^(magnus|hikaru)/.test(v)?'GM':PT[v]||'';return t?'<span class="'+(t=='MOD'?'modtag':'gmtag')+'">'+t+'</span>':''}
 function icon(v){return IMG.icons&&(IMG.icons[v]||(/^maia/.test(v)&&IMG.icons.maia)||(v=='worstfish'&&IMG.icons.stockfish))}
 // Magnus Carlsen bot avatars: a Santa-mask character drawn here (a nod to a festive chess.com avatar; not a photo,
 // not anyone's likeness). Prime 2014 on blue, Now 2026 on purple, with an era badge.
