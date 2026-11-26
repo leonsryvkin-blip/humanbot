@@ -247,7 +247,8 @@
     <div class="lbl">Variant</div><div class="row" id="mvar"></div><div class="small" id="mvarhelp"></div>
     <div class="lbl">Visualization training</div><div class="row" id="mvis"></div><div class="small" id="mvishelp"></div>
     <div id="mvisdemo" class="set-staunty"></div>
-    <button class="play" id="mgo">Choose your opponent →</button>
+    <button class="play" id="mgo">Play a bot →</button>
+    <button class="play" id="mgon" style="background:#4b4847;border-bottom-color:#3a3836;margin-top:8px">Play online →</button>
    </div>
    <div class="small" id="modeline" style="display:none;margin:-4px 0 10px"></div>
    <div id="lib">
@@ -1631,7 +1632,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='
 function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
  const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
- if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML}}
+ if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML;
+  if(GAME.online){const g=GAME.online.g;$('vstc').textContent='🌐 '+tcInfo(g.tc)[1]+' · '+modeName(g.mode)}}}
 $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this game? It counts as resigning.'))return;end('you resigned')}
  if(GAME&&GAME.online)onLeave();
  if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
@@ -1730,8 +1732,9 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  else{const p=ON.prof,tl=tcInfo(tcValue())[1];
   h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+esc(p.name)+' <span style="color:#81b64c">'+p.rating+'</span></div>'+
    '<div class="small">'+(p.w||0)+' wins · '+(p.d||0)+' draws · '+(p.l||0)+' losses · <a href="#" id="onout" style="color:#bab9b8">Sign out</a></div></div></div>';
-  if(ON.seek)h+='<div class="small" style="margin:8px 0">🔎 Looking for an opponent ('+esc(tl)+')… it starts as soon as someone joins.</div><button class="play" id="oncancel" style="background:#4b4847">Cancel</button>';
-  else if(ON.chal)h+='<div class="small" style="margin:8px 0">Send this link to your friend. The game starts when they open it ('+esc(tcInfo(ON.chal.tc)[1])+'):</div>'+
+  const mk=modeKey();h+='<div class="small" style="margin-bottom:8px">Mode: <b>'+esc(modeName(mk))+'</b>'+(ON.seek||ON.chal?'':' · <a href="#" id="onmode" style="color:#bab9b8">change</a>')+'</div>';
+  if(ON.seek)h+='<div class="small" style="margin:8px 0">🔎 Looking for an opponent ('+esc(tl)+', '+esc(modeName(mk))+')… it starts as soon as someone with the same time and mode joins.</div><button class="play" id="oncancel" style="background:#4b4847">Cancel</button>';
+  else if(ON.chal)h+='<div class="small" style="margin:8px 0">Send this link to your friend. The game starts when they open it ('+esc(tcInfo(ON.chal.tc)[1])+', '+esc(modeName(ON.chal.mode))+'):</div>'+
    '<input readonly id="onlink" value="'+esc(ON.chal.link)+'" style="width:100%;box-sizing:border-box;padding:8px;border-radius:6px;border:0;margin-bottom:8px">'+
    '<div class="row"><span class="chip" id="oncopy">Copy link</span><span class="chip" id="oncancel">Cancel</span></div>';
   else h+='<div class="small" style="margin-bottom:6px">Time: pick it under <b>Time</b> below (now '+esc(tl)+').</div>'+
@@ -1750,24 +1753,29 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  B('onsave',async()=>{const n=($('onname').value||'').trim();if(!/^[A-Za-z0-9_]{3,20}$/.test(n))throw new Error('Use 3–20 letters, numbers or _.');
   const {F,db}=ON.fb;await F.setDoc(F.doc(db,'users',ON.user.uid),{name:n,rating:1200,w:0,d:0,l:0,games:0,created:F.serverTimestamp()})});
  B('onquick',onQuick);B('onchal',onChallenge);B('oncancel',onStopSeek);
+ B('onmode',()=>{opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()});
  B('oncopy',async()=>{const i=$('onlink');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();document.execCommand('copy')}})}
 async function onTop(){if(ON.topBusy)return;ON.topBusy=true;try{const {F,db}=ON.fb;const s=await F.getDocs(F.query(F.collection(db,'users'),F.orderBy('rating','desc'),F.limit(10)));
  ON.top=s.docs.map(d=>d.data());const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+esc(u.name)+' <b>'+u.rating+'</b>').join('<br>')}catch(e){}ON.topBusy=false}
 function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
+// a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
+function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)}
+function modeName(k){const [v,s]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
- return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},created:ON.fb.F.serverTimestamp()}}
+ return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
+  mode:modeKey(),back:opts.variant=='960'?rand960():null,vis:+opts.vis||0,created:ON.fb.F.serverTimestamp()}}
 async function onQuick(){const {F,db}=ON.fb,tc=onTc(),me=onMe();
  const s=await F.getDocs(F.query(F.collection(db,'seeks'),F.where('tc','==',tc),F.limit(20)));
  for(const d of s.docs.sort((a,b)=>(a.data().t||0)-(b.data().t||0))){const x=d.data();
   if(x.uid==me.uid){F.deleteDoc(d.ref).catch(()=>{});continue}
-  if(x.gameId||Date.now()-(x.t||0)>90000)continue; // taken, or its owner left
+  if(x.gameId||Date.now()-(x.t||0)>90000||(x.mode||'std|v0')!=modeKey())continue; // taken, owner left, or another mode
   try{const id=await F.runTransaction(db,async tx=>{const c=await tx.get(d.ref);if(!c.exists()||c.data().gameId)throw new Error('taken');
     const g=F.doc(F.collection(db,'games')),meW=Math.random()<.5,them={uid:x.uid,name:x.name,rating:x.rating};
     tx.set(g,onGameData(meW?me:them,meW?them:me,tc,'live'));tx.update(d.ref,{gameId:g.id});return g.id});
    return onWatch(id)}catch(e){}}
  // nobody waiting: wait for someone (the seek's time is refreshed while this page is open)
- const ref=await F.addDoc(F.collection(db,'seeks'),{uid:me.uid,name:me.name,rating:me.rating,tc,t:Date.now(),gameId:null});
+ const ref=await F.addDoc(F.collection(db,'seeks'),{uid:me.uid,name:me.name,rating:me.rating,tc,mode:modeKey(),t:Date.now(),gameId:null});
  ON.seek=ref;ON.seekBeat=setInterval(()=>F.updateDoc(ref,{t:Date.now()}).catch(()=>{}),30000);
  ON.seekUnsub=F.onSnapshot(ref,x=>{const g=x.exists()&&x.data().gameId;if(g){onStopSeek(true);onWatch(g)}})}
 async function onStopSeek(){const {F}=ON.fb||{};if(ON.seekUnsub){ON.seekUnsub();ON.seekUnsub=null}if(ON.seekBeat){clearInterval(ON.seekBeat);ON.seekBeat=null}
@@ -1778,7 +1786,7 @@ async function onStopSeek(){const {F}=ON.fb||{};if(ON.seekUnsub){ON.seekUnsub();
 addEventListener('pagehide',()=>{if(ON.seek&&ON.fb)ON.fb.F.deleteDoc(ON.seek).catch(()=>{})});
 async function onChallenge(){const {F,db}=ON.fb,tc=onTc(),me=onMe(),meW=Math.random()<.5;
  const ref=await F.addDoc(F.collection(db,'games'),onGameData(meW?me:null,meW?null:me,tc,'waiting'));
- ON.chal={ref,tc,link:location.origin+location.pathname+'?play='+ref.id};onWatch(ref.id)}
+ ON.chal={ref,tc,mode:modeKey(),link:location.origin+location.pathname+'?play='+ref.id};onWatch(ref.id)}
 async function onJoinFromLink(){const id=new URLSearchParams(location.search).get('play');if(!id||!ON.prof||ON.joined==id)return;ON.joined=id;
  history.replaceState(null,'',location.pathname);const {F,db}=ON.fb,ref=F.doc(db,'games',id),me=onMe();
  try{await F.runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('That game link doesn\'t exist.');const g=s.data();
@@ -1800,10 +1808,11 @@ async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')retur
   end(dr?'Draw ('+g.reason+')':won?'You win ('+g.reason+')':O.opp.name+' wins ('+g.reason+')')}}
 async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();MATCH=null;$('info').innerHTML='';
  const my=g.white&&g.white.uid==ON.user.uid?'white':'black',me=g[my],opp=g[my=='white'?'black':'white'];
- S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,model:(document.getElementById('model')||{}).value});if(S.error)return;
+ S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,model:(document.getElementById('model')||{}).value});if(S.error)return;
  GAME={online:{id,color:my,opp,me,g},bvb:false,spec:{bot:{bot:'online'}},names:{me:me.name+' ('+me.rating+')',bot:opp.name+' ('+opp.rating+')'},short:{me:'You',bot:opp.name},av:{me:'me',bot:'opp'}};
  $('over').style.display='none';$('comm').innerHTML='';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);
- msg(S.turn==S.you?'You play '+my+'. Your move.':'You play '+my+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot')}
+ const mn=g.mode&&g.mode!='std|v0'?' ('+modeName(g.mode)+')':'';
+ msg(S.turn==S.you?'You play '+my+mn+'. Your move.':'You play '+my+mn+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot')}
 async function onSend(){const O=GAME.online,{F}=ON.fb;
  try{await F.updateDoc(ON.gref,{moves:S.ucis.slice(),[O.color[0]+'t']:Math.max(0,clk.me)})}catch(e){msg('Couldn\'t send your move: '+e.message)}}
 const REASON=t=>/resign/i.test(t)?'resignation':/flag|time/i.test(t)?'time':((/\(([^)]*)\)/.exec(t)||[])[1]||'game over');
@@ -1834,15 +1843,18 @@ const VISHELP=['Normal pieces.','Knights and bishops look like checkers: remembe
  'The whole back rank (rooks, knights, bishops, queen, king) looks like checkers. Only pawns stay.','Every piece is a checker: you only see colours.',
  'Plain board: no pieces at all. You see only the last move, outlined. Play it all in your head (the move list helps).'];
 const VISSET=[[],['N','B'],['N','B','R'],['N','B','R','Q','K'],['N','B','R','Q','K','P']];
-function visLevel(){return GAME&&GAME.lib?0:+opts.vis||0}
-function checker(w){const f=w?'#f3ede1':'#2d2b29',r=w?'#c8bca6':'#5b5753',e=w?'#9c8f78':'#111';
- return '<div class="pc"><svg class="ck" viewBox="0 0 40 40"><ellipse cx="20" cy="23" rx="17" ry="14" fill="'+e+'"/><ellipse cx="20" cy="19" rx="17" ry="14" fill="'+f+'" stroke="'+e+'" stroke-width="1.2"/>'+
-  '<ellipse cx="20" cy="19" rx="11" ry="9" fill="none" stroke="'+r+'" stroke-width="1.6"/><ellipse cx="20" cy="19" rx="6" ry="5" fill="none" stroke="'+r+'" stroke-width="1.2"/></svg></div>'}
+function visLevel(){if(GAME&&GAME.lib)return 0;if(GAME&&GAME.online)return +GAME.online.g.vis||0;return +opts.vis||0}
+// a flat round disc with faint grooves (seen from above), light for White and dark for Black
+function checker(w){const f=w?'#f5f5f4':'#4b4948',g=w?'#dcdcda':'#3d3b3a',o=w?'#3b3936':'#1f1e1d';let rings='';
+ for(const r of [12.5,9.5,6.5,3.6])rings+='<circle cx="20" cy="20" r="'+r+'" fill="none" stroke="'+g+'" stroke-width="'+(r>10?1.3:.9)+'"/>';
+ return '<div class="pc"><svg class="ck" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18.2" fill="'+f+'" stroke="'+o+'" stroke-width="1.6"/>'+
+  '<circle cx="20" cy="20" r="15.6" fill="none" stroke="'+g+'" stroke-width="1.6"/>'+rings+'</svg></div>'}
 function visPiece(p,V){if(!V)return piece(p);if(V>=5)return '';return VISSET[V].includes(p.toUpperCase())?checker(p==p.toUpperCase()):piece(p)}
 function modesUI(){const ms=$('mvar');if(!ms.children.length){
   chips(ms,[['standard','Standard'],['960','Chess960 (Fischer Random)']],'variant',modesUI);
   chips($('mvis'),VISL,'vis',()=>{modesUI();draw()});
-  $('mgo').onclick=()=>{opts.vs='human';localStorage.setItem('hb_vs','human');vsUI()}}
+  $('mgo').onclick=()=>{opts.vs='human';localStorage.setItem('hb_vs','human');vsUI()};
+  $('mgon').onclick=()=>{opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}}
  $('mvarhelp').textContent=opts.variant=='960'?'Bobby Fischer\'s chess: the back pieces start in a random order (960 possible), so opening theory is useless. Bishops on opposite colours, king between the rooks. Castle by moving your king onto your rook (or to g/c). New position every game.':'Normal chess.';
  $('mvishelp').textContent=VISHELP[+opts.vis||0];
  const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
