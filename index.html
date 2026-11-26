@@ -60,6 +60,15 @@
  .sq.hkm::before,.sq.hkt::before{content:"👑";position:absolute;top:1px;right:2px;font-size:calc(var(--sq)*.27);line-height:1;z-index:3;pointer-events:none;filter:drop-shadow(0 1px 1px #000a)}
  .sq.hkt{box-shadow:inset 0 0 0 3px #e05a4f}
  .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
+ .sq.hole{background:radial-gradient(circle at 50% 45%,#000 0 55%,#0b0a09 70%,#1a1816) !important;box-shadow:inset 0 0 calc(var(--sq)*.18) #000}
+ .sq.hole::after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 10deg,#ffffff06 0 8deg,#0000 8deg 30deg);pointer-events:none}
+ .sq.abt{box-shadow:inset 0 0 0 3px #b06cff;cursor:crosshair}
+ #abil .ab{display:flex;gap:6px;margin:8px 0}#abil button{flex:1;padding:10px 4px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;cursor:pointer;font-size:13.5px}
+ #abil button.on{background:#7b3fd1}#abil button:disabled{opacity:.4;cursor:default}
+ #moves .flow{display:flex;flex-wrap:wrap;gap:4px 8px;padding:6px 8px}
+ .thief{position:absolute;z-index:30;pointer-events:none;transition:transform linear;left:0;top:0}
+ .thief svg{width:100%;height:100%;animation:tbob .28s ease-in-out infinite alternate}
+ @keyframes tbob{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-8%) rotate(4deg)}}
  .sq.fogd::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,#24231f 0 6px,#2a2925 6px 12px);opacity:.97;pointer-events:none}
  .ck{width:80%;height:80%;pointer-events:none}
  #mvisdemo{display:grid;grid-template-columns:repeat(8,1fr);width:240px;margin:10px auto 2px;border-radius:5px;overflow:hidden;--sq:30px}#mvisdemo .sq{height:30px}
@@ -354,6 +363,7 @@
   <div class="sbody" id="gameview">
    <div id="score"></div>
    <div class="vs"><span class="av" id="vsav">♞</span><div><div style="font-weight:700" id="vsname">HumanBot</div><div class="small" id="vstc"></div></div></div>
+   <div id="abil"></div>
    <div id="moves"></div>
    <div class="nav" id="nav"><button id="nfirst" title="Start (Home)">⏮</button><button id="nprev" title="Back (←)">◀</button><button id="nnext" title="Forward (→)">▶</button><button id="nlast" title="End (End)">⏭</button></div>
    <label class="tog" id="explainwrap" style="display:none"><input type="checkbox" id="explain2"> Explain moves</label>
@@ -417,6 +427,7 @@ class Chess {
   constructor(back, rule) {
     this.rule = rule || null;
     this.hk = { w: -1, b: -1 }; this.hkLost = null;
+    this.holes = new Set(); this.boss = null; // boss duel: deleted squares, and the boss side's powers
     this.b = new Array(64).fill(null);
     back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
@@ -439,8 +450,18 @@ class Chess {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
     c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule; c.hk = { ...this.hk }; c.hkLost = this.hkLost;
+    c.holes = new Set(this.holes); c.boss = this.boss ? { ...this.boss } : null;
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
+  }
+  // Boss duel: `side` ('w'|'b') keeps only a king (e-file) and one pawn; cfg = {del, steal, respawn} (Infinity = unlimited)
+  setupBoss(side, cfg) {
+    for (let s = 0; s < 64; s++) if (colorOf(this.b[s]) === side) this.b[s] = null;
+    const W = side === "w";
+    this.b[W ? 4 : 60] = W ? "K" : "k"; this.b[W ? 12 : 52] = W ? "P" : "p";
+    if (W) this.castle.K = this.castle.Q = false; else this.castle.k = this.castle.q = false;
+    this.boss = { side };
+    this.keys = [this.key()];
   }
   kingSq(color) { const k = color === "w" ? "K" : "k"; return this.b.indexOf(k); }
   attacked(sq, by) { // is sq attacked by color `by`
@@ -456,6 +477,7 @@ class Chess {
       for (const [df, dr] of dirs) {
         let ff = f + df, rr = r + dr;
         while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
+          if (this.holes.has(rr * 8 + ff)) break; // nothing passes a deleted square
           const p = b[rr * 8 + ff];
           if (p) { if (set.includes(p)) return true; break; }
           ff += df; rr += dr;
@@ -479,7 +501,7 @@ class Chess {
       const f = fileOf(s), r = rankOf(s), t = p.toUpperCase();
       if (t === "P") {
         const dir = W ? 1 : -1, start = W ? 1 : 6, r1 = r + dir;
-        if (r1 >= 0 && r1 < 8 && !b[r1 * 8 + f]) {
+        if (r1 >= 0 && r1 < 8 && !b[r1 * 8 + f] && !this.holes.has(r1 * 8 + f)) {
           add(s, r1 * 8 + f);
           if (r === start && !b[(r + 2 * dir) * 8 + f]) out.push({ from: s, to: (r + 2 * dir) * 8 + f, promo: null });
         }
@@ -502,6 +524,7 @@ class Chess {
           let ff = f + df, rr = r + dr;
           while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
             const to = rr * 8 + ff;
+            if (this.holes.has(to)) break;
             if (b[to]) { if (colorOf(b[to]) !== us) out.push({ from: s, to, promo: null }); break; }
             out.push({ from: s, to, promo: null });
             ff += df; rr += dr;
@@ -537,12 +560,42 @@ class Chess {
           !this.attacked(home + 3, them) && !this.attacked(home + 2, them))
         out.push({ from: home + 4, to: home + 2, promo: null });
     }
+    if (!this.holes.size && !this.boss) return out;
+    const res = out.filter(m => { // no landing on a deleted square, and no castling across one
+      if (this.holes.has(m.to)) return false;
+      const std = !this.c960 && b[m.from] && b[m.from].toUpperCase() === "K" && Math.abs(m.to - m.from) === 2;
+      if (!m.castle && !std) return true;
+      const sqs = m.castle ? [m.from, m.to, m.kTo, m.rTo] : [m.from, m.to, m.to > m.from ? m.from + 3 : m.from - 4];
+      const lo = Math.min(...sqs), hi = Math.max(...sqs);
+      for (const h of this.holes) if (h >= lo && h <= hi) return false;
+      return true;
+    });
+    return res;
+  }
+  // Boss powers: free actions on the boss's own turn (the turn does not pass), unlimited, kings are off limits
+  specials() {
+    const b = this.b, out = [];
+    if (!this.boss || this.turn !== this.boss.side || this.outcome()) return out;
+    const pawn = this.boss.side === "w" ? "P" : "p", noPawn = !b.includes(pawn);
+    for (let s = 0; s < 64; s++) {
+      if (!this.holes.has(s) && !(b[s] && b[s].toUpperCase() === "K")) out.push({ special: "del", sq: s });
+      if (b[s] && colorOf(b[s]) !== this.turn && b[s].toUpperCase() !== "K") out.push({ special: "steal", sq: s });
+      // the pawn, once lost, can be placed back on any empty square (not on the first or last rank)
+      if (noPawn && !b[s] && !this.holes.has(s) && rankOf(s) > 0 && rankOf(s) < 7) out.push({ special: "pawn", sq: s });
+    }
     return out;
   }
   _apply(m) { // no legality check; returns undo record
-    const b = this.b, p = b[m.from], t = p.toUpperCase(), W = this.turn === "w";
+    const b = this.b, p = b[m.from], t = p ? p.toUpperCase() : "", W = this.turn === "w";
     const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
       hk: { ...this.hk }, hkLost: this.hkLost };
+    if (m.special) { // boss powers: delete a square (and whatever is on it) or steal a piece; the turn stays
+      u.cap = b[m.sq]; b[m.sq] = m.special === "pawn" ? (W ? "P" : "p") : null;
+      if (m.special === "del") this.holes.add(m.sq);
+      for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.sq === sq) this.castle[flag] = false;
+      if (m.sq === this.ep || (this.ep >= 0 && m.sq === this.ep + (W ? -8 : 8))) this.ep = -1;
+      return u;
+    }
     if (this.rule === "hidden") { // follow the secret kings
       const us = W ? "w" : "b", them = W ? "b" : "w", home = W ? 0 : 56;
       const capSq = m.castle ? -1 : (t === "P" && m.to === this.ep && !b[m.to]) ? m.to + (W ? -8 : 8) : b[m.to] ? m.to : -1;
@@ -586,6 +639,11 @@ class Chess {
   }
   _undo(u) {
     const m = u.m, b = this.b;
+    if (m.special) { // the turn never passed
+      b[m.sq] = u.cap; if (m.special === "del") this.holes.delete(m.sq);
+      this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
+      return;
+    }
     this.turn = this.turn === "w" ? "b" : "w";
     const W = this.turn === "w";
     this.hk = u.hk; this.hkLost = u.hkLost;
@@ -624,6 +682,7 @@ class Chess {
   }
   key() {
     return this.b.map(p => p || ".").join("") + this.turn + ["K", "Q", "k", "q"].filter(c => this.castle[c]).join("") +
+      (this.holes && this.holes.size ? "#" + [...this.holes].sort((a, b) => a - b).join(",") : "") +
       (this.ep >= 0 ? this.legalEpFileFast() : "-");
   }
   legalEpFileFast() { return this.ep >= 0 && this.legal().some(m => m.to === this.ep && this.b[m.from].toUpperCase() === "P") ? fileOf(this.ep) : "-"; }
@@ -638,15 +697,17 @@ class Chess {
     this._undo(u); this.moves.pop(); this.keys.pop();
     return u.m;
   }
-  uci(m) { return sqName(m.from) + sqName(m.to) + (m.promo || ""); }
+  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || ""); }
   fromUci(s) {
+    if (s[0] === "@") { const [k, q] = s.slice(1).split(":"), sq = sqFrom(q); return this.specials().find(m => m.special === k && m.sq === sq) || null; }
     const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), promo = s[4] || null;
     return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === promo) || null;
   }
   san(m) {
-    const p = this.b[m.from], t = p.toUpperCase();
+    const p = this.b[m.from], t = p ? p.toUpperCase() : "";
     let s;
-    if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
+    if (m.special) return ({ del: "🕳", steal: "🕵x", pawn: "♟@" })[m.special] + sqName(m.sq);
+    else if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
     else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) s = m.to > m.from ? "O-O" : "O-O-O";
     else {
         const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep);
@@ -1191,6 +1252,8 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
  return Object.assign({ucis:g.moves.map(m=>g.uci(m)),fen:fenBoard(g)+' '+g.turn,turn:g.turn=='w'?'white':'black',legal:g.legal().map(m=>g.uci(m)),
   last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
   start:LG.back?startFen960(LG.back):null,rule:LG.rule,
+  holes:[...g.holes].map(sqName),boss:g.boss?{side:g.boss.side=='w'?'white':'black'}:null,
+  specials:g.boss?g.specials().map(m=>g.uci(m)):[],
   hk:LG.rule=='hidden'?{mine:g.hk[LG.color[0]]>=0?sqName(g.hk[LG.color[0]]):null,theirs:o&&g.hk[LG.color=='white'?'b':'w']>=0?sqName(g.hk[LG.color=='white'?'b':'w']):null,taken:g.hkLost?g.hkLostP:null}:null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
 function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
  return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
@@ -1205,8 +1268,9 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
   const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
-  const rule=['shape','fog','hidden'].includes(d.rule)?d.rule:null;
+  const rule=['shape','fog','hidden','boss'].includes(d.rule)?d.rule:null;
   LG={game:new Chess(back||undefined,rule),back,rule,hk0:{w:-1,b:-1},sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
+  if(rule=='boss'&&d.boss)LG.game.setupBoss(d.boss.side=='black'?'b':'w');
   if(rule=='hidden')for(const c of ['w','b']){ // bots' secret kings: a random non-pawn piece (online: the other side is unknown)
    if(d.online&&c!=LG.color[0])continue;const sqs=[];LG.game.b.forEach((p,s)=>{if(p&&colorOf(p)==c&&p.toUpperCase()!='P')sqs.push(s)});
    LG.hk0[c]=LG.game.hk[c]=sqs[Math.floor(Math.random()*sqs.length)]}
@@ -1538,7 +1602,8 @@ function parseFen(f){const rows=f.split(' ')[0].split('/'),b={};rows.forEach((r,
 function myColor(){return S?S.you:'white'}
 // ---- positions from the move list (for reviewing a finished game)
 const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
-function applyUci(b,u){const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
+function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pawn'){const w=S&&S.boss&&S.boss.side=='white';b[q]=w?'P':'p'}else delete b[q];return} // boss powers
+ const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
  if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
   const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
  const was=b[t];let cap=was;if(!cap&&p.toUpperCase()=='P'&&f[0]!=t[0])cap='p';
@@ -1561,6 +1626,8 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const file=wb?f:7-f,rank=wb?7-r:r,sq='abcdefgh'[file]+(rank+1);
   const d=document.createElement('div');d.className='sq '+((file+rank)%2?'l':'d');const hid=FOG&&!FOG.has(sq),p=hid?null:pos[sq];
   if(hid)d.classList.add('fogd');
+  if(S&&S.holes&&S.holes.includes(sq)){d.classList.add('hole');d.dataset.sq=sq;B.appendChild(d);continue} // deleted square
+  if(ABIL&&!rv&&S&&S.specials&&S.specials.includes('@'+ABIL+':'+sq))d.classList.add('abt');
   if(!rv&&S&&S.hk&&!HKP){if(S.hk.mine==sq&&p)d.classList.add('hkm');if(S.hk.theirs==sq)d.classList.add('hkt')}
   if(HKP&&p&&(p==p.toUpperCase())==(S.you=='white'))d.classList.add('hkpick');
   if(!hid&&lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
@@ -1584,10 +1651,11 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  const mv=$('moves'),sn=S?S.sans:[];let h='';
  const theirs=i=>FOG&&(i%2==0)!=(S.you=='white'); // fog of war: their moves stay secret until the game ends
  const ms=i=>i<sn.length?'<span class="m'+(rv&&view==i+1?' cur':'')+'" data-i="'+(i+1)+'">'+(theirs(i)?'?':sn[i]+glyph(i+1))+'</span>':'<span></span>';
- for(let i=0;i<sn.length;i+=2)h+='<div class="mr"><span class="n">'+(i/2+1)+'.</span>'+ms(i)+ms(i+1)+'</div>';
+ if(S&&S.boss&&(S.ucis||[]).some(u=>u[0]=='@'))h='<div class="flow">'+sn.map((x,i)=>ms(i)).join('')+'</div>'; // boss powers break the 2-column rhythm
+ else for(let i=0;i<sn.length;i+=2)h+='<div class="mr"><span class="n">'+(i/2+1)+'.</span>'+ms(i)+ms(i+1)+'</div>';
  mv.innerHTML=h;mv.classList.toggle('rv',rv);
  if(rv){const c=mv.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'});else if(view==0)mv.scrollTop=0}else mv.scrollTop=1e9;
- $('nav').style.display=rv?'grid':'none';evalUI(wb);explainUI();
+ $('nav').style.display=rv?'grid':'none';evalUI(wb);explainUI();abilUI();
  drawClocks()}
 function arrowSvg(list,wb){const xy=s=>{const f=s.charCodeAt(0)-97,r=+s[1]-1;return[(wb?f:7-f)+.5,(wb?7-r:r)+.5]};let h='';
  list.forEach(([u,col])=>{const [x1,y1]=xy(u.slice(0,2)),[x2,y2]=xy(u.slice(2,4)),dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,ex=x2-ux*.32,ey=y2-uy*.32;
@@ -1612,6 +1680,7 @@ function firePre(){if(!PREM||!S)return;const p=PREM;PREM=null;const ms=S.legal.f
 $('board').addEventListener('contextmenu',e=>e.preventDefault());
 $('board').addEventListener('pointerdown',e=>{const el=e.target.closest('.sq');if(!el||!el.dataset.sq)return;const sq=el.dataset.sq,p=CUR[sq];
  if(HKP){if(e.button===0)hkTap(sq);return}
+ if(ABIL&&bossMe()){if(e.button===0)abilTap(sq);return}
  if(e.button==2){RCL=sq;return}if(e.button!==0)return;
  let redraw=false;if(MK.a.length||MK.h.length){MK.a=[];MK.h=[];redraw=true}
  const live=myTurn(),pre=canPre();
@@ -1717,7 +1786,7 @@ function startClock(who){stopClock();running=who;last=performance.now();
     {flag:who})}drawClocks()},100)}
 function stopClock(){if(tick)clearInterval(tick);tick=null;running=null}
 function settle(){if(running){const dt=(performance.now()-last)/1000;if(S.base!=null)clk[running]-=dt;last=performance.now()}}
-async function play(uci){settle();if(!gameOn)return;sel=null;stopClock();if(S.base!=null)clk.me+=inc;
+async function play(uci){if(uci[0]=='@')return doSpecial(uci);settle();if(!gameOn)return;sel=null;stopClock();if(S.base!=null)clk.me+=inc;
  S=await api('/api/move',{uci});draw();lastSnd();
  if(GAME&&GAME.online){await onSend();if(S.over){end(S.over);return}startClock('bot');msg('Waiting for '+GAME.short.bot+'…');return}
  if(S.over){end(S.over);return}botTurn()}
@@ -1883,7 +1952,11 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
    '<div class="row"><span class="chip" id="oncopy">Copy link</span><span class="chip" id="oncancel">Cancel</span></div>';
   else h+='<div class="small" style="margin-bottom:6px">Time: pick it under <b>Time</b> below (now '+esc(tl)+').</div>'+
    '<button class="play" id="onquick">Play online · '+esc(tl)+'</button>'+
-   '<button class="play" id="onchal" style="background:#4b4847;margin-top:8px">Challenge a friend (link)</button>';
+   '<button class="play" id="onchal" style="background:#4b4847;margin-top:8px">Challenge a friend (link)</button>'+
+   (isMod(ON.user.uid)?'<details class="more" id="bossbox" style="margin-top:12px"'+(ON.bossOpen?' open':'')+'><summary>👑 Boss duel (mods only)</summary>'+
+    '<div class="small" style="margin:6px 0">The Boss gets only a king and one pawn, plus free powers on their turn (they don\'t end it, no limits): 🕳 delete any square, 🕵 steal any piece, ♟ put the pawn back after losing it. The other side plays normal chess with a full army. Time: as picked below.</div>'+
+    '<div class="lbl">Who is the Boss</div><div class="row" id="bwho"></div><div class="lbl">My colour</div><div class="row" id="bcol"></div>'+
+    '<button class="play" id="onboss" style="background:#7b3fd1;border-bottom-color:#5a2ca0">Create boss duel link</button></details>':'');
   h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>').join('<br>'):'…')+'</div>';
   if(!ON.top)onTop()}
  if(ON.err)h+='<div class="small" style="color:#e05a4f;margin-top:10px">'+esc(ON.err)+'</div>';
@@ -1896,7 +1969,10 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  B('onout',async()=>{await onStopSeek();await AU.signOut(au)});
  B('onsave',async()=>{const n=($('onname').value||'').trim();if(!/^[A-Za-z0-9_]{3,20}$/.test(n))throw new Error('Use 3–20 letters, numbers or _.');
   const {F,db}=ON.fb;await F.setDoc(F.doc(db,'users',ON.user.uid),{name:n,rating:1200,w:0,d:0,l:0,games:0,created:F.serverTimestamp()})});
- B('onquick',onQuick);B('onchal',onChallenge);B('oncancel',onStopSeek);
+ B('onquick',onQuick);B('onchal',onChallenge);B('oncancel',onStopSeek);B('onboss',onBossChallenge);
+ if($('bwho')){opts.bossWho=LS('bossWho','me');opts.bossCol=LS('bossCol','white');
+  chips($('bwho'),[['me','Me'],['them','My opponent']],'bossWho');chips($('bcol'),[['white','White'],['black','Black'],['random','Random']],'bossCol');
+  $('bossbox').ontoggle=()=>{ON.bossOpen=$('bossbox').open}}
  B('onuid',async()=>{const id=ON.user.uid;try{await navigator.clipboard.writeText(id);ON.err='Account ID copied: '+id}catch(e){ON.err='Your account ID: '+id}});
  B('onmode',()=>{opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()});
  B('oncopy',async()=>{const i=$('onlink');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();document.execCommand('copy')}})}
@@ -1906,7 +1982,8 @@ function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
 function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)+(opts.rule&&opts.rule!='none'?'|'+opts.rule:'')}
-function modeName(k){const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king'}[r]||r);
+function modeName(k){if(k=='boss')return 'Standard'; // a boss duel looks like a normal game to everyone
+ const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king'}[r]||r);
  if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
  return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
@@ -1933,6 +2010,11 @@ addEventListener('pagehide',()=>{if(ON.seek&&ON.fb)ON.fb.F.deleteDoc(ON.seek).ca
 async function onChallenge(){const {F,db}=ON.fb,tc=onTc(),me=onMe(),meW=Math.random()<.5;
  const ref=await F.addDoc(F.collection(db,'games'),onGameData(meW?me:null,meW?null:me,tc,'waiting'));
  ON.chal={ref,tc,mode:modeKey(),link:location.origin+location.pathname+'?play='+ref.id};onWatch(ref.id)}
+async function onBossChallenge(){if(!isMod(ON.user.uid))throw new Error('Boss duels are for mods only.');
+ const {F,db}=ON.fb,tc=onTc(),me=onMe(),myCol=opts.bossCol=='random'?(Math.random()<.5?'white':'black'):(opts.bossCol||'white'),meW=myCol=='white';
+ const side=(opts.bossWho||'me')=='me'?myCol:(meW?'black':'white');
+ const ref=await F.addDoc(F.collection(db,'games'),Object.assign(onGameData(meW?me:null,meW?null:me,tc,'waiting'),{mode:'boss',rule:'boss',back:null,vis:0,boss:{side}}));
+ ON.chal={ref,tc,mode:'boss',link:location.origin+location.pathname+'?play='+ref.id};onWatch(ref.id)}
 async function onJoinFromLink(){const id=new URLSearchParams(location.search).get('play');if(!id||!ON.prof||ON.joined==id)return;ON.joined=id;
  history.replaceState(null,'',location.pathname);const {F,db}=ON.fb,ref=F.doc(db,'games',id),me=onMe();
  try{await F.runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('That game link doesn\'t exist.');const g=s.data();
@@ -1948,7 +2030,13 @@ async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')retur
  const O=GAME.online,my=O.color,op=my=='white'?'black':'white',wasReady=hkReady();O.g=g;
  if(g.rule=='hidden'){if(!wasReady&&hkReady()&&!HKP&&gameOn)msg(S.turn==S.you?'Both secret kings are chosen. Your move.':'Both secret kings are chosen. Waiting for '+O.opp.name+'…');
   if(g['hk_'+op]&&S.hk){S.hk.theirs=g['hk_'+op];draw()}}
- while(S.ucis.length<g.moves.length){const u=g.moves[S.ucis.length];settle();stopClock();
+ while(S.ucis.length<g.moves.length){const u=g.moves[S.ucis.length];
+  if(u[0]=='@'){ // the boss used a power: show it, the boss's turn (and clock) goes on
+   if(u.startsWith('@steal:'))await thiefAnim(u.split(':')[1]);
+   S=await api('/api/move',{uci:u});if(S.error)return;clk.bot=g[op[0]+'t'];draw();snd(true);
+   msg({del:'🕳 '+O.opp.name+' deleted ',steal:'🕵 '+O.opp.name+' stole the piece on ',pawn:'♟ '+O.opp.name+' put their pawn on '}[u.slice(1).split(':')[0]]+u.split(':')[1]);
+   if(S.over){end(S.over);return}continue}
+  settle();stopClock();
   S=await api('/api/move',{uci:u});if(S.error)return;clk.me=g[my[0]+'t'];clk.bot=g[op[0]+'t'];draw();lastSnd();
   if(S.over){end(S.over);return}
   if(S.turn==S.you){startClock('me');msg('Your move.');if(PREM)setTimeout(firePre,60)}}
@@ -1956,10 +2044,10 @@ async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')retur
   end(dr?'Draw ('+g.reason+')':won?'You win ('+g.reason+')':O.opp.name+' wins ('+g.reason+')')}}
 async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();MATCH=null;$('info').innerHTML='';
  const my=g.white&&g.white.uid==ON.user.uid?'white':'black',me=g[my],opp=g[my=='white'?'black':'white'];
- S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,rule:g.rule||undefined,online:1,model:(document.getElementById('model')||{}).value});if(S.error)return;
+ S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,rule:g.rule||undefined,boss:g.boss||undefined,online:1,model:(document.getElementById('model')||{}).value});if(S.error)return;
  GAME={online:{id,color:my,opp,me,g},bvb:false,spec:{bot:{bot:'online'}},names:{me:me.name+' ('+me.rating+')',bot:opp.name+' ('+opp.rating+')'},short:{me:'You',bot:opp.name},av:{me:'me',bot:'opp'}};
  $('over').style.display='none';$('comm').innerHTML='';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);
- const mn=g.mode&&g.mode!='std|v0'?' ('+modeName(g.mode)+')':'';
+ const mn=g.mode&&modeName(g.mode)!='Standard'?' ('+modeName(g.mode)+')':'';
  msg(S.turn==S.you?'You play '+my+mn+'. Your move.':'You play '+my+mn+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot');
  if(g.rule=='hidden'){const gg=gid;if(!await hkPick()||gg!=gid)return; // lock in the pick: only its fingerprint is shared until the end
   ON.hkSalt=Math.random().toString(36).slice(2)+Date.now().toString(36);ON.hk0=S.hk.mine;
@@ -2005,6 +2093,44 @@ function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg(
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
 const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn'};
+// ---- Boss duel (mods only, online): the boss has a king + one pawn and free powers on its own turn
+let ABIL=null,ABK='';
+function bossMe(){return !!(S&&S.boss&&S.boss.side==S.you&&gameOn&&!S.over)}
+function abilUI(){const el=$('abil');if(!el)return;if(!(S&&S.boss)||!gameOn){el.innerHTML='';ABIL=null;return}
+ if(!bossMe()){el.innerHTML='';return} // the other player sees a normal game
+ const can=k=>S.turn==S.you&&(S.specials||[]).some(u=>u.startsWith('@'+k+':'));
+ el.innerHTML='<div class="small">👑 You are the Boss. Powers are free on your turn (they don\'t end it). Tap a power, then a square'+(ABIL=='del'?' — or type it, like e4':'')+'.</div><div class="ab">'+
+  [['del','🕳 Delete'],['steal','🕵 Thief'],['pawn','♟ Place pawn']].map(([k,t])=>'<button data-k="'+k+'" class="'+(ABIL==k?'on':'')+'"'+(can(k)?'':' disabled')+'>'+t+'</button>').join('')+'</div>';
+ el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ABIL=ABIL==b.dataset.k?null:b.dataset.k;ABK='';sel=null;draw()})}
+async function abilTap(sq){const tok='@'+ABIL+':'+sq;
+ if(!(S.specials||[]).includes(tok)){msg(ABIL=='del'?'That square can\'t be deleted (kings are safe).':ABIL=='steal'?'Pick one of their pieces (not the king).':'Pick an empty square (not the first or last rank).');return}
+ if(ABIL!='del')ABIL=null; // Delete stays armed so you can remove several squares
+ await doSpecial(tok)}
+async function doSpecial(tok){if(!gameOn||S.turn!=S.you)return;const [k,q]=tok.slice(1).split(':');
+ if(k=='steal')await thiefAnim(q);
+ S=await api('/api/move',{uci:tok});if(S.error)return;draw();snd(true);
+ if(GAME&&GAME.online){settle();await onSend()}
+ msg(k=='del'?'🕳 '+q+' is gone.':k=='steal'?'🕵 Stolen from '+q+'!':'♟ Your pawn is back, on '+q+'.');
+ if(S.over)end(S.over)}
+document.addEventListener('keydown',e=>{if(!ABIL||!bossMe()||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+ if(e.key=='Escape'){ABIL=null;draw();return}
+ if(/^[a-h]$/.test(e.key))ABK=e.key;else if(/^[1-8]$/.test(e.key)&&ABK){abilTap(ABK+e.key);ABK=''}});
+// the thief: an original little masked bandit who sneaks in from the side, grabs the piece and runs off
+const THIEF='<svg viewBox="0 0 100 100"><ellipse cx="50" cy="93" rx="27" ry="5" fill="#0006"/>'+
+ '<path d="M36 86l-4 8M64 86l4 8" stroke="#24183a" stroke-width="8" stroke-linecap="round"/>'+
+ '<path d="M22 62c0-24 12-42 28-42s28 18 28 42c0 16-12 26-28 26S22 78 22 62z" fill="#6a45a8" stroke="#24183a" stroke-width="3.5"/>'+
+ '<path d="M30 24c6-10 34-10 40 0-12-4-28-4-40 0z" fill="#24183a"/>'+
+ '<path d="M18 44c12-7 52-7 64 0v11c-12 6-52 6-64 0z" fill="#121016"/><path d="M82 46l10-5-2 10z" fill="#121016"/>'+
+ '<ellipse cx="38" cy="49.5" rx="6.5" ry="4.6" fill="#fff"/><ellipse cx="62" cy="49.5" rx="6.5" ry="4.6" fill="#fff"/>'+
+ '<circle cx="41" cy="50" r="2.6" fill="#111"/><circle cx="65" cy="50" r="2.6" fill="#111"/>'+
+ '<path d="M42 68q8 6 16 0" stroke="#24183a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
+function thiefAnim(q){return new Promise(res=>{const B=$('board'),t=B.querySelector('[data-sq="'+q+'"]');if(!t){res();return}
+ const sz=t.offsetWidth,W=B.clientWidth,x=t.offsetLeft,y=t.offsetTop,th=document.createElement('div');
+ th.className='thief';th.style.width=th.style.height=sz+'px';th.innerHTML=THIEF;th.style.transform='translate('+(-sz)+'px,'+y+'px)';B.appendChild(th);
+ const go=(tx,ms,cb)=>{th.style.transitionDuration=ms+'ms';requestAnimationFrame(()=>requestAnimationFrame(()=>{th.style.transform='translate('+tx+'px,'+y+'px)'}));setTimeout(cb,ms+30)};
+ go(x,300+1200*(x+sz)/W,()=>{const pc=t.querySelector('.pc');let loot='';if(pc){loot=pc.outerHTML;pc.style.visibility='hidden'}
+  th.insertAdjacentHTML('beforeend','<div style="position:absolute;width:48%;height:48%;right:-14%;top:18%;font-size:'+(sz*.4)+'px">'+loot+'</div>');snd(true);
+  setTimeout(()=>go(W+sz,300+1000*(W-x)/W,()=>{th.remove();res()}),260)})})}
 function hkReveal(){if(!S||!S.hk||!S.hk.theirs)return '';const p=parseFen(S.fen)[S.hk.theirs],theirs=p&&(p==p.toUpperCase())!=(S.you=='white');
  const tk=S.hk.taken;
  return ' · 👑 Their secret king was '+(theirs?'the '+PNAME[p.toUpperCase()]+' on '+S.hk.theirs:tk&&(tk==tk.toUpperCase())!=(S.you=='white')?'the '+PNAME[tk.toUpperCase()]+' you took on '+S.hk.theirs:'on '+S.hk.theirs)}
