@@ -56,8 +56,11 @@
  .small{font-size:12px;color:#9a9894;line-height:1.35;margin-top:4px}
  #custombox{display:none;background:#1f1e1c;border-radius:8px;padding:6px 12px 10px;margin-top:8px}
  button{font-family:inherit}
- .seg{display:grid;grid-template-columns:repeat(4,auto);font-size:13.5px;background:#1f1e1c;border-radius:9px;padding:3px;margin-bottom:12px}
- .seg span{text-align:center;padding:9px 4px;border-radius:7px;cursor:pointer;font-weight:700;color:var(--mut)}
+ .sq.lastol{outline:3px solid #f6d33cdd;outline-offset:-3px}
+ .ck{width:82%;height:82%;pointer-events:none}
+ #mvisdemo{display:grid;grid-template-columns:repeat(8,1fr);width:240px;margin:10px auto 2px;border-radius:5px;overflow:hidden;--sq:30px}#mvisdemo .sq{height:30px}
+ .seg{display:flex;font-size:13px;background:#1f1e1c;border-radius:9px;padding:3px;margin-bottom:12px}
+ .seg span{flex:1 1 auto;white-space:nowrap;text-align:center;padding:9px 5px;border-radius:7px;cursor:pointer;font-weight:700;color:var(--mut)}
  .seg span.on{background:var(--card2);color:#fff}
  #bvb{display:none}#lib{display:none}
  .lg{background:var(--card);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:2px solid transparent}
@@ -238,8 +241,15 @@
  <div class="side">
   <div class="shead"><span class="ttl">♞ HumanBot</span><span><button class="iconbtn" id="homebtn" title="Home">⌂</button><button class="iconbtn" id="lookbtn" title="Board &amp; pieces">⚙</button></span></div>
   <div class="sbody" id="setup">
-   <div class="seg" id="vsmode"><span data-v="human">Play a bot</span><span data-v="online">Online</span><span data-v="bots">Bot vs bot</span><span data-v="lib">Masters</span></div>
+   <div class="seg" id="vsmode"><span data-v="human">Play a bot</span><span data-v="online">Online</span><span data-v="modes">Modes</span><span data-v="bots">Bot vs bot</span><span data-v="lib">Masters</span></div>
    <div id="online" style="display:none"></div>
+   <div id="gmodes" style="display:none">
+    <div class="lbl">Variant</div><div class="row" id="mvar"></div><div class="small" id="mvarhelp"></div>
+    <div class="lbl">Visualization training</div><div class="row" id="mvis"></div><div class="small" id="mvishelp"></div>
+    <div id="mvisdemo" class="set-staunty"></div>
+    <button class="play" id="mgo">Choose your opponent →</button>
+   </div>
+   <div class="small" id="modeline" style="display:none;margin:-4px 0 10px"></div>
    <div id="lib">
     <div class="lbl">Famous games</div>
     <label class="tog" style="margin:0 0 10px"><input type="checkbox" id="explain"> Explain moves (what each move does, the story, and Stockfish's view)</label>
@@ -372,15 +382,19 @@ const isWhite = p => p && p === p.toUpperCase();
 const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 
 class Chess {
-  constructor() {
+  constructor(back) { // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
     this.b = new Array(64).fill(null);
-    const back = "RNBQKBNR";
+    back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
       this.b[f] = back[f]; this.b[8 + f] = "P";
       this.b[48 + f] = "p"; this.b[56 + f] = back[f].toLowerCase();
     }
     this.turn = "w";
     this.castle = { K: true, Q: true, k: true, q: true };
+    // Chess960: castling = king onto its own rook (as UCI_Chess960); king ends on g/c, rook on f/d
+    this.c960 = back !== "RNBQKBNR";
+    const kf = back.indexOf("K"), rq = back.indexOf("R"), rk = back.lastIndexOf("R");
+    this.kf = kf; this.rook = { K: rk, Q: rq, k: 56 + rk, q: 56 + rq };
     this.ep = -1;          // target square after a double pawn push
     this.half = 0; this.full = 1;
     this.stack = [];       // undo info
@@ -390,6 +404,7 @@ class Chess {
   clone() {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
+    c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook;
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
   }
@@ -460,6 +475,24 @@ class Chess {
     }
     // castling
     const them = W ? "b" : "w", home = W ? 0 : 56, K = W ? "K" : "k";
+    if (this.c960) {
+      const kFrom = home + this.kf, R = W ? "R" : "r";
+      if (b[kFrom] === K && !this.attacked(kFrom, them))
+        for (const side of W ? ["K", "Q"] : ["k", "q"]) {
+          const rSq = this.rook[side], ks = side.toUpperCase() === "K";
+          if (!this.castle[side] || b[rSq] !== R) continue;
+          const kTo = home + (ks ? 6 : 2), rTo = home + (ks ? 5 : 3);
+          const lo = Math.min(kFrom, kTo, rSq, rTo), hi = Math.max(kFrom, kTo, rSq, rTo);
+          let ok = true;
+          for (let s = lo; s <= hi && ok; s++) if (s !== kFrom && s !== rSq && b[s]) ok = false;
+          if (!ok) continue;
+          b[kFrom] = null; b[rSq] = null; // the king may not pass through an attacked square
+          for (let s = Math.min(kFrom, kTo); s <= Math.max(kFrom, kTo) && ok; s++) if (this.attacked(s, them)) ok = false;
+          b[kFrom] = K; b[rSq] = R;
+          if (ok) out.push({ from: kFrom, to: rSq, promo: null, castle: side, kTo, rTo });
+        }
+      return out;
+    }
     if (b[home + 4] === K && !this.attacked(home + 4, them)) {
       if (this.castle[W ? "K" : "k"] && !b[home + 5] && !b[home + 6] && b[home + 7] === (W ? "R" : "r") &&
           !this.attacked(home + 5, them) && !this.attacked(home + 6, them))
@@ -473,16 +506,23 @@ class Chess {
   _apply(m) { // no legality check; returns undo record
     const b = this.b, p = b[m.from], t = p.toUpperCase(), W = this.turn === "w";
     const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1 };
+    if (m.castle) { // Chess960 castling
+      const R = b[m.to];
+      b[m.from] = null; b[m.to] = null; b[m.kTo] = p; b[m.rTo] = R; u.cap = null;
+      if (W) this.castle.K = this.castle.Q = false; else this.castle.k = this.castle.q = false;
+      this.ep = -1; this.half++; if (!W) this.full++; this.turn = W ? "b" : "w";
+      return u;
+    }
     if (t === "P" && m.to === this.ep && !b[m.to]) { u.epCap = m.to + (W ? -8 : 8); u.cap = b[u.epCap]; b[u.epCap] = null; }
     b[m.to] = m.promo ? (W ? m.promo.toUpperCase() : m.promo) : p;
     b[m.from] = null;
-    if (t === "K" && Math.abs(m.to - m.from) === 2) { // rook jumps too
+    if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { // rook jumps too
       const home = W ? 0 : 56;
       if (m.to === home + 6) { b[home + 5] = b[home + 7]; b[home + 7] = null; }
       else { b[home + 3] = b[home]; b[home] = null; }
     }
     if (t === "K") { if (W) this.castle.K = this.castle.Q = false; else this.castle.k = this.castle.q = false; }
-    for (const [sq, flag] of [[0, "Q"], [7, "K"], [56, "q"], [63, "k"]])
+    for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]])
       if (m.from === sq || m.to === sq) this.castle[flag] = false;
     this.ep = t === "P" && Math.abs(m.to - m.from) === 16 ? (m.from + m.to) / 2 : -1;
     this.half = t === "P" || u.cap ? 0 : this.half + 1;
@@ -494,11 +534,17 @@ class Chess {
     const m = u.m, b = this.b;
     this.turn = this.turn === "w" ? "b" : "w";
     const W = this.turn === "w";
+    if (m.castle) {
+      const K = b[m.kTo], R = b[m.rTo];
+      b[m.kTo] = null; b[m.rTo] = null; b[m.from] = K; b[m.to] = R;
+      this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
+      return;
+    }
     b[m.from] = m.promo ? (W ? "P" : "p") : b[m.to];
     b[m.to] = u.epCap >= 0 ? null : u.cap;
     if (u.epCap >= 0) b[u.epCap] = u.cap;
     const t = b[m.from].toUpperCase();
-    if (t === "K" && Math.abs(m.to - m.from) === 2) {
+    if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) {
       const home = W ? 0 : 56;
       if (m.to === home + 6) { b[home + 7] = b[home + 5]; b[home + 5] = null; }
       else { b[home] = b[home + 3]; b[home + 3] = null; }
@@ -543,9 +589,10 @@ class Chess {
   san(m) {
     const p = this.b[m.from], t = p.toUpperCase();
     let s;
-    if (t === "K" && Math.abs(m.to - m.from) === 2) s = m.to > m.from ? "O-O" : "O-O-O";
+    if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
+    else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) s = m.to > m.from ? "O-O" : "O-O-O";
     else {
-      const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep);
+        const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep);
       if (t === "P") s = (cap ? "abcdefgh"[fileOf(m.from)] + "x" : "") + sqName(m.to) + (m.promo ? "=" + m.promo.toUpperCase() : "");
       else {
         const others = this.legal().filter(o => o.to === m.to && o.from !== m.from && this.b[o.from] === p);
@@ -746,7 +793,8 @@ function encode(game) { // planes [19*64] in the side-to-move frame
 }
 
 function moveIndex(m, flip) {
-  const f = flip ? m.from ^ 56 : m.from, t = flip ? m.to ^ 56 : m.to;
+  const to = m.castle && m.kTo !== m.from ? m.kTo : m.to; // Chess960 castling: like the e1g1 the net learned
+  const f = flip ? m.from ^ 56 : m.from, t = flip ? to ^ 56 : to;
   if (m.promo && m.promo !== "q") return f * 73 + 64 + (fileOf(t) - fileOf(f) + 1) * 3 + UNDER[m.promo];
   return f * 73 + t;
 }
@@ -931,7 +979,7 @@ if (typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScop
   self.onmessage = e => {
     const d = e.data;
     if (d.type === "init") { net = new HumanNet(d.bytes, d.meta); self.postMessage({ type: "ready" }); return; }
-    const g = new Chess();
+    const g = new Chess(d.back || undefined);
     for (const u of d.moves) g.push(g.fromUci(u));
     if (d.leela) { // Leela: net arrives with the first request; search up to d.nodes nodes / d.ms milliseconds
       if (d.leelaBytes) self.leela = parseMaiaFile(d.leelaBytes);
@@ -981,6 +1029,7 @@ function loadNet(){ // network in a background thread when possible, else on the
   WK=new Worker(URL.createObjectURL(new Blob([document.getElementById('eng').textContent],{type:'text/javascript'})));
   WKready=new Promise((res,rej)=>{WK.onmessage=e=>{const d=e.data;if(d.type=='ready')return res();const f=WKwait[d.id];delete WKwait[d.id];f&&f(d)};WK.onerror=rej});
   WK.postMessage({type:'init',bytes,meta:META},[bytes.buffer]);
+  const pm=WK.postMessage.bind(WK);WK.postMessage=(m,t)=>pm(m&&m.moves?Object.assign(m,{back:LG&&LG.back}):m,t||[]); // Chess960 start
   return WKready.catch(()=>{WK=null;WKready=null;NET=new HumanNet(b64ToBytes(document.getElementById('w').textContent.trim()),META)});
  }catch(e){WK=null;NET=new HumanNet(bytes,META);return Promise.resolve()}
 }
@@ -1025,7 +1074,10 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
  if(o){const why=o.reason;if(!o.winner)over='Draw ('+why+')';else over=((o.winner=='w')==(LG.color=='white')?'You win':'HumanBot wins')+' ('+why+')'}
  const last=g.moves[g.moves.length-1];
  return Object.assign({ucis:g.moves.map(m=>g.uci(m)),fen:fenBoard(g)+' '+g.turn,turn:g.turn=='w'?'white':'black',legal:g.legal().map(m=>g.uci(m)),
-  last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc},extra||{})}
+  last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
+  start:LG.back?startFen960(LG.back):null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
+function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
+ return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
 function guessThink(g,p,clock,inc){if(clock==null)return 0.7;const top=p.moves.length?p.moves[0][1]:1;
  let t=(clock/35+0.8*inc)*(0.25+1.5*(1-top))*(0.5+Math.random()*1.1);if(g.full<=6)t*=0.35;return Math.max(0.3,Math.min(t,clock*0.25))}
 const CUTOFF=0.05; // Human mode; RNG mode uses every move
@@ -1036,7 +1088,8 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  try{
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
-  LG={game:new Chess(),sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
+  const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
+  LG={game:new Chess(back||undefined),back,sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
   return lstate({has_clock:true,level_lichess:lvl})}
  const g=LG.game;
  if(path=='/api/move'){const m=g.fromUci(d.uci);if(!m)return lstate({error:'illegal move'});LG.sans.push(g.san(m));g.push(m);return lstate()}
@@ -1250,10 +1303,13 @@ function sfStart(){if(SF)return;const bin=atob(IMG.sf.wasm),u8=new Uint8Array(bi
  const wu=URL.createObjectURL(new Blob([u8],{type:'application/wasm'}));
  SF=new Worker(URL.createObjectURL(new Blob([IMG.sf.js],{type:'text/javascript'}))+'#'+encodeURIComponent(wu));
  SF.onmessage=e=>{if(SFh)SFh(String(e.data))};SF.postMessage('uci')}
+// the position for Stockfish; Chess960 games start from their own position (castling = king onto rook)
+function sfPos(ucis){const st=S&&S.start;SF.postMessage('setoption name UCI_Chess960 value '+!!st);
+ return (st?'position fen '+st:'position startpos')+(ucis.length?' moves '+ucis.join(' '):'')}
 function sfMove(ucis,elo,ms){sfStart();return new Promise(res=>{let info='';
  SFh=l=>{if(l.startsWith('info')&&l.includes(' score '))info=l;if(l.startsWith('bestmove')){SFh=null;res({uci:l.split(' ')[1],info})}};
  const full=elo>=3200;SF.postMessage('setoption name UCI_LimitStrength value '+(!full));if(!full)SF.postMessage('setoption name UCI_Elo value '+Math.min(3190,elo));
- SF.postMessage('position startpos'+(ucis.length?' moves '+ucis.join(' '):''));SF.postMessage('go movetime '+ms)})}
+ SF.postMessage(sfPos(ucis));SF.postMessage('go movetime '+ms)})}
 // Worstfish: Stockfish scores every legal move (MultiPV), we play the lowest-scored one
 function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
  SFh=l=>{const m=/ multipv (\d+) score (cp|mate) (-?\d+).* pv (\S+)/.exec(l);
@@ -1263,7 +1319,7 @@ function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
    const lo=Math.min(...ks.map(k=>sc[k].k)),worst=ks.filter(k=>sc[k].k==lo),u=worst[Math.floor(Math.random()*worst.length)];
    res({uci:u,n:ks.length,ev:sc[u].t})}};
  SF.postMessage('setoption name UCI_LimitStrength value false');SF.postMessage('setoption name MultiPV value 256');
- SF.postMessage('position startpos'+(ucis.length?' moves '+ucis.join(' '):''));SF.postMessage('go depth 8 movetime 1500')})}
+ SF.postMessage(sfPos(ucis));SF.postMessage('go depth 8 movetime 1500')})}
 async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
  if(s.bot=='leela'){const secs=S.base!=null?Math.max(0.5,Math.min(10,clk[who]/30+inc*0.6)):10;
   return api('/api/bot',{bot:'leela',nodes:s.nodes,secs})}
@@ -1350,11 +1406,14 @@ function parseFen(f){const rows=f.split(' ')[0].split('/'),b={};rows.forEach((r,
 function myColor(){return S?S.you:'white'}
 // ---- positions from the move list (for reviewing a finished game)
 const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
-function applyUci(b,u){const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;delete b[f];const k=p.toUpperCase();
+function applyUci(b,u){const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
+ if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
+  const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
+ delete b[f];const k=p.toUpperCase();
  if(k=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];
- if(k=='K'&&Math.abs(f.charCodeAt(0)-t.charCodeAt(0))==2){const r=f[1],[a,c]=t[0]=='g'?['h','f']:['a','d'];b[c+r]=b[a+r];delete b[a+r]}
+ if(k=='K'&&!(S&&S.start)&&Math.abs(f.charCodeAt(0)-t.charCodeAt(0))==2){const r=f[1],[a,c]=t[0]=='g'?['h','f']:['a','d'];b[c+r]=b[a+r];delete b[a+r]}
  b[t]=u[4]?(p==k?u[4].toUpperCase():u[4]):p}
-function posAt(n){const b=parseFen(START),us=S&&S.ucis||[];for(let i=0;i<n&&i<us.length;i++)applyUci(b,us[i]);return b}
+function posAt(n){const b=parseFen(S&&S.start||START),us=S&&S.ucis||[];for(let i=0;i<n&&i<us.length;i++)applyUci(b,us[i]);return b}
 let view=null; // null = live position; otherwise number of half-moves shown
 const RV={ev:[],best:[],tok:0,busy:null,n:0}; // ev[n]: White's score after n half-moves {cp} or {mate}
 function nPly(){return S&&S.ucis?S.ucis.length:0}
@@ -1362,13 +1421,14 @@ function reviewOn(){return view!=null}
 function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:nPly();
  const pos=rv?posAt(view):S?parseFen(S.fen):parseFen(START),lastU=rv?(n?S.ucis[n-1]:''):(S&&S.last);
  const sanN=S&&n?S.sans[n-1]:'',inChk=rv?/[+#]$/.test(sanN||''):S&&S.check,turnW=rv?n%2==0:S&&S.turn=='white';
- const wb=(myColor()=='white')!=flip;const targets=!rv&&sel&&S?S.legal.filter(m=>m.startsWith(sel)).map(m=>m.slice(2,4)):[];
+ const wb=(myColor()=='white')!=flip;const targets=!rv&&sel&&S?S.legal.filter(m=>m.startsWith(sel)).map(m=>m.slice(2,4)).concat(Object.entries(S.castles||{}).filter(([u])=>u.startsWith(sel)).map(([,d])=>d)):[];
+ const V=visLevel();
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const file=wb?f:7-f,rank=wb?7-r:r,sq='abcdefgh'[file]+(rank+1);
   const d=document.createElement('div');d.className='sq '+((file+rank)%2?'l':'d');const p=pos[sq];
-  if(lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last');
+  if(lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
   if(sq==sel&&!rv)d.classList.add('sel');
   if(targets.includes(sq))d.classList.add(p?'cap':'dot');
-  if(p){d.innerHTML=piece(p);
+  if(p){d.innerHTML=visPiece(p,V);
    if(inChk&&p.toUpperCase()=='K'&&((p=='K')==turnW))d.classList.add('chk')}
   if(r==7){const c=document.createElement('span');c.className='coord cf';c.textContent='abcdefgh'[file];d.appendChild(c)}
   if(f==0){const c=document.createElement('span');c.className='coord cr';c.textContent=rank+1;d.appendChild(c)}
@@ -1380,8 +1440,8 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  const arr=(rv&&RV.best[n]?[[RV.best[n],'#3d9c3fd0']]:[]).concat(MK.a.map(u=>[u,'#f0a020c8']));
  if(arr.length)B.insertAdjacentHTML('beforeend',arrowSvg(arr,wb));
  // slide the piece that just moved (one step forward only; not after a drag)
- const key=gid+':'+n;if(lastU&&ANIM.g==gid&&ANIM.n==n-1&&!noAnim){slide(B,lastU,wb);const k=pos[lastU.slice(2,4)];
-  if(k&&k.toUpperCase()=='K'&&Math.abs(lastU.charCodeAt(0)-lastU.charCodeAt(2))==2){const r=lastU[3],g=lastU[2]=='g';slide(B,(g?'h':'a')+r+(g?'f':'d')+r,wb)}}
+ const key=gid+':'+n;if(lastU&&ANIM.g==gid&&ANIM.n==n-1&&!noAnim&&!(S.start&&/^O-O/.test(sanN))){slide(B,lastU,wb);const k=pos[lastU.slice(2,4)];
+  if(k&&!S.start&&k.toUpperCase()=='K'&&Math.abs(lastU.charCodeAt(0)-lastU.charCodeAt(2))==2){const r=lastU[3],g=lastU[2]=='g';slide(B,(g?'h':'a')+r+(g?'f':'d')+r,wb)}}
  noAnim=false;ANIM={g:gid,n};
  const mv=$('moves'),sn=S?S.sans:[];let h='';
  const ms=i=>i<sn.length?'<span class="m'+(rv&&view==i+1?' cur':'')+'" data-i="'+(i+1)+'">'+sn[i]+glyph(i+1)+'</span>':'<span></span>';
@@ -1404,7 +1464,9 @@ function slide(B,u,wb){const el=B.querySelector('[data-sq="'+u.slice(2,4)+'"] .p
 function isMine(p){return p&&((p==p.toUpperCase())==(S.you=='white'))}
 function canPre(){return S&&gameOn&&!S.over&&!(GAME&&(GAME.bvb||GAME.lib))&&!reviewOn()&&S.turn!=S.you}
 function sqAt(x,y){const el=document.elementFromPoint(x,y),s=el&&el.closest?el.closest('#board .sq'):null;return s?s.dataset.sq:null}
-function tryMove(f,t,drag){const ms=S.legal.filter(m=>m.startsWith(f+t));if(!ms.length)return false;
+function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t));
+ if(!ms.length)ms=Object.entries(S.castles||{}).filter(([u,d])=>u.startsWith(f)&&d==t).map(([u])=>u); // 960: king to g/c castles
+ if(!ms.length)return false;
  noAnim=!!drag;if(ms.length>1)promo(ms);else play(ms[0]);return true}
 function firePre(){if(!PREM||!S)return;const p=PREM;PREM=null;const ms=S.legal.filter(m=>m.startsWith(p.f+p.t));
  if(ms.length&&myTurn())play(ms.find(m=>m.length==4||m.endsWith('q')));else draw()}
@@ -1421,7 +1483,7 @@ $('board').addEventListener('pointerdown',e=>{const el=e.target.closest('.sq');i
  sel=null;if(pre)PREM=null;draw()});
 function startDrag(e,sq,p,was){const B=$('board'),src=B.querySelector('[data-sq="'+sq+'"] .pc'),sz=B.getBoundingClientRect().width/8;
  const g=document.createElement('div');g.className=B.className;g.style.cssText='position:fixed;pointer-events:none;z-index:50;width:'+sz+'px;height:'+sz+'px;font-size:'+(sz*.78)+'px;display:none;left:0;top:0';
- g.innerHTML=piece(p);document.body.appendChild(g);DRG={sq,g,src,was,x:e.clientX,y:e.clientY,moved:false,id:e.pointerId};
+ g.innerHTML=visPiece(p,visLevel())||checker(p==p.toUpperCase());document.body.appendChild(g);DRG={sq,g,src,was,x:e.clientX,y:e.clientY,moved:false,id:e.pointerId};
  try{B.setPointerCapture(e.pointerId)}catch(_){}
  const mv=ev=>{if(!DRG)return;if(!DRG.moved&&Math.hypot(ev.clientX-DRG.x,ev.clientY-DRG.y)<5)return;
   if(!DRG.moved){DRG.moved=true;g.style.display='block';if(src)src.style.opacity='.25'}
@@ -1450,7 +1512,7 @@ function evalUI(wb){const bar=$('evalbar');const rv=reviewOn()&&IMG.sf&&!(GAME&&
 function sfEval(ucis){return new Promise(res=>{let sc=null,best=null;
  SFh=l=>{const m=/ score (cp|mate) (-?\d+)/.exec(l);if(l.startsWith('info')&&m)sc=m[1]=='cp'?{cp:+m[2]}:{mate:+m[2]};
   if(l.startsWith('bestmove')){SFh=null;best=l.split(' ')[1];res({sc,best:best&&best!='(none)'?best:null})}};
- SF.postMessage('position startpos'+(ucis.length?' moves '+ucis.join(' '):''));SF.postMessage('go depth 14 movetime 600')})}
+ SF.postMessage(sfPos(ucis));SF.postMessage('go depth 14 movetime 600')})}
 async function analyse(){if(!IMG.sf)return;sfStart();const tok=++RV.tok,us=S.ucis.slice(),N=us.length;RV.ev=[];RV.best=[];
  SF.postMessage('setoption name UCI_LimitStrength value false');
  let done;RV.busy=new Promise(r=>done=r);
@@ -1576,7 +1638,7 @@ $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this 
 async function newGame(white,black){ // white/black: spec, or null for you
  gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
  const bvb=!!(white&&black),youColor=bvb?'white':(white?'black':'white'),botSpec=bvb?black:(white||black);
- const d={level:botSpec.lvl||1500,you:botSpec.opp||1500,chesscom:false,tc:tcValue(),color:youColor};
+ const d={level:botSpec.lvl||1500,you:botSpec.opp||1500,chesscom:false,tc:tcValue(),color:youColor,back:opts.variant=='960'?rand960():undefined};
  S=await api('/api/new',d);if(S.error)return;
  const avOf=s=>s.bot=='magnus'?'magnus-'+(s.era=='prime'?'prime':'now'):s.bot;
  GAME=bvb?{bvb,spec:{me:white,bot:black},names:{me:specName(white),bot:specName(black)},short:{me:shortName(white.bot),bot:shortName(black.bot)},av:{me:avOf(white),bot:avOf(black)}}
@@ -1609,7 +1671,9 @@ function vsUI(){document.querySelectorAll('#vsmode span').forEach(s=>s.classList
  const L=opts.vs=='lib';$('lib').style.display=L?'block':'none';['tcwrap','moreopts','start'].forEach(id=>$(id).style.display=L?'none':'');
  $('bvb').style.display=opts.vs=='bots'?'block':'none';$('pvb').style.display=$('colwrap').style.display=opts.vs=='human'?'block':'none';
  $('start').textContent=opts.vs=='bots'?'Start match':'Play';
- const O=opts.vs=='online';$('online').style.display=O?'block':'none';if(O){$('moreopts').style.display=$('start').style.display='none';setTimeout(onOpen)}}
+ const O=opts.vs=='online';$('online').style.display=O?'block':'none';if(O){$('moreopts').style.display=$('start').style.display='none';setTimeout(onOpen)}
+ const M=opts.vs=='modes';$('gmodes').style.display=M?'block':'none';if(M)['tcwrap','moreopts','start'].forEach(id=>$(id).style.display='none');
+ setTimeout(modesUI)}
 opts.vs=LS('vs','human');document.querySelectorAll('#vsmode span').forEach(s=>s.onclick=()=>{opts.vs=s.dataset.v;localStorage.setItem('hb_vs',opts.vs);vsUI()});vsUI();
 async function startMatch(){MATCH={A:$('bvbA').spec(),B:$('bvbB').spec(),n:+opts.games,g:0,a:0,b:0,log:[]};await nextMatchGame()}
 async function nextMatchGame(){const M=MATCH;if(!M)return;const aWhite=M.g%2==0;
@@ -1634,7 +1698,7 @@ $('flip').onclick=()=>{flip=!flip;draw()};
 // Firebase web config: public by design (it only names the project); access is controlled by web/firestore.rules
 const FBCFG={apiKey:'AIzaSyDZq-joHgXMDGSPFGnjjwtMchkt7sGKtD8',authDomain:'humanbot-abbc6.firebaseapp.com',projectId:'humanbot-abbc6',
  storageBucket:'humanbot-abbc6.firebasestorage.app',messagingSenderId:'977229743782',appId:'1:977229743782:web:0d20754d25d3e23dc9d667'},FBV='10.12.2';
-BOTINFO.opp=['👤','#5a5754',''];
+BOTINFO.opp=['👤','#5a5754',''];BOTINFO.modes=['960','#6b4fa3',''];
 const ON={fb:null,user:null,prof:null,err:'',seek:null,seekUnsub:null,seekBeat:null,chal:null,gref:null,gunsub:null,applying:false,top:null,busy:false};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 async function fbLoad(){if(ON.fb)return ON.fb;if(!FBCFG)throw new Error('Online play is not switched on yet.');
@@ -1760,6 +1824,33 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
   $('ovre').textContent='New game';$('ovpgn').textContent='Copy PGN';$('over').style.display='flex'},700)}
 function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
 if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
+// ---- Game modes: Chess960 (Fischer Random) and visualization training (pieces turn into checkers, then vanish)
+opts.variant=LS('variant','standard');opts.vis=LS('vis','0');
+function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
+ b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
+ const f=free();b[f[0]]='R';b[f[1]]='K';b[f[2]]='R';return b.join('')} // king always between the rooks
+const VISL=[['0','Off'],['1','Level 1'],['2','Level 2'],['3','Level 3'],['4','Level 4'],['5','Level 5']];
+const VISHELP=['Normal pieces.','Knights and bishops look like checkers: remember which is which.','Knights, bishops and rooks look like checkers.',
+ 'The whole back rank (rooks, knights, bishops, queen, king) looks like checkers. Only pawns stay.','Every piece is a checker: you only see colours.',
+ 'Plain board: no pieces at all. You see only the last move, outlined. Play it all in your head (the move list helps).'];
+const VISSET=[[],['N','B'],['N','B','R'],['N','B','R','Q','K'],['N','B','R','Q','K','P']];
+function visLevel(){return GAME&&GAME.lib?0:+opts.vis||0}
+function checker(w){const f=w?'#f3ede1':'#2d2b29',r=w?'#c8bca6':'#5b5753',e=w?'#9c8f78':'#111';
+ return '<div class="pc"><svg class="ck" viewBox="0 0 40 40"><ellipse cx="20" cy="23" rx="17" ry="14" fill="'+e+'"/><ellipse cx="20" cy="19" rx="17" ry="14" fill="'+f+'" stroke="'+e+'" stroke-width="1.2"/>'+
+  '<ellipse cx="20" cy="19" rx="11" ry="9" fill="none" stroke="'+r+'" stroke-width="1.6"/><ellipse cx="20" cy="19" rx="6" ry="5" fill="none" stroke="'+r+'" stroke-width="1.2"/></svg></div>'}
+function visPiece(p,V){if(!V)return piece(p);if(V>=5)return '';return VISSET[V].includes(p.toUpperCase())?checker(p==p.toUpperCase()):piece(p)}
+function modesUI(){const ms=$('mvar');if(!ms.children.length){
+  chips(ms,[['standard','Standard'],['960','Chess960 (Fischer Random)']],'variant',modesUI);
+  chips($('mvis'),VISL,'vis',()=>{modesUI();draw()});
+  $('mgo').onclick=()=>{opts.vs='human';localStorage.setItem('hb_vs','human');vsUI()}}
+ $('mvarhelp').textContent=opts.variant=='960'?'Bobby Fischer\'s chess: the back pieces start in a random order (960 possible), so opening theory is useless. Bishops on opposite colours, king between the rooks. Castle by moving your king onto your rook (or to g/c). New position every game.':'Normal chess.';
+ $('mvishelp').textContent=VISHELP[+opts.vis||0];
+ const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
+ const fen=[...row.toLowerCase(),...'pppppppp',...Array(32).fill(''),...'PPPPPPPP',...row];
+ let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8;h+='<div class="sq '+((r+f)%2?'d':'l')+'">'+(fen[i]?visPiece(fen[i],+opts.vis||0):'')+'</div>'}demo.innerHTML=h;
+ const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
+ const ml=$('modeline');ml.style.display=parts.length&&(opts.vs=='human'||opts.vs=='bots')?'block':'none';
+ ml.innerHTML='Mode: <b>'+parts.join(' · ')+'</b> · <a href="#" style="color:#bab9b8" id="mlchg">change</a>';const c=$('mlchg');if(c)c.onclick=e=>{e.preventDefault();opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()}}
 // ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
 const HOMEPOS='r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N1PN2/PP1B1PPP/R2QKB1R'; // a calm Queen's Gambit middlegame
 function homeUI(){const fen=[];for(const row of HOMEPOS.split('/'))for(const ch of row)if(/\d/.test(ch))for(let i=0;i<+ch;i++)fen.push('');else fen.push(ch);
@@ -1771,6 +1862,7 @@ function homeUI(){const fen=[];for(const row of HOMEPOS.split('/'))for(const ch 
  [['humanbot','HumanBot','Plays like a real person at any rating',()=>homeGo('human','humanbot')],
   ['opp','Play online','Real opponents, ratings and a leaderboard',()=>homeGo('online')],
   ['gm','Masters','Famous games, explained move by move',()=>homeGo('lib')],
+  ['modes','Game modes','Chess960 and visualization training',()=>homeGo('modes')],
   ['stockfish','Bot vs bot','Pit any two bots against each other',()=>homeGo('bots')]].forEach(([v,n,t,f])=>$('hmore').appendChild(card(v,n,t,f)));
  const R=REC(),s=Object.values(R).reduce((a,c)=>({w:a.w+c.w,d:a.d+c.d,l:a.l+c.l}),{w:0,d:0,l:0}),n=s.w+s.d+s.l;
  $('hstats').innerHTML=n?'Your games vs bots on this device: <b style="color:#81b64c">'+s.w+'</b> wins · <b>'+s.d+'</b> draws · <b style="color:#e05a4f">'+s.l+'</b> losses':''}
