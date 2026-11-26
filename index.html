@@ -1685,9 +1685,9 @@ const OUT={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙'};
 // Evolution's evolved pieces: letter -> [drawn as, badge, badge colour class, name, what it does]
 var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time. Captures diagonally, and can capture without moving.'],
  G:['P','★','evG','★ Grand pawn','Captures diagonally, straight ahead and to the left and right.'],
- H:['N','✚','evH','✚ Arabian horse','Moves like a knight, and can also move or capture one square straight (up, down, left, right).'],
+ H:['N','✚','evH','✚ Arabian horse','Moves like a knight, and can also move or capture one square orthogonally (up, down, left or right).'],
  M:['N','✖','evM','✖ Mustang','Moves like a knight, and can also move or capture one square diagonally.'],
- S:['N','✚²','evS','✚² Stallion','Moves like a knight, and can also move or capture 1 or 2 squares straight (a short rook move).'],
+ S:['N','✚²','evS','✚² Stallion','Moves like a knight, and can also move or capture 1 or 2 squares orthogonally (a short rook move).'],
  C:['N','✖²','evC','✖² Bronco','Moves like a knight, and can also move or capture 1 or 2 squares diagonally (a short bishop move).'],
  T:['N','✚³','evT','🏜 Sandstorm','Everything the Stallion does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces.'],
  D:['N','✖³','evD','🏜 Dune runner','Everything the Bronco does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces.']};
@@ -2269,7 +2269,7 @@ async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncod
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
  fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
- evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step straight) or ✖ Mustang (+ one step diagonally); two moves later they evolve again: ✚² Stallion (+ 1–2 squares straight) or ✖² Bronco (+ 1–2 squares diagonally); three moves after that they gain the camel jump (3+1 leap): 🏜 Sandstorm / 🏜 Dune runner. More pieces coming. Website only; bots play it with a small search engine.',
+ evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step orthogonally) or ✖ Mustang (+ one step diagonally); two moves later they evolve again: ✚² Stallion (+ 1–2 squares orthogonally) or ✖² Bronco (+ 1–2 squares diagonally); three moves after that they gain the camel jump (3+1 leap): 🏜 Sandstorm / 🏜 Dune runner. More pieces coming. Website only; bots play it with a small search engine.',
  hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
