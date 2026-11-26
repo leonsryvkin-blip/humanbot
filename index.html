@@ -183,8 +183,51 @@
   #evaltxt,#evalbar.fl.bl #evaltxt{top:1px;bottom:auto;left:5px;right:auto}
   #evalbar.fl #evaltxt,#evalbar.bl #evaltxt{top:1px;bottom:auto;left:auto;right:5px}
  }
+ #home{position:fixed;inset:0;z-index:40;overflow:auto;background:radial-gradient(1200px 600px at 20% -10%,#3d4a2f55,transparent),var(--bg)}
+ #home .in{max-width:1040px;margin:0 auto;padding:18px 22px 40px}
+ .hnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+ .hnav .logo{font-weight:800;font-size:24px;letter-spacing:-.3px}.hnav .logo b{color:var(--grn)}
+ .hnav a{color:var(--mut);font-weight:700;margin-left:18px;cursor:pointer;text-decoration:none}.hnav a:hover{color:#fff}
+ .hero{display:flex;gap:40px;align-items:center;margin-bottom:38px}
+ #hboard{display:grid;grid-template-columns:repeat(8,var(--sq));grid-template-rows:repeat(8,var(--sq));--sq:54px;border-radius:6px;overflow:hidden;box-shadow:0 10px 34px #000a;flex:none}
+ .htext h1{font-size:42px;line-height:1.1;margin:0 0 14px;letter-spacing:-.6px}
+ .htext p{color:var(--mut);font-size:17px;line-height:1.5;margin:0 0 20px}
+ .hbtn{display:flex;align-items:center;gap:14px;text-align:left;font-size:22px;margin-top:10px;max-width:380px}
+ .hbtn small{display:block;font-size:13px;font-weight:600;opacity:.85}.hbtn .ic{font-size:30px}
+ .hbtn.alt{background:var(--card2);border-bottom-color:#3a3836}
+ #hstats{margin-top:14px;color:var(--mut);font-size:14px}
+ #home h2{font-size:20px;margin:28px 0 12px}
+ .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+ .hcard{background:var(--card);border-radius:10px;padding:16px 12px;cursor:pointer;text-align:center;transition:transform .12s,background .12s}
+ .hcard:hover{background:var(--card2);transform:translateY(-2px)}
+ .hcard .av{width:72px;height:72px;margin:0 auto 10px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;overflow:hidden}
+ .hcard .nm{font-weight:800;font-size:16px}.hcard .tg{color:var(--mut);font-size:13px;margin-top:4px;line-height:1.35}
+ .hfoot{color:#7f7d79;font-size:13px;margin-top:34px;line-height:1.5;border-top:1px solid #3a3836;padding-top:14px}
+ #homebtn{margin-right:6px}
+ @media (max-width:900px){
+  #home .in{padding:12px 12px 30px}.hnav{margin-bottom:16px}.hnav a{margin-left:12px;font-size:14px}
+  .hero{flex-direction:column;gap:20px}#hboard{--sq:min(calc((100vw - 24px)/8),44px)}
+  .htext h1{font-size:30px}.htext p{font-size:15px}.hbtn{max-width:none}
+  .hcards{grid-template-columns:repeat(2,1fr)}
+ }
 </style><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#302e2b"><link rel="apple-touch-icon" href="icon-192.png">
 </head><body>
+<div id="home"><div class="in">
+ <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a></span></div>
+ <div class="hero">
+  <div id="hboard"></div>
+  <div class="htext">
+   <h1>Chess bots that play like real people</h1>
+   <p>Trained on millions of real games, so they think, hesitate and make mistakes like players at your level, from beginner to grandmaster. Or take on bots of Magnus, Hikaru and GothamChess.</p>
+   <button class="play hbtn" data-go="human"><span class="ic">🤖</span><span>Play a bot<small>Any level from 600 to 2600</small></span></button>
+   <button class="play hbtn alt" data-go="online"><span class="ic">🌐</span><span>Play online<small>Real people, ratings, a link for friends</small></span></button>
+   <div id="hstats"></div>
+  </div>
+ </div>
+ <h2>Play the pros</h2><div class="hcards" id="hpros"></div>
+ <h2>More ways to play</h2><div class="hcards" id="hmore"></div>
+ <div class="hfoot">HumanBot runs on your device: no account needed to play bots, and it works offline once opened. Player bots are unofficial: trained on public games, not made or endorsed by the players. Tip: install it from your browser's menu (“Install app” or “Add to Home screen”).</div>
+</div></div>
 <div class="wrap">
  <div class="boardcol">
   <div class="clock" id="ctop"><span class="who"><span class="av" id="atop">♞</span><span id="ntop">HumanBot</span></span><span class="t" id="ttop">–</span></div>
@@ -193,7 +236,7 @@
   <div id="msg"></div>
  </div>
  <div class="side">
-  <div class="shead"><span class="ttl">♞ HumanBot</span><button class="iconbtn" id="lookbtn" title="Board &amp; pieces">⚙</button></div>
+  <div class="shead"><span class="ttl">♞ HumanBot</span><span><button class="iconbtn" id="homebtn" title="Home">⌂</button><button class="iconbtn" id="lookbtn" title="Board &amp; pieces">⚙</button></span></div>
   <div class="sbody" id="setup">
    <div class="seg" id="vsmode"><span data-v="human">Play a bot</span><span data-v="online">Online</span><span data-v="bots">Bot vs bot</span><span data-v="lib">Masters</span></div>
    <div id="online" style="display:none"></div>
@@ -1717,6 +1760,27 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
   $('ovre').textContent='New game';$('ovpgn').textContent='Copy PGN';$('over').style.display='flex'},700)}
 function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
 if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
+// ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
+const HOMEPOS='r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N1PN2/PP1B1PPP/R2QKB1R'; // a calm Queen's Gambit middlegame
+function homeUI(){const fen=[];for(const row of HOMEPOS.split('/'))for(const ch of row)if(/\d/.test(ch))for(let i=0;i<+ch;i++)fen.push('');else fen.push(ch);
+ const hb=$('hboard');hb.className='set-'+opts.set;hb.style.background=boardBg(opts.theme);hb.innerHTML=sqs(64,8,fen);
+ const pros=BOTS.filter(([v])=>PB.test(v)),card=(v,name,tag,go)=>{const d=document.createElement('div');d.className='hcard';
+  d.innerHTML='<div class="av" style="background:'+avBg(v)+'">'+avHTML(v)+'</div><div class="nm">'+name+'</div><div class="tg">'+tag+'</div>';d.onclick=go;return d};
+ $('hpros').innerHTML='';pros.forEach(([v,t])=>$('hpros').appendChild(card(v,ttl(v)+esc(t)+BOTTAG,v=='magnus'?'World Champion · Prime 2014 or now':v=='hikaru'?'Speed chess legend · 79,000 games':(p=>p?'~'+p.rating+' · '+p.games.toLocaleString('en')+' games':'')(PLAYERS.find(p=>'p_'+p.id==v)),()=>homeGo('human',v))));
+ $('hmore').innerHTML='';
+ [['humanbot','HumanBot','Plays like a real person at any rating',()=>homeGo('human','humanbot')],
+  ['opp','Play online','Real opponents, ratings and a leaderboard',()=>homeGo('online')],
+  ['gm','Masters','Famous games, explained move by move',()=>homeGo('lib')],
+  ['stockfish','Bot vs bot','Pit any two bots against each other',()=>homeGo('bots')]].forEach(([v,n,t,f])=>$('hmore').appendChild(card(v,n,t,f)));
+ const R=REC(),s=Object.values(R).reduce((a,c)=>({w:a.w+c.w,d:a.d+c.d,l:a.l+c.l}),{w:0,d:0,l:0}),n=s.w+s.d+s.l;
+ $('hstats').innerHTML=n?'Your games vs bots on this device: <b style="color:#81b64c">'+s.w+'</b> wins · <b>'+s.d+'</b> draws · <b style="color:#e05a4f">'+s.l+'</b> losses':''}
+function homeGo(vs,bot){$('home').style.display='none';if(!gameOn)showView('setup');
+ if(bot){const c=document.querySelector('#bots .card[data-v="'+bot+'"]');if(c)c.click()}
+ opts.vs=vs;localStorage.setItem('hb_vs',vs);vsUI();window.scrollTo(0,0)}
+function homeShow(){homeUI();$('home').style.display='block';$('home').scrollTop=0}
+document.querySelectorAll('#home [data-go]').forEach(b=>b.onclick=()=>homeGo(b.dataset.go));
+$('homebtn').onclick=homeShow;
+if(new URLSearchParams(location.search).get('play'))$('home').style.display='none';else setTimeout(homeUI)
 // ---- Magnus Carlsen bot extras: emoji reactions (on its avatar), a commentator, and real facts from his games.
 // The reactions and commentator lines are invented for fun and are not things Magnus said.
 // player bots (Magnus, Hikaru) share these extras; {N} in a line = the player's first name
