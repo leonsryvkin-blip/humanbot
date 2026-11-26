@@ -57,6 +57,9 @@
  #custombox{display:none;background:#1f1e1c;border-radius:8px;padding:6px 12px 10px;margin-top:8px}
  button{font-family:inherit}
  .sq.lastol{outline:3px solid #f6d33cdd;outline-offset:-3px}
+ .sq.hkm::before,.sq.hkt::before{content:"👑";position:absolute;top:1px;right:2px;font-size:calc(var(--sq)*.27);line-height:1;z-index:3;pointer-events:none;filter:drop-shadow(0 1px 1px #000a)}
+ .sq.hkt{box-shadow:inset 0 0 0 3px #e05a4f}
+ .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
  .sq.fogd::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,#24231f 0 6px,#2a2925 6px 12px);opacity:.97;pointer-events:none}
  .ck{width:80%;height:80%;pointer-events:none}
  #mvisdemo{display:grid;grid-template-columns:repeat(8,1fr);width:240px;margin:10px auto 2px;border-radius:5px;overflow:hidden;--sq:30px}#mvisdemo .sq{height:30px}
@@ -388,8 +391,11 @@ class Chess {
   // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
   // rule: null | "shape" (a capturing piece becomes the piece it took; kings stay kings)
   //       | "fog" (fog of war: no check rules, you may move into check; capturing the king wins)
+  //       | "hidden" (each side's real king is a secret piece, hk[color] = its square; no check rules;
+  //          capturing the secret king wins; -1 = unknown, e.g. the opponent's online)
   constructor(back, rule) {
     this.rule = rule || null;
+    this.hk = { w: -1, b: -1 }; this.hkLost = null;
     this.b = new Array(64).fill(null);
     back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
@@ -411,7 +417,7 @@ class Chess {
   clone() {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
-    c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule;
+    c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule; c.hk = { ...this.hk }; c.hkLost = this.hkLost;
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
   }
@@ -514,7 +520,20 @@ class Chess {
   }
   _apply(m) { // no legality check; returns undo record
     const b = this.b, p = b[m.from], t = p.toUpperCase(), W = this.turn === "w";
-    const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1 };
+    const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
+      hk: { ...this.hk }, hkLost: this.hkLost };
+    if (this.rule === "hidden") { // follow the secret kings
+      const us = W ? "w" : "b", them = W ? "b" : "w", home = W ? 0 : 56;
+      const capSq = m.castle ? -1 : (t === "P" && m.to === this.ep && !b[m.to]) ? m.to + (W ? -8 : 8) : b[m.to] ? m.to : -1;
+      if (capSq >= 0 && capSq === this.hk[them]) { this.hkLost = them; this.hkLostP = b[capSq]; }
+      const h = this.hk[us];
+      if (m.castle) { if (h === m.from) this.hk[us] = m.kTo; else if (h === m.to) this.hk[us] = m.rTo; }
+      else if (h === m.from) this.hk[us] = m.to;
+      else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { // the rook of a normal castle
+        if (m.to === home + 6 && h === home + 7) this.hk[us] = home + 5;
+        if (m.to === home + 2 && h === home) this.hk[us] = home + 3;
+      }
+    }
     if (m.castle) { // Chess960 castling
       const R = b[m.to];
       b[m.from] = null; b[m.to] = null; b[m.kTo] = p; b[m.rTo] = R; u.cap = null;
@@ -548,6 +567,7 @@ class Chess {
     const m = u.m, b = this.b;
     this.turn = this.turn === "w" ? "b" : "w";
     const W = this.turn === "w";
+    this.hk = u.hk; this.hkLost = u.hkLost;
     if (m.castle) {
       const K = b[m.kTo], R = b[m.rTo];
       b[m.kTo] = null; b[m.rTo] = null; b[m.from] = K; b[m.to] = R;
@@ -567,6 +587,7 @@ class Chess {
   }
   legal() {
     if (this.rule === "fog") return this.kingSq("w") < 0 || this.kingSq("b") < 0 ? [] : this.pseudo(); // no check rules
+    if (this.rule === "hidden") return this.hkLost ? [] : this.pseudo();
     const us = this.turn, out = [];
     for (const m of this.pseudo()) {
       const u = this._apply(m);
@@ -642,6 +663,13 @@ class Chess {
       if (this.kingSq("w") < 0) return { winner: "b", reason: "king captured" };
       if (this.kingSq("b") < 0) return { winner: "w", reason: "king captured" };
       if (this.legal().length === 0) return { winner: null, reason: "no moves" };
+    }
+    if (this.rule === "hidden") {
+      if (this.hkLost) return { winner: this.hkLost === "w" ? "b" : "w", reason: "secret king captured" };
+      if (this.legal().length === 0) return { winner: null, reason: "no moves" };
+      if (this.half >= 100) return { winner: null, reason: "fifty-move rule" };
+      const k = this.keys[this.keys.length - 1];
+      return this.keys.filter(x => x === k).length >= 3 ? { winner: null, reason: "threefold repetition" } : null;
     }
     const n = this.legal().length;
     if (n === 0) return this.inCheck() ? { winner: this.turn === "w" ? "b" : "w", reason: "checkmate" } : { winner: null, reason: "stalemate" };
@@ -1003,6 +1031,7 @@ function evalMaterial(g) { // from the side to move's view; centre bonus for kni
     const t = p.toUpperCase(), f = fileOf(q), r = rankOf(q);
     let v = VAL[t] + ((t === "N" || t === "P") ? 12 - 4 * (Math.abs(3.5 - f) + Math.abs(3.5 - r)) : 0);
     if (t === "P") v += (p === "P" ? r : 7 - r) * 6;
+    if (g.rule === "hidden" && g.hk[colorOf(p)] === q) v += 700; // a secret king is worth guarding
     s += colorOf(p) === g.turn ? v : -v;
   }
   return s;
@@ -1013,8 +1042,9 @@ function searchVariant(g, level, ms) {
   const order = list => list.map(m => [m, g.b[m.to] ? VAL[g.b[m.to].toUpperCase()] * 10 - VAL[g.b[m.from].toUpperCase()] : 0]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
   function ab(d, a, b) {
     nodes++; if ((nodes & 1023) === 0 && Date.now() - t0 > ms) stop = true;
-    const kingsGone = g.kingSq(g.turn) < 0;
+    const kingsGone = g.rule === "hidden" ? g.hkLost === g.turn : g.kingSq(g.turn) < 0;
     if (kingsGone) return -100000 - d;
+    if (g.rule === "hidden" && g.hkLost) return 100000 + d;
     const legal = g.legal();
     if (!legal.length) return g.inCheck() ? -100000 - d : 0;
     if (d === 0 || stop) return evalMaterial(g);
@@ -1042,6 +1072,7 @@ if (typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScop
     const d = e.data;
     if (d.type === "init") { net = new HumanNet(d.bytes, d.meta); self.postMessage({ type: "ready" }); return; }
     const g = new Chess(d.back || undefined, d.rule || null);
+    if (d.hk) g.hk = { ...g.hk, ...d.hk }; // hidden king: only the bot's own secret king is known to it
     for (const u of d.moves) g.push(g.fromUci(u));
     if (d.variant) { const r = searchVariant(g, d.level || 1500, d.ms || 1500); self.postMessage({ id: d.id, move: g.uci(r.move), ranked: r.ranked.map(([m, v]) => [g.uci(m), v]), depth: r.depth }); return; }
     if (d.leela) { // Leela: net arrives with the first request; search up to d.nodes nodes / d.ms milliseconds
@@ -1138,7 +1169,8 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
  const last=g.moves[g.moves.length-1];
  return Object.assign({ucis:g.moves.map(m=>g.uci(m)),fen:fenBoard(g)+' '+g.turn,turn:g.turn=='w'?'white':'black',legal:g.legal().map(m=>g.uci(m)),
   last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
-  start:LG.back?startFen960(LG.back):null,rule:LG.rule,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
+  start:LG.back?startFen960(LG.back):null,rule:LG.rule,
+  hk:LG.rule=='hidden'?{mine:g.hk[LG.color[0]]>=0?sqName(g.hk[LG.color[0]]):null,theirs:o&&g.hk[LG.color=='white'?'b':'w']>=0?sqName(g.hk[LG.color=='white'?'b':'w']):null,taken:g.hkLost?g.hkLostP:null}:null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
 function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
  return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
 function guessThink(g,p,clock,inc){if(clock==null)return 0.7;const top=p.moves.length?p.moves[0][1]:1;
@@ -1152,15 +1184,21 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
   const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
-  const rule=['shape','fog'].includes(d.rule)?d.rule:null;
-  LG={game:new Chess(back||undefined,rule),back,rule,sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
+  const rule=['shape','fog','hidden'].includes(d.rule)?d.rule:null;
+  LG={game:new Chess(back||undefined,rule),back,rule,hk0:{w:-1,b:-1},sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
+  if(rule=='hidden')for(const c of ['w','b']){ // bots' secret kings: a random non-pawn piece (online: the other side is unknown)
+   if(d.online&&c!=LG.color[0])continue;const sqs=[];LG.game.b.forEach((p,s)=>{if(p&&colorOf(p)==c&&p.toUpperCase()!='P')sqs.push(s)});
+   LG.hk0[c]=LG.game.hk[c]=sqs[Math.floor(Math.random()*sqs.length)]}
   return lstate({has_clock:true,level_lichess:lvl})}
+ if(path=='/api/hk'){const g=LG.game,c=LG.color[0],s=sqFrom(d.sq);if(g.moves.length>1||!g.b[s]||colorOf(g.b[s])!=c)return lstate({error:'pick one of your own pieces'});
+  LG.hk0[c]=g.hk[c]=s;return lstate()}
  const g=LG.game;
  if(path=='/api/move'){const m=g.fromUci(d.uci);if(!m)return lstate({error:'illegal move'});LG.sans.push(g.san(m));g.push(m);return lstate()}
  if(path=='/api/bot'&&d.variant){ // rules the nets never learned (Shapeshift): the small search engine plays
   const lv=+d.level||1500,ms=Math.max(400,Math.min(2500,LG.base!=null?(+d.bot_clock/40)*1000:1500));let m,ranked;
-  if(WK){const id=++WKid;const r=await new Promise(res=>{WKwait[id]=res;WK.postMessage({id,moves:g.moves.map(x=>g.uci(x)),variant:1,level:lv,ms})});m=g.fromUci(r.move);ranked=r.ranked}
-  else{const r=searchVariant(g,lv,ms);m=r.move;ranked=r.ranked.map(([x,v])=>[g.uci(x),v])}
+  const me=g.turn,mine={[me]:LG.hk0[me]}; // the bot only knows its own secret king
+  if(WK){const id=++WKid;const r=await new Promise(res=>{WKwait[id]=res;WK.postMessage({id,moves:g.moves.map(x=>g.uci(x)),variant:1,level:lv,ms,hk:LG.rule=='hidden'?mine:null})});m=g.fromUci(r.move);ranked=r.ranked}
+  else{const gc=g.clone();if(LG.rule=='hidden')gc.hk[me=='w'?'b':'w']=-1;const r=searchVariant(gc,lv,ms);m=g.fromUci(gc.uci(r.move));ranked=r.ranked.map(([x,v])=>[gc.uci(x),v])}
   const cands=ranked.slice(0,3).map(([u])=>[g.san(g.fromUci(u)),0]);const san=g.san(m);LG.sans.push(san);g.push(m);
   return lstate({bot_move:g.uci(m),bot_san:san,think:0.4+Math.random()*1.5,cands})}
  if(path=='/api/bot'&&d.bot=='leela'){const r=await PL(g,+d.nodes||8,(+d.secs||10)*1000);const m=r.moves[0][0];
@@ -1393,7 +1431,7 @@ function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
 async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
  if(S.rule=='fog'){const pos=parseFen(S.fen),kill=S.legal.find(u=>{const q=pos[u.slice(2,4)];return q&&q.toUpperCase()=='K'});
   if(kill){const st=await api('/api/move',{uci:kill});if(st.error)return st;return Object.assign(st,{bot_move:kill,bot_san:st.sans[st.sans.length-1],think:0.8,cands:[]})}} // fog: an exposed king is taken
- if(S.rule=='shape')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
+ if(S.rule=='shape'||S.rule=='hidden')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
  if(s.bot=='leela'){const secs=S.base!=null?Math.max(0.5,Math.min(10,clk[who]/30+inc*0.6)):10;
   return api('/api/bot',{bot:'leela',nodes:s.nodes,secs})}
  if(s.bot=='worstfish'){const t0=performance.now(),w=await sfWorst(S.ucis||[]);if(my!=gid)return{stale:true};
@@ -1502,6 +1540,8 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  for(let r=0;r<8;r++)for(let f=0;f<8;f++){const file=wb?f:7-f,rank=wb?7-r:r,sq='abcdefgh'[file]+(rank+1);
   const d=document.createElement('div');d.className='sq '+((file+rank)%2?'l':'d');const hid=FOG&&!FOG.has(sq),p=hid?null:pos[sq];
   if(hid)d.classList.add('fogd');
+  if(!rv&&S&&S.hk&&!HKP){if(S.hk.mine==sq&&p)d.classList.add('hkm');if(S.hk.theirs==sq)d.classList.add('hkt')}
+  if(HKP&&p&&(p==p.toUpperCase())==(S.you=='white'))d.classList.add('hkpick');
   if(!hid&&lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
   if(sq==sel&&!rv)d.classList.add('sel');
   if(targets.includes(sq))d.classList.add(p?'cap':'dot');
@@ -1550,6 +1590,7 @@ function firePre(){if(!PREM||!S)return;const p=PREM;PREM=null;const ms=S.legal.f
  if(ms.length&&myTurn())play(ms.find(m=>m.length==4||m.endsWith('q')));else draw()}
 $('board').addEventListener('contextmenu',e=>e.preventDefault());
 $('board').addEventListener('pointerdown',e=>{const el=e.target.closest('.sq');if(!el||!el.dataset.sq)return;const sq=el.dataset.sq,p=CUR[sq];
+ if(HKP){if(e.button===0)hkTap(sq);return}
  if(e.button==2){RCL=sq;return}if(e.button!==0)return;
  let redraw=false;if(MK.a.length||MK.h.length){MK.a=[];MK.h=[];redraw=true}
  const live=myTurn(),pre=canPre();
@@ -1641,7 +1682,7 @@ function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
 // a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
 function nameEl(el,txt,tag){el.textContent=txt;if(tag){el.insertAdjacentHTML('afterbegin',ttl(tag));el.insertAdjacentHTML('beforeend',BOTTAG)}}
-function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!(GAME&&GAME.bvb)}
+function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!HKP&&!(GAME&&GAME.bvb)&&hkReady()}
 function sideOf(color){return GAME&&GAME.bvb?(color=='white'?'me':'bot'):(color==S.you?'me':'bot')}
 function click(sq,p){if(!myTurn())return;const mine=p&&((p==p.toUpperCase())==(S.you=='white'));
  if(sel){const ms=S.legal.filter(m=>m.startsWith(sel+sq));if(ms.length){ms.length>1?promo(ms):play(ms[0]);return}}
@@ -1680,7 +1721,7 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function end(t,o){gameOn=false;stopClock();PREM=null;sel=null;drawClocks();
  if(GAME&&GAME.online){onEnd(t);return}
  if(GAME&&GAME.bvb){t=t.replace('You win','White wins').replace('HumanBot wins','Black wins');matchResult(t,o);if(!MATCH||MATCH.g>=MATCH.n)reviewStart();return}
- msg('Game over: '+t.replace('HumanBot',BNshort()));reviewStart();wake(false);
+ msg('Game over: '+t.replace('HumanBot',BNshort())+hkReveal());reviewStart();wake(false);
  if(GAME&&!GAME.lib){const r=/you win/i.test(t)?'win':/draw/i.test(t)?'draw':'loss';GAME.res=r;const k=GAME.names.bot,R=REC();R[k]=R[k]||{w:0,l:0,d:0};R[k][r[0]]++;
   localStorage.setItem('hb_rec',JSON.stringify(R));mgEnd(r);const my=gid;setTimeout(()=>{if(my==gid)overUI(t,r,R[k])},700)}}
 function REC(){try{return JSON.parse(localStorage.getItem('hb_rec')||'{}')}catch(e){return {}}}
@@ -1692,7 +1733,8 @@ function overUI(t,r,c){const h=$('ovhd');h.className='hd '+r;
 $('over').onclick=e=>{if(e.target.id=='over')$('over').style.display='none'};
 $('ovrev').onclick=()=>{$('over').style.display='none'};
 $('ovre').onclick=async()=>{$('over').style.display='none';if(GAME&&GAME.online){onLeave();draw();showView('setup');opts.vs='online';vsUI();onQuick();return}const sp=GAME.spec.bot,wasWhite=S.you=='white';
- S=await newGame(wasWhite?sp:null,wasWhite?null:sp);if(!S||S.error)return;msg('Rematch: you play '+S.you+'.');if(S.turn!=S.you)botTurn();else startClock('me')};
+ S=await newGame(wasWhite?sp:null,wasWhite?null:sp);if(!S||S.error)return;msg('Rematch: you play '+S.you+'.');
+ if(S.rule=='hidden'){const my=gid;if(!await hkPick()||my!=gid)return}if(S.turn!=S.you)botTurn();else startClock('me')};
 function pgnText(){if(!S)return '';const L=GAME&&GAME.lib,bvb=GAME&&GAME.bvb,youW=S.you=='white';
  const res=L?L.result:GAME&&GAME.res?(GAME.res=='draw'?'1/2-1/2':(GAME.res=='win')==youW?'1-0':'0-1'):'*';
  const W=L?L.white:bvb?GAME.names.me:youW?'You':GAME.names.bot,B=L?L.black:bvb?GAME.names.bot:youW?GAME.names.bot:'You';
@@ -1715,7 +1757,7 @@ $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this 
  if(GAME&&GAME.online)onLeave();
  if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
 async function newGame(white,black){ // white/black: spec, or null for you
- gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
+ gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;HKP=null;await reviewStop();msg('Loading…');$('info').innerHTML='';
  const bvb=!!(white&&black),youColor=bvb?'white':(white?'black':'white'),botSpec=bvb?black:(white||black);
  const d={level:botSpec.lvl||1500,you:botSpec.opp||1500,chesscom:false,tc:tcValue(),color:youColor,back:opts.variant=='960'?rand960():undefined,rule:opts.rule&&opts.rule!='none'?opts.rule:undefined};
  S=await api('/api/new',d);if(S.error)return;
@@ -1728,6 +1770,7 @@ $('start').onclick=async()=>{addRecent(tcValue());
  if(opts.vs=='bots')return startMatch();
  const sp=specFromMain(),color=opts.color=='random'?(Math.random()<.5?'white':'black'):opts.color;
  S=await newGame(color=='white'?null:sp,color=='black'?null:sp);if(!S||S.error)return;
+ if(S.rule=='hidden'){const my=gid;if(!await hkPick()||my!=gid)return;if(S.turn!=S.you)botTurn();else startClock('me');return}
  msg((S.has_clock||sp.bot!='humanbot'?'':'(This model has no thinking-time head, so the bot\'s timing is a rough guess.) ')+($('cc').checked&&sp.bot!='stockfish'&&sp.bot!='leela'?'Bot ≈ '+sp.lvl+' on Lichess. ':'')+'You play '+S.you+'.');
  if(S.turn!=S.you)botTurn();else startClock('me')};
 // ---- bot vs bot: two sides, a match of N games with colours swapped every game
@@ -1838,7 +1881,7 @@ function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
 function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)+(opts.rule&&opts.rule!='none'?'|'+opts.rule:'')}
-function modeName(k){const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war'}[r]||r);
+function modeName(k){const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king'}[r]||r);
  if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
  return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
@@ -1877,7 +1920,9 @@ let ONQ=Promise.resolve();
 function onSnap(id,g){ONQ=ONQ.then(()=>onApply(id,g)).catch(e=>msg('Error: '+e.message))}
 async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')return;
  if(!GAME||!GAME.online||GAME.online.id!=id){if(g.status!='live')return;if(ON.chal&&ON.chal.ref.id==id)ON.chal=null;await onStart(id,g)}
- const O=GAME.online,my=O.color,op=my=='white'?'black':'white';O.g=g;
+ const O=GAME.online,my=O.color,op=my=='white'?'black':'white',wasReady=hkReady();O.g=g;
+ if(g.rule=='hidden'){if(!wasReady&&hkReady()&&!HKP&&gameOn)msg(S.turn==S.you?'Both secret kings are chosen. Your move.':'Both secret kings are chosen. Waiting for '+O.opp.name+'…');
+  if(g['hk_'+op]&&S.hk){S.hk.theirs=g['hk_'+op];draw()}}
  while(S.ucis.length<g.moves.length){const u=g.moves[S.ucis.length];settle();stopClock();
   S=await api('/api/move',{uci:u});if(S.error)return;clk.me=g[my[0]+'t'];clk.bot=g[op[0]+'t'];draw();lastSnd();
   if(S.over){end(S.over);return}
@@ -1886,11 +1931,16 @@ async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')retur
   end(dr?'Draw ('+g.reason+')':won?'You win ('+g.reason+')':O.opp.name+' wins ('+g.reason+')')}}
 async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null;sel=null;await reviewStop();MATCH=null;$('info').innerHTML='';
  const my=g.white&&g.white.uid==ON.user.uid?'white':'black',me=g[my],opp=g[my=='white'?'black':'white'];
- S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,rule:g.rule||undefined,model:(document.getElementById('model')||{}).value});if(S.error)return;
+ S=await api('/api/new',{level:1500,you:1500,chesscom:false,tc:g.tc,color:my,back:g.back||undefined,rule:g.rule||undefined,online:1,model:(document.getElementById('model')||{}).value});if(S.error)return;
  GAME={online:{id,color:my,opp,me,g},bvb:false,spec:{bot:{bot:'online'}},names:{me:me.name+' ('+me.rating+')',bot:opp.name+' ('+opp.rating+')'},short:{me:'You',bot:opp.name},av:{me:'me',bot:'opp'}};
  $('over').style.display='none';$('comm').innerHTML='';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);
  const mn=g.mode&&g.mode!='std|v0'?' ('+modeName(g.mode)+')':'';
- msg(S.turn==S.you?'You play '+my+mn+'. Your move.':'You play '+my+mn+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot')}
+ msg(S.turn==S.you?'You play '+my+mn+'. Your move.':'You play '+my+mn+'. Waiting for '+opp.name+'…');startClock(S.turn==S.you?'me':'bot');
+ if(g.rule=='hidden'){const gg=gid;if(!await hkPick()||gg!=gid)return; // lock in the pick: only its fingerprint is shared until the end
+  ON.hkSalt=Math.random().toString(36).slice(2)+Date.now().toString(36);ON.hk0=S.hk.mine;
+  const {F}=ON.fb;await F.updateDoc(ON.gref,{['hc_'+my]:await sha(S.hk.mine+':'+ON.hkSalt)});
+  msg(GAME.online.g['hc_'+(my=='white'?'black':'white')]?(S.turn==S.you?'Your move.':'Waiting for '+opp.name+'…'):'Waiting for '+opp.name+' to pick their secret king…')}}
+function hkReady(){const O=GAME&&GAME.online;return !O||O.g.rule!='hidden'||(O.g.hc_white&&O.g.hc_black)}
 async function onSend(){const O=GAME.online,{F}=ON.fb;
  try{await F.updateDoc(ON.gref,{moves:S.ucis.slice(),[O.color[0]+'t']:Math.max(0,clk.me)})}catch(e){msg('Couldn\'t send your move: '+e.message)}}
 const REASON=t=>/resign/i.test(t)?'resignation':/flag|time/i.test(t)?'time':((/\(([^)]*)\)/.exec(t)||[])[1]||'game over');
@@ -1905,6 +1955,7 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
    if(g.rated&&g.rated[my]!=null)return g.rated[my];
    tx.update(F.doc(db,'users',ON.user.uid),{rating:u.rating+d,games:(u.games||0)+1,[sc==1?'w':sc==0?'l':'d']:(u[sc==1?'w':sc==0?'l':'d']||0)+1});
    tx.update(ON.gref,{['rated.'+my]:d});return d})}catch(e){msg('Game over, but saving the result failed: '+e.message)}
+ if(O.g.rule=='hidden'&&S.hk&&S.hk.mine)F.updateDoc(ON.gref,{['hk_'+my]:S.hk.mine,['hk0_'+my]:ON.hk0||'',['hs_'+my]:ON.hkSalt||''}).catch(()=>{}); // reveal
  const myg=gid;setTimeout(()=>{if(myg!=gid)return;const h=$('ovhd');h.className='hd '+r;
   h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':esc(O.opp.name)+' won')+'<div class="why">'+esc(REASON(t))+'</div>';
   $('ovrec').innerHTML='vs '+esc(O.opp.name)+' ('+O.opp.rating+')'+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
@@ -1922,10 +1973,21 @@ function fogSquares(pos,white){const v=new Set(),F='abcdefgh',at=(f,r)=>f>=0&&f<
   else if(t=='N')[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]].forEach(([a,b])=>ray(a,b,1));
   else{const dirs=t=='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t=='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];dirs.forEach(([a,b])=>ray(a,b,t=='K'))}}
  return v}
-const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war']];
+const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war'],['hidden','Hidden king']];
+// Hidden king: before the first move you tap the piece that will be your secret king
+let HKP=null;
+function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
+async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
+ const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn'};
+function hkReveal(){if(!S||!S.hk||!S.hk.theirs)return '';const p=parseFen(S.fen)[S.hk.theirs],theirs=p&&(p==p.toUpperCase())!=(S.you=='white');
+ const tk=S.hk.taken;
+ return ' · 👑 Their secret king was '+(theirs?'the '+PNAME[p.toUpperCase()]+' on '+S.hk.theirs:tk&&(tk==tk.toUpperCase())!=(S.you=='white')?'the '+PNAME[tk.toUpperCase()]+' you took on '+S.hk.theirs:'on '+S.hk.theirs)}
+async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
- fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.'};
+ fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
+ hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
  const f=free();b[f[0]]='R';b[f[1]]='K';b[f[2]]='R';return b.join('')} // king always between the rooks
@@ -1952,7 +2014,7 @@ function modesUI(){const ms=$('mvar');if(!ms.children.length){
  const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
  const fen=[...row.toLowerCase(),...'pppppppp',...Array(32).fill(''),...'PPPPPPPP',...row];
  let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8;h+='<div class="sq '+((r+f)%2?'d':'l')+'">'+(fen[i]?visPiece(fen[i],+opts.vis||0):'')+'</div>'}demo.innerHTML=h;
- const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
+ const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(opts.rule=='hidden')parts.push('👑 Hidden king');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
  const ml=$('modeline');ml.style.display=parts.length&&(opts.vs=='human'||opts.vs=='bots')?'block':'none';
  ml.innerHTML='Mode: <b>'+parts.join(' · ')+'</b> · <a href="#" style="color:#bab9b8" id="mlchg">change</a>';const c=$('mlchg');if(c)c.onclick=e=>{e.preventDefault();opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()}}
 // ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
