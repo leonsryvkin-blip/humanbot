@@ -60,6 +60,12 @@
  .sq.hkm::before,.sq.hkt::before{content:"👑";position:absolute;top:1px;right:2px;font-size:calc(var(--sq)*.27);line-height:1;z-index:3;pointer-events:none;filter:drop-shadow(0 1px 1px #000a)}
  .sq.hkt{box-shadow:inset 0 0 0 3px #e05a4f}
  .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
+ .evb{position:absolute;right:4%;top:2%;min-width:36%;height:36%;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 calc(var(--sq)*.24)/1 sans-serif;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px #0008;z-index:2}
+ .evA{background:#2f8f3f}.evG{background:#c48a12}
+ #evopick{position:fixed;inset:0;background:#000a;z-index:70;display:none;align-items:center;justify-content:center}
+ #evopick .box{background:#262522;border-radius:12px;padding:18px;width:min(360px,92vw);color:#fff}
+ #evopick button{display:block;width:100%;margin-top:8px;padding:11px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;text-align:left;cursor:pointer}
+ #evopick button small{display:block;font-weight:500;color:#cfcdc9;margin-top:2px}
  .sq.hole{background:radial-gradient(circle at 50% 45%,#000 0 55%,#0b0a09 70%,#1a1816) !important;box-shadow:inset 0 0 calc(var(--sq)*.18) #000}
  .sq.hole::after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 10deg,#ffffff06 0 8deg,#0000 8deg 30deg);pointer-events:none}
  .sq.abt{box-shadow:inset 0 0 0 3px #b06cff;cursor:crosshair}
@@ -469,6 +475,11 @@ class Chess {
     const at = (ff, rr) => (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 ? b[rr * 8 + ff] : undefined);
     const pr = W ? r - 1 : r + 1, pawn = W ? "P" : "p";
     if (at(f - 1, pr) === pawn || at(f + 1, pr) === pawn) return true;
+    if (this.rule === "evo") { // evolved pawns: Pawn+ (A) attacks like a pawn; Grand pawn (G) also ahead and sideways
+      const A = W ? "A" : "a", G = W ? "G" : "g";
+      for (const x of [at(f - 1, pr), at(f + 1, pr)]) if (x === A || x === G) return true;
+      if (at(f, pr) === G || at(f - 1, r) === G || at(f + 1, r) === G) return true;
+    }
     const kn = W ? "N" : "n", kg = W ? "K" : "k";
     for (const [df, dr] of N_OFF) if (at(f + df, r + dr) === kn) return true;
     for (const [df, dr] of K_OFF) if (at(f + df, r + dr) === kg) return true;
@@ -489,7 +500,8 @@ class Chess {
   pseudo() {
     const out = [], b = this.b, us = this.turn, W = us === "w";
     const add = (from, to) => {
-      if ((b[from] === "P" && rankOf(to) === 7) || (b[from] === "p" && rankOf(to) === 0)) {
+      const pl = b[from] && "PAG".includes(b[from].toUpperCase()), wp = isWhite(b[from]); // pawn-like pieces promote
+      if (pl && rankOf(to) === (wp ? 7 : 0)) {
         if (this.rule === "shape" && b[to]) { out.push({ from, to, promo: "q" }); return; } // becomes what it takes
         for (const pr of "qrbn") out.push({ from, to, promo: pr });
       }
@@ -511,6 +523,24 @@ class Chess {
           const to = r1 * 8 + ff;
           if ((b[to] && colorOf(b[to]) !== us) || to === this.ep) add(s, to);
         }
+      } else if (t === "A" || t === "G") { // Evolution: Pawn+ and Grand pawn
+        const dir = W ? 1 : -1, r1 = r + dir, ok = q => q >= 0 && q < 64 && !this.holes.has(q);
+        const enemy = q => b[q] && colorOf(b[q]) !== us;
+        if (r1 >= 0 && r1 < 8 && !b[r1 * 8 + f] && ok(r1 * 8 + f)) {
+          add(s, r1 * 8 + f);
+          const r2 = r + 2 * dir; // Pawn+ may always step two
+          if (t === "A" && r2 >= 0 && r2 < 8 && !b[r2 * 8 + f] && ok(r2 * 8 + f)) add(s, r2 * 8 + f);
+        }
+        for (const df of [-1, 1]) {
+          const ff = f + df;
+          if (ff < 0 || ff > 7) continue;
+          if (r1 >= 0 && r1 < 8 && enemy(r1 * 8 + ff)) {
+            add(s, r1 * 8 + ff);
+            if (t === "A") out.push({ from: s, to: r1 * 8 + ff, promo: null, stay: true }); // capture and stay put
+          }
+          if (t === "G" && enemy(r * 8 + ff)) add(s, r * 8 + ff); // Grand pawn: sideways captures
+        }
+        if (t === "G" && r1 >= 0 && r1 < 8 && enemy(r1 * 8 + f)) add(s, r1 * 8 + f); // and straight ahead
       } else if (t === "N" || t === "K") {
         for (const [df, dr] of t === "N" ? N_OFF : K_OFF) {
           const ff = f + df, rr = r + dr;
@@ -560,6 +590,9 @@ class Chess {
           !this.attacked(home + 3, them) && !this.attacked(home + 2, them))
         out.push({ from: home + 4, to: home + 2, promo: null });
     }
+    if (this.rule === "evo") // Evolution: a pawn that has just moved may evolve as part of that move
+      for (const m of out.slice()) if (!m.promo && !m.stay && b[m.from] && b[m.from].toUpperCase() === "P")
+        out.push({ ...m, evo: "A" }, { ...m, evo: "G" });
     if (!this.holes.size && !this.boss) return out;
     const res = out.filter(m => { // no landing on a deleted square, and no castling across one
       if (this.holes.has(m.to)) return false;
@@ -589,6 +622,12 @@ class Chess {
     const b = this.b, p = b[m.from], t = p ? p.toUpperCase() : "", W = this.turn === "w";
     const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
       hk: { ...this.hk }, hkLost: this.hkLost };
+    if (m.stay) { // Evolution, Pawn+: capture without moving
+      b[m.to] = null;
+      for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.to === sq) this.castle[flag] = false;
+      this.ep = -1; this.half = 0; if (!W) this.full++; this.turn = W ? "b" : "w";
+      return u;
+    }
     if (m.special) { // boss powers: delete a square (and whatever is on it) or steal a piece; the turn stays
       u.cap = b[m.sq]; b[m.sq] = m.special === "pawn" ? (W ? "P" : "p") : null;
       if (m.special === "del") this.holes.add(m.sq);
@@ -623,6 +662,7 @@ class Chess {
       if (nt === "P" && rankOf(m.to) === (W ? 7 : 0)) nt = "Q"; // a pawn on the far rank promotes at once
       u.orig = p; b[m.to] = W ? nt : nt.toLowerCase();
     }
+    if (m.evo) { u.orig = p; b[m.to] = W ? m.evo : m.evo.toLowerCase(); } // Evolution: the pawn evolves on arrival
     if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { // rook jumps too
       const home = W ? 0 : 56;
       if (m.to === home + 6) { b[home + 5] = b[home + 7]; b[home + 7] = null; }
@@ -632,7 +672,7 @@ class Chess {
     for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]])
       if (m.from === sq || m.to === sq) this.castle[flag] = false;
     this.ep = t === "P" && Math.abs(m.to - m.from) === 16 ? (m.from + m.to) / 2 : -1;
-    this.half = t === "P" || u.cap ? 0 : this.half + 1;
+    this.half = "PAG".includes(t) || u.cap ? 0 : this.half + 1;
     if (!W) this.full++;
     this.turn = W ? "b" : "w";
     return u;
@@ -647,6 +687,7 @@ class Chess {
     this.turn = this.turn === "w" ? "b" : "w";
     const W = this.turn === "w";
     this.hk = u.hk; this.hkLost = u.hkLost;
+    if (m.stay) { b[m.to] = u.cap; this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full; return; }
     if (m.castle) {
       const K = b[m.kTo], R = b[m.rTo];
       b[m.kTo] = null; b[m.rTo] = null; b[m.from] = K; b[m.to] = R;
@@ -697,11 +738,17 @@ class Chess {
     this._undo(u); this.moves.pop(); this.keys.pop();
     return u.m;
   }
-  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || ""); }
+  // uci: e2e4 · e7e8q · Evolution: e4d5! (capture and stay) · e2e4^a (evolve to Pawn+) · boss: @del:e4
+  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || "") + (m.stay ? "!" : "") + (m.evo ? "^" + m.evo.toLowerCase() : ""); }
   fromUci(s) {
     if (s[0] === "@") { const [k, q] = s.slice(1).split(":"), sq = sqFrom(q); return this.specials().find(m => m.special === k && m.sq === sq) || null; }
+    if (s.length > 5 || /[!^]/.test(s)) {
+      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), ev = (rest.match(/\^([ag])/) || [])[1];
+      const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), evo = ev ? ev.toUpperCase() : undefined;
+      return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === pr && !!m.stay === stay && m.evo === evo) || null;
+    }
     const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), promo = s[4] || null;
-    return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === promo) || null;
+    return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === promo && !m.stay && !m.evo) || null;
   }
   san(m) {
     const p = this.b[m.from], t = p ? p.toUpperCase() : "";
@@ -709,6 +756,8 @@ class Chess {
     if (m.special) return ({ del: "🕳", steal: "🕵x", pawn: "♟@" })[m.special] + sqName(m.sq);
     else if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
     else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) s = m.to > m.from ? "O-O" : "O-O-O";
+    else if (t === "A" || t === "G") // Evolution: P+ = Pawn+, GP = Grand pawn; ↺ = captured without moving
+      s = (t === "A" ? "P+" : "GP") + (this.b[m.to] ? "x" : "") + sqName(m.to) + (m.stay ? "↺" : "") + (m.promo ? "=" + m.promo.toUpperCase() : "");
     else {
         const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep);
       if (t === "P") s = (cap ? "abcdefgh"[fileOf(m.from)] + "x" : "") + sqName(m.to) + (m.promo ? "=" + m.promo.toUpperCase() : "");
@@ -725,6 +774,7 @@ class Chess {
         s = t + dis + (cap ? "x" : "") + sqName(m.to);
       }
     }
+    if (m.evo) s += "⇧" + (m.evo === "A" ? "P+" : "GP");
     const u = this._apply(m);
     const chk = this.inCheck(), mate = chk && this.legal().length === 0;
     this._undo(u);
@@ -1105,7 +1155,7 @@ function predictMaia(net, game) {
 
 // Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
 // deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
-const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0 };
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200 };
 function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
   let s = 0;
   for (let q = 0; q < 64; q++) {
@@ -1268,7 +1318,7 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
   const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
-  const rule=['shape','fog','hidden','boss'].includes(d.rule)?d.rule:null;
+  const rule=['shape','fog','hidden','boss','evo'].includes(d.rule)?d.rule:null;
   LG={game:new Chess(back||undefined,rule),back,rule,hk0:{w:-1,b:-1},sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
   if(rule=='boss'&&d.boss)LG.game.setupBoss(d.boss.side=='black'?'b':'w');
   if(rule=='hidden')for(const c of ['w','b']){ // bots' secret kings: a random non-pawn piece (online: the other side is unknown)
@@ -1516,7 +1566,7 @@ function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
 async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
  if(S.rule=='fog'){const pos=parseFen(S.fen),kill=S.legal.find(u=>{const q=pos[u.slice(2,4)];return q&&q.toUpperCase()=='K'});
   if(kill){const st=await api('/api/move',{uci:kill});if(st.error)return st;return Object.assign(st,{bot_move:kill,bot_san:st.sans[st.sans.length-1],think:0.8,cands:[]})}} // fog: an exposed king is taken
- if(S.rule=='shape'||S.rule=='hidden')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
+ if(S.rule=='shape'||S.rule=='hidden'||S.rule=='evo')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
  if(s.bot=='leela'){const secs=S.base!=null?Math.max(0.5,Math.min(10,clk[who]/30+inc*0.6)):10;
   return api('/api/bot',{bot:'leela',nodes:s.nodes,secs})}
  if(s.bot=='worstfish'){const t0=performance.now(),w=await sfWorst(S.ucis||[]);if(my!=gid)return{stale:true};
@@ -1577,7 +1627,9 @@ const ST={P:'<circle cx="22.5" cy="11.5" r="5.2"/><path d="M18 18.2h9c.6 0 .9.9.
  K:'<path d="M21.3 3.2h2.4v3h3v2.4h-3v3.6h-2.4V8.6h-3V6.2h3z"/><path d="M19.6 12.2h5.8l1.2 4.4h-8.2z"/><path d="M14.2 33.3c-2.6-4.8-3.4-9.6-1.4-13 1.6-2.6 4.8-3.7 9.7-3.7s8.1 1.1 9.7 3.7c2 3.4 1.2 8.2-1.4 13z"/><path class="h" d="M14.6 29.6c5.2-1.6 10.6-1.6 15.8 0"/>'};
 const STFOOT='<path d="M12.6 33.3h19.8c1.2 0 2.1.9 2.1 2v1.5H10.5v-1.5c0-1.1.9-2 2.1-2z"/><path d="M9.2 36.8h26.6c.9 0 1.6.7 1.6 1.6v2.2H7.6v-2.2c0-.9.7-1.6 1.6-1.6z"/>';
 const OUT={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙'};
-function piece(p,set){set=set||opts.set;const k=p.toUpperCase(),w=p==k,cls='pc '+(w?'wht':'blk');
+function piece(p,set){if(/[AaGg]/.test(p)){const w=p==p.toUpperCase(),A=p.toUpperCase()=='A'; // Evolution: pawn + badge
+  return piece(w?'P':'p',set).replace('</div>','<span class="evb '+(A?'evA':'evG')+'">'+(A?'+':'★')+'</span></div>')}
+ set=set||opts.set;const k=p.toUpperCase(),w=p==k,cls='pc '+(w?'wht':'blk');
  if(set=='minimal'){const f=w?'#f7f5ef':'#2b2b2b',s=w?'#222':'#000',x=w?'#222':'#ddd';
   return '<div class="'+cls+'"><svg viewBox="0 0 45 45"><g fill="'+f+'" stroke="'+s+'" stroke-width="1.6" stroke-linejoin="round">'+
    SV[k].replace('class="x"','stroke="'+x+'" fill="'+x+'"')+'<rect x="10.5" y="35" width="24" height="5" rx="2"/></g></svg></div>'}
@@ -1604,6 +1656,9 @@ function myColor(){return S?S.you:'white'}
 const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pawn'){const w=S&&S.boss&&S.boss.side=='white';b[q]=w?'P':'p'}else delete b[q];return} // boss powers
  const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
+ if(u.includes('!')){delete b[t];return} // Evolution: Pawn+ captured without moving
+ const ev=(u.match(/\^([ag])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
+ if(ev){if(f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];delete b[f];b[t]=p==p.toUpperCase()?ev.toUpperCase():ev;return} // the pawn evolved as it moved
  if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
   const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
  const was=b[t];let cap=was;if(!cap&&p.toUpperCase()=='P'&&f[0]!=t[0])cap='p';
@@ -1612,7 +1667,7 @@ function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pa
   let nt=cap.toUpperCase();if(nt=='P'&&t[1]==(p==k?'8':'1'))nt='Q';if(!was)delete b[t[0]+f[1]];b[t]=p==k?nt:nt.toLowerCase();return}
  if(k=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];
  if(k=='K'&&!(S&&S.start)&&Math.abs(f.charCodeAt(0)-t.charCodeAt(0))==2){const r=f[1],[a,c]=t[0]=='g'?['h','f']:['a','d'];b[c+r]=b[a+r];delete b[a+r]}
- b[t]=u[4]?(p==k?u[4].toUpperCase():u[4]):p}
+ b[t]=pr?(p==k?pr.toUpperCase():pr):p}
 function posAt(n){const b=parseFen(S&&S.start||START),us=S&&S.ucis||[];for(let i=0;i<n&&i<us.length;i++)applyUci(b,us[i]);return b}
 let view=null; // null = live position; otherwise number of half-moves shown
 const RV={ev:[],best:[],tok:0,busy:null,n:0}; // ev[n]: White's score after n half-moves {cp} or {mate}
@@ -1671,9 +1726,10 @@ function slide(B,u,wb){const el=B.querySelector('[data-sq="'+u.slice(2,4)+'"] .p
 function isMine(p){return p&&((p==p.toUpperCase())==(S.you=='white'))}
 function canPre(){return S&&gameOn&&!S.over&&!(GAME&&(GAME.bvb||GAME.lib))&&!reviewOn()&&S.turn!=S.you}
 function sqAt(x,y){const el=document.elementFromPoint(x,y),s=el&&el.closest?el.closest('#board .sq'):null;return s?s.dataset.sq:null}
-function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t));
+function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t)&&!/[!^]/.test(m));
  if(!ms.length)ms=Object.entries(S.castles||{}).filter(([u,d])=>u.startsWith(f)&&d==t).map(([u])=>u); // 960: king to g/c castles
  if(!ms.length)return false;
+ if(S.rule=='evo'&&ms.length==1){noAnim=!!drag;evoMove(f,t,ms[0]);return true}
  noAnim=!!drag;if(ms.length>1)promo(ms);else play(ms[0]);return true}
 function firePre(){if(!PREM||!S)return;const p=PREM;PREM=null;const ms=S.legal.filter(m=>m.startsWith(p.f+p.t));
  if(ms.length&&myTurn())play(ms.find(m=>m.length==4||m.endsWith('q')));else draw()}
@@ -1983,7 +2039,7 @@ function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online ga
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
 function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)+(opts.rule&&opts.rule!='none'?'|'+opts.rule:'')}
 function modeName(k){if(k=='boss')return 'Standard'; // a boss duel looks like a normal game to everyone
- const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king'}[r]||r);
+ const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king',evo:'Evolution'}[r]||r);
  if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
  return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
@@ -2086,13 +2142,23 @@ function fogSquares(pos,white){const v=new Set(),F='abcdefgh',at=(f,r)=>f>=0&&f<
   else if(t=='N')[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]].forEach(([a,b])=>ray(a,b,1));
   else{const dirs=t=='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t=='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];dirs.forEach(([a,b])=>ray(a,b,t=='K'))}}
  return v}
-const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war'],['hidden','Hidden king']];
+const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war'],['hidden','Hidden king'],['evo','Evolution']];
 // Hidden king: before the first move you tap the piece that will be your secret king
 let HKP=null;
 function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
-const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn'};
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn'};
+// ---- Evolution: after moving a pawn you may evolve it; Pawn+ may capture without moving
+function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el){el=document.createElement('div');el.id='evopick';document.body.appendChild(el)}
+ el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
+ el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.style.display='none';res(list[+b.dataset.i][0])})})}
+async function evoMove(f,t,u){
+ if(S.legal.includes(f+t+'!')&&await pickBox('Pawn+ capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay')u=f+t+'!';
+ if(S.legal.includes(u+'^a')){const c=await pickBox('Evolve this pawn?',[['','Keep it a pawn','You can evolve it after a later move.'],
+   ['a','➕ Pawn+','Moves 1 or 2 squares forward at any time. Captures diagonally, and can capture without moving.'],
+   ['g','★ Grand pawn','Captures diagonally, straight ahead and to the left and right.']]);if(c)u+='^'+c}
+ play(u)}
 // ---- Boss duel (mods only, online): the boss has a king + one pawn and free powers on its own turn
 let ABIL=null,ABK='';
 function bossMe(){return !!(S&&S.boss&&S.boss.side==S.you&&gameOn&&!S.over)}
@@ -2139,6 +2205,7 @@ async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncod
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
  fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
+ evo:'Evolution: after a pawn has made its first move, each time you move it you can evolve it. ➕ Pawn+ moves 1 or 2 squares forward any time, captures diagonally and can capture without moving. ★ Grand pawn captures diagonally, straight ahead and to the sides. More pieces will get evolutions later. Website only; bots play it with a small search engine.',
  hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
@@ -2166,7 +2233,7 @@ function modesUI(){const ms=$('mvar');if(!ms.children.length){
  const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
  const fen=[...row.toLowerCase(),...'pppppppp',...Array(32).fill(''),...'PPPPPPPP',...row];
  let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8;h+='<div class="sq '+((r+f)%2?'d':'l')+'">'+(fen[i]?visPiece(fen[i],+opts.vis||0):'')+'</div>'}demo.innerHTML=h;
- const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(opts.rule=='hidden')parts.push('👑 Hidden king');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
+ const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(opts.rule=='hidden')parts.push('👑 Hidden king');if(opts.rule=='evo')parts.push('🧬 Evolution');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
  const ml=$('modeline');ml.style.display=parts.length&&(opts.vs=='human'||opts.vs=='bots')?'block':'none';
  ml.innerHTML='Mode: <b>'+parts.join(' · ')+'</b> · <a href="#" style="color:#bab9b8" id="mlchg">change</a>';const c=$('mlchg');if(c)c.onclick=e=>{e.preventDefault();opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()}}
 // ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
