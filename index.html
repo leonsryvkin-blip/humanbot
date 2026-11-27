@@ -400,6 +400,7 @@
     <button class="act" id="flip">⇅<small>Flip</small></button>
     <button class="act" id="resign">⚑<small>Resign / draw</small></button>
     <button class="act" id="pgnbtn">📋<small>PGN</small></button>
+    <button class="act" id="evotr" style="display:none">🌳<small>Tree</small></button>
    </div>
    <button class="play" id="newgame" style="font-size:19px;padding:11px">New game</button>
   </div>
@@ -455,6 +456,19 @@ const SLIDERS = { Y: [[B_DIR, 7], [R_DIR, 1]], Z: [[B_DIR, 7], [R_DIR, 1]], V: [
 const HORSE = { H: [R_DIR, 1], M: [B_DIR, 1], S: [R_DIR, 2], C: [B_DIR, 2], T: [R_DIR, 2, 1], D: [B_DIR, 2, 1], E: [R_DIR, 7, 1], X: [B_DIR, 7, 1],
   L: [R_DIR, 7, 1, B_DIR], W: [B_DIR, 7, 1, R_DIR] };
 const CAMEL = [[1, 3], [3, 1], [3, -1], [1, -3], [-1, -3], [-3, -1], [-3, 1], [-1, 3]];
+// Evolution attack tables (one walk per direction instead of one per piece type)
+const DIR8 = B_DIR.concat(R_DIR); // 0-3 diagonal, 4-7 straight
+const ATK_REACH = {}; // piece -> how far it captures along each DIR8 direction
+const addReach = (t, dirs, reach) => { const a = ATK_REACH[t] || (ATK_REACH[t] = [0, 0, 0, 0, 0, 0, 0, 0]);
+  for (const d of dirs) { const i = DIR8.findIndex(x => x[0] === d[0] && x[1] === d[1]); if (reach > a[i]) a[i] = reach; } };
+for (const t in SLIDERS) for (const [dirs, reach] of SLIDERS[t]) addReach(t, dirs, reach);
+for (const t in HORSE) addReach(t, HORSE[t][0], HORSE[t][1]);
+addReach("B", B_DIR, 7); addReach("R", R_DIR, 7); addReach("Q", DIR8, 7); addReach("K", DIR8, 1); addReach("Π", R_DIR, 7); // Reaper bishop: rook captures
+const ATK_KN = new Set(["N", "F", "O", "Ω", "Φ", "Ψ", "Ц", "Б", "Д", ...Object.keys(HORSE)]); // capture on knight squares
+const ATK_CAMEL = new Set(["O", "Θ", "Ξ", "Π", "Ω", "Ч", "Б", "Д", ...Object.keys(HORSE).filter(k => HORSE[k][2])]);
+const ATK_DK = new Set(["Ψ", "Д"]); // double knight jump (first landing square empty)
+const ATK_K2D = new Set([..."КГЛПЙЫЇЗЪЄҐ"]), ATK_K2O = new Set([..."ГЛПЙЫЇЗЪҐ"]); // kings' 2-square captures
+const ROYAL_W = new Set([..."KКГЛПЙЫЇЗЪ"]), ROYAL_B = new Set([..."kкглпйыїзъ"]);
 
 class Chess {
   // back: White's back rank, e.g. "RNBQKBNR"; any other = Chess960 (Fischer Random)
@@ -505,12 +519,44 @@ class Chess {
     this.keys = [this.key()];
   }
   kingSq(color) { // Evolution: an evolved king (К = Strong king) is still the king
-    const W = color === "w", s = this.b.indexOf(W ? "K" : "k");
+    const W = color === "w";
+    if (this.rule === "evo") { const R = W ? ROYAL_W : ROYAL_B, b = this.b; for (let q = 0; q < 64; q++) if (b[q] && R.has(b[q])) return q; return -1; }
+    const s = this.b.indexOf(W ? "K" : "k");
     if (s >= 0 || this.rule !== "evo") return s;
     for (const k of W ? "КГЛПЙЫЗЪЇ" : "кглпйызъї") { const e = this.b.indexOf(k); if (e >= 0) return e; }
     return -1;
   }
+  _attEvo(sq, by) { // Evolution: is sq attacked by color `by` (every evolved piece, one pass)
+    const f = sq & 7, r = sq >> 3, b = this.b, W = by === "w", holes = this.holes.size ? this.holes : null, pr = W ? r - 1 : r + 1;
+    if (pr >= 0 && pr < 8) {
+      for (const ff of [f - 1, f + 1]) if (ff >= 0 && ff < 8) { const x = b[pr * 8 + ff]; if (x && colorOf(x) === by) { const t = x.toUpperCase(); if (t === "P" || t === "A" || t === "G") return true; } }
+      if (b[pr * 8 + f] === (W ? "G" : "g")) return true;
+    }
+    if ((f > 0 && b[r * 8 + f - 1] === (W ? "G" : "g")) || (f < 7 && b[r * 8 + f + 1] === (W ? "G" : "g"))) return true;
+    for (const [df, dr] of N_OFF) {
+      const ff = f + df, rr = r + dr; if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue; const x = b[rr * 8 + ff];
+      if (x) { if (colorOf(x) === by && ATK_KN.has(x.toUpperCase())) return true; }
+      else { const f2 = f + 2 * df, r2 = r + 2 * dr; if (f2 >= 0 && f2 < 8 && r2 >= 0 && r2 < 8) { const y = b[r2 * 8 + f2]; if (y && colorOf(y) === by && ATK_DK.has(y.toUpperCase())) return true; } }
+    }
+    for (const [df, dr] of CAMEL) { const ff = f + df, rr = r + dr; if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue; const x = b[rr * 8 + ff]; if (x && colorOf(x) === by && ATK_CAMEL.has(x.toUpperCase())) return true; }
+    for (let i = 0; i < 8; i++) {
+      const df = DIR8[i][0], dr = DIR8[i][1], f2 = f + 2 * df, r2 = r + 2 * dr;
+      if (f2 >= 0 && f2 < 8 && r2 >= 0 && r2 < 8 && !b[(r + dr) * 8 + f + df]) { // kings' 2-square captures, the Sniper king's 3
+        const y = b[r2 * 8 + f2];
+        if (y) { if (colorOf(y) === by && (i < 4 ? ATK_K2D : ATK_K2O).has(y.toUpperCase())) return true; }
+        else { const f3 = f + 3 * df, r3 = r + 3 * dr; if (f3 >= 0 && f3 < 8 && r3 >= 0 && r3 < 8 && b[r3 * 8 + f3] === (W ? "Ы" : "ы")) return true; }
+      }
+      for (let k = 1; k <= 7; k++) { // the first piece along the line: does it reach this far?
+        const ff = f + df * k, rr = r + dr * k; if (ff < 0 || ff > 7 || rr < 0 || rr > 7) break;
+        const s = rr * 8 + ff; if (holes && holes.has(s)) break; const x = b[s]; if (!x) continue;
+        if (colorOf(x) === by) { const re = ATK_REACH[x.toUpperCase()]; if (re && re[i] >= k) return true; }
+        break;
+      }
+    }
+    return false;
+  }
   attacked(sq, by) { // is sq attacked by color `by`
+    if (this.rule === "evo") return this._attEvo(sq, by);
     const f = fileOf(sq), r = rankOf(sq), b = this.b, W = by === "w";
     const gu = this.rule === "guilt" ? this.gu : null; // Guilt: a guilty piece can't capture, so it attacks nothing (but still blocks)
     const at = (ff, rr) => (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 ? (gu && gu[rr * 8 + ff] && b[rr * 8 + ff] ? "#" : b[rr * 8 + ff]) : undefined);
@@ -848,7 +894,7 @@ class Chess {
   }
   _apply(m) { // no legality check; returns undo record
     const b = this.b, p = b[m.from], t = p ? p.toUpperCase() : "", W = this.turn === "w";
-    const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
+    const u = { m, pc: p, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
       hk: { ...this.hk }, hkLost: this.hkLost, mc: this.mc.slice() };
     if (this.rule === "guilt") { u.gu = this.gu.slice(); u.gb = this.gb.slice(); }
     if (this.rule === "evo") u.lv = this.lv.slice();
@@ -1018,7 +1064,7 @@ class Chess {
       this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
       return;
     }
-    b[m.from] = u.orig ? u.orig : m.promo ? (W ? "P" : "p") : b[m.to];
+    b[m.from] = u.orig ? u.orig : m.promo ? (u.pc || (W ? "P" : "p")) : b[m.to]; // a promoting pawn goes back as itself (Evolution: Pawn+ / Grand pawn stay evolved)
     b[m.to] = u.epCap >= 0 ? null : u.cap;
     if (u.epCap >= 0) b[u.epCap] = u.cap;
     if (m.jcap2 >= 0) b[m.jcap2] = u.cap2;
@@ -1498,6 +1544,7 @@ function evalMaterial(g) { // from the side to move's view; centre bonus for kni
   return s;
 }
 function searchVariant(g, level, ms) {
+  if (g.rule === "evo") return searchEvo(g, level, ms); // Evolution has its own engine
   const depth = level < 900 ? 1 : level < 1500 ? 2 : 3, noise = Math.max(0, (2400 - level) / 6);
   const t0 = Date.now(); let nodes = 0, stop = false;
   const order = list => list.map(m => [m, g.b[m.to] ? VAL[g.b[m.to].toUpperCase()] * 10 - VAL[g.b[m.from].toUpperCase()] : 0]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
@@ -1524,6 +1571,228 @@ function searchVariant(g, level, ms) {
   for (const m of root.slice(scored.length)) scored.push([m, -1e8]);
   scored.sort((x, y) => y[1] - x[1]);
   return { move: scored[0][0], depth, nodes, ranked: scored.slice(0, 5) };
+}
+
+// ---- Evo engine: the Evolution bot. Iterative deepening alpha-beta with a transposition table, move ordering
+// (hash move, captures, evolutions, killers, history), null-move pruning, futility pruning, late-move reductions,
+// repetition detection and a capture search. Legality is checked lazily (pseudo moves, skipped if they leave the
+// king attacked), and inside the tree only the strongest evolution of each move is tried. The evaluation knows the
+// Evolution powers: evolving, lives, summons, evolved kings, plus mobility and king safety.
+const EVO_KX = { "К": 60, "Г": 120, "Л": 200, "П": 230, "Й": 260, "Ї": 220, "Ы": 330, "З": 170, "Ъ": 230 }; // evolved kings: worth having
+const evoV = t => (VAL[t] !== undefined ? VAL[t] : 300) + (EVO_KX[t] || 0); // rough values, for move ordering
+const EVO_GAIN = {}; // letter -> [moves needed, value gained by its best evolution]
+for (const t in EVOLVE) { const [need, forms] = EVOLVE[t][0]; let best = 0; for (const e of forms) best = Math.max(best, evoV(e)); EVO_GAIN[t] = [need, Math.max(0, best - evoV(t))]; }
+const EVO_ROYAL = new Set([..."KКГЛПЙЫЇЗЪ"]), EVO_PAWNS = new Set(["P", "A", "G"]);
+// Evaluation weights. Every term is a weight times a feature, so the same features (evoFeatures) can be fitted
+// to self-play results. Starts from hand-set values; EVO_TUNED (from training) replaces them when present.
+const EVO_TUNED = null;
+const EVO_W = (() => {
+  const w = { mat: {}, evo: {}, padv: [0, 7, 14, 21, 64, 80, 96, 0], pfile: 6, cent: 3, mob: 3, life: 150, sumP: 30, sumN: 90, sumZ: 30, sumE: 110, ks: 18, kadv: 12, tempo: 0 };
+  for (const t of Object.keys(VAL)) w.mat[t] = evoV(t);
+  for (const t in EVO_GAIN) w.evo[t] = EVO_GAIN[t][1] * 0.4;
+  if (EVO_TUNED) for (const k in EVO_TUNED) { if (typeof EVO_TUNED[k] === "object" && !Array.isArray(EVO_TUNED[k])) Object.assign(w[k], EVO_TUNED[k]); else w[k] = EVO_TUNED[k]; }
+  return w;
+})();
+const evoMob = (b, f, r, re, w) => { // free squares along a piece's lines (plus an enemy it could take)
+  let m = 0;
+  for (let i = 0; i < 8; i++) { const R = re[i]; if (!R) continue; const df = DIR8[i][0], dr = DIR8[i][1];
+    for (let k = 1; k <= R; k++) { const ff = f + df * k, rr = r + dr * k; if (ff < 0 || ff > 7 || rr < 0 || rr > 7) break;
+      const x = b[rr * 8 + ff]; if (x) { if ((x === x.toUpperCase()) !== w) m++; break; } m++; } }
+  return m;
+};
+// Value network (evo_train/train_nnue.py): a learned correction added to the evaluation. EVO_NNUE = trained weights.
+const EVO_NNUE = null;
+const EVO_NN = (() => {
+  if (!EVO_NNUE || typeof atob === "undefined") return null;
+  const bytes = s => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+  const f = s => new Float32Array(bytes(s).buffer);
+  const N = EVO_NNUE, LI = {}; N.letters.forEach((x, i) => { LI[x] = i; });
+  const emb = N.emb8 ? Float32Array.from(new Int8Array(bytes(N.emb8).buffer), v => v * N.es) : f(N.emb); // stored as 1 byte per weight
+  return { H: N.H, NL: N.NL, NP: 2 * N.NL, LI, need: N.need, emb, b1: f(N.b1), w2: f(N.w2), b2: f(N.b2), w3: f(N.w3), b3: f(N.b3),
+    FP: 64 * 2 * N.NL, FL: 64 * 2 * N.NL + 2 * N.NL, acc: new Float32Array(N.H), ix: new Int32Array(256), wx: new Float32Array(256),
+    PC: (() => { const pc = {}; for (const t of N.letters) for (const x of [t, t.toLowerCase()]) pc[x] = { li: LI[t], nd: N.need[t] || 0, w: x === t, t, sp: "ЯЭИЗЪ".includes(t) }; return pc; })() };
+})();
+function nnEvo(g) { // the network's correction, side to move's view
+  const N = EVO_NN, H = N.H, acc = N.acc, E = N.emb, b = g.b, mc = g.mc, lv = g.lv, wtm = g.turn === "w", ix = N.ix, wx = N.wx;
+  let n = 0;
+  for (let q = 0; q < 64; q++) { // collect the active inputs: (row offset, weight)
+    const p = b[q]; if (!p) continue;
+    const d = N.PC[p]; if (!d) continue;
+    const own = d.w === wtm, pi = d.li + (own ? 0 : N.NL);
+    ix[n] = ((wtm ? q : q ^ 56) * N.NP + pi) * H; wx[n++] = 1;
+    if (d.nd) { ix[n] = (N.FP + pi) * H; wx[n++] = mc[q] >= d.nd ? 1 : mc[q] / d.nd; }
+    if (d.sp) {
+      const t = d.t, l = lv[q], o = N.FL + (own ? 0 : 4);
+      if (t === "Я") { if (l) { ix[n] = o * H; wx[n++] = l; } }
+      else if (t === "Э" || t === "И") { ix[n] = (o + 1) * H; wx[n++] = 7 - l % 8; }
+      else if (t === "З") { ix[n] = (o + 1) * H; wx[n++] = 5 - l; }
+      if (t === "И") { ix[n] = (o + 2) * H; wx[n++] = 2 - (l >> 3); }
+      if (t === "Ъ") { ix[n] = (o + 3) * H; wx[n++] = 2 - (l >> 3); }
+    }
+  }
+  acc.set(N.b1);
+  for (let k = 0; k < n; k++) { const o = ix[k], w = wx[k];
+    if (w === 1) for (let h = 0; h < H; h++) acc[h] += E[o + h]; else for (let h = 0; h < H; h++) acc[h] += E[o + h] * w; }
+  for (let h = 0; h < H; h++) acc[h] = acc[h] < 0 ? 0 : acc[h] > 1 ? 1 : acc[h];
+  let out = N.b3[0];
+  for (let j = 0; j < 32; j++) { let s = N.b2[j]; const o = j * H; for (let h = 0; h < H; h++) s += N.w2[o + h] * acc[h]; out += N.w3[j] * (s < 0 ? 0 : s > 1 ? 1 : s); }
+  return out * 600;
+}
+function evalEvo(g) { // from the side to move's view
+  const W = EVO_W, b = g.b, mc = g.mc, lv = g.lv; let s = 0, kw = -1, kb = -1; const near = [];
+  for (let q = 0; q < 64; q++) {
+    const p = b[q]; if (!p) continue;
+    const t = p.toUpperCase(), w = p === t, f = q & 7, r = q >> 3;
+    let v = W.mat[t] !== undefined ? W.mat[t] : 300;
+    if (EVO_PAWNS.has(t)) v += W.padv[w ? r : 7 - r] + (f > 1 && f < 6 ? W.pfile : 0);
+    else if (EVO_ROYAL.has(t)) { if (w) kw = q; else kb = q; }
+    else { near.push(q); v += W.cent * (4 - Math.abs(3.5 - f) - Math.abs(3.5 - r)); const re = ATK_REACH[t]; if (re) v += W.mob * evoMob(b, f, r, re, w); }
+    const eg = EVO_GAIN[t]; if (eg) { const we = W.evo[t]; if (we) v += we * Math.min(1, mc[q] / eg[0]); } // close to evolving
+    if (t === "Я") v += W.life * lv[q];
+    else if (t === "Э" || t === "И") v += W.sumP * (7 - lv[q] % 8) + (t === "И" ? W.sumN * (2 - (lv[q] >> 3)) : 0);
+    else if (t === "З") v += W.sumZ * (5 - lv[q]);
+    else if (t === "Ъ") v += W.sumE * (2 - (lv[q] >> 3));
+    s += w ? v : -v;
+  }
+  for (const q of near) { const w = b[q] === b[q].toUpperCase(), k = w ? kb : kw; if (k < 0) continue; // enemy pieces close to a king
+    if (Math.max(Math.abs((q & 7) - (k & 7)), Math.abs((q >> 3) - (k >> 3))) <= 2) s += w ? W.ks : -W.ks; }
+  if (g.full < 30) { if (kw >= 0) s -= W.kadv * (kw >> 3); if (kb >= 0) s += W.kadv * (7 - (kb >> 3)); } // kings walking up early
+  s += g.turn === "w" ? W.tempo : -W.tempo;
+  return (g.turn === "w" ? s : -s) + (EVO_NN ? nnEvo(g) : 0);
+}
+function evoFeatures(g) { // the same terms as evalEvo, as White-minus-Black feature counts (for tuning)
+  const F = {}, b = g.b, mc = g.mc, lv = g.lv, add = (k, v) => { F[k] = (F[k] || 0) + v; }; let kw = -1, kb = -1; const near = [];
+  for (let q = 0; q < 64; q++) {
+    const p = b[q]; if (!p) continue;
+    const t = p.toUpperCase(), w = p === t, f = q & 7, r = q >> 3, sg = w ? 1 : -1;
+    add("m:" + t, sg);
+    if (EVO_PAWNS.has(t)) { add("pa" + (w ? r : 7 - r), sg); if (f > 1 && f < 6) add("pf", sg); }
+    else if (EVO_ROYAL.has(t)) { if (w) kw = q; else kb = q; }
+    else { near.push(q); add("ce", sg * (4 - Math.abs(3.5 - f) - Math.abs(3.5 - r))); const re = ATK_REACH[t]; if (re) add("mo", sg * evoMob(b, f, r, re, w)); }
+    const eg = EVO_GAIN[t]; if (eg) add("e:" + t, sg * Math.min(1, mc[q] / eg[0]));
+    if (t === "Я") add("li", sg * lv[q]);
+    else if (t === "Э" || t === "И") { add("sp", sg * (7 - lv[q] % 8)); if (t === "И") add("sn", sg * (2 - (lv[q] >> 3))); }
+    else if (t === "З") add("sz", sg * (5 - lv[q]));
+    else if (t === "Ъ") add("se", sg * (2 - (lv[q] >> 3)));
+  }
+  for (const q of near) { const w = b[q] === b[q].toUpperCase(), k = w ? kb : kw; if (k < 0) continue;
+    if (Math.max(Math.abs((q & 7) - (k & 7)), Math.abs((q >> 3) - (k >> 3))) <= 2) add("ks", w ? 1 : -1); }
+  if (g.full < 30) add("ka", (kw >= 0 ? -(kw >> 3) : 0) + (kb >= 0 ? 7 - (kb >> 3) : 0));
+  add("tm", g.turn === "w" ? 1 : -1);
+  for (const k in F) if (!F[k]) delete F[k];
+  return F;
+}
+function searchEvo(g, level, ms) {
+  const t0 = Date.now(), INF = 1e9, MATE = 100000;
+  const maxD = level < 900 ? 2 : level < 1300 ? 3 : level < 1800 ? 4 : 40, noise = Math.max(0, (2200 - level) / 5);
+  const TT = new Map(), killers = [], hist = new Map(), path = []; let nodes = 0, stop = false;
+  const bkey = m => m.from * 64 + m.to + (m.stay ? 4096 : 0) + (m.summon ? 8192 : 0) + (m.swap ? 16384 : 0) + (m.promo ? m.promo.charCodeAt(0) * 32768 : 0);
+  const mkey = m => bkey(m) + (m.evo ? m.evo.charCodeAt(0) * 4194304 : 0);
+  const hash = () => {
+    const b = g.b, mc = g.mc, lv = g.lv; let h1 = 0x811c9dc5 | 0, h2 = 0x2545f491 | 0;
+    for (let q = 0; q < 64; q++) { const p = b[q]; if (!p) continue; const c = p.charCodeAt(0);
+      h1 = Math.imul(h1 ^ (c * 67 + q), 16777619); h2 = Math.imul(h2 ^ (c + q * 131 + (mc[q] < 15 ? mc[q] : 15) * 9001 + lv[q] * 77777), 2246822519); }
+    const c = g.castle; return (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36) + g.turn + (c.K ? 1 : 0) + (c.Q ? 2 : 0) + (c.k ? 4 : 0) + (c.q ? 8 : 0) + g.ep;
+  };
+  const capVal = m => { const b = g.b; let v = 0, x = b[m.to];
+    if (x && !m.swap && colorOf(x) !== g.turn) v += evoV(x.toUpperCase());
+    else if (!x && m.to === g.ep && b[m.from] && b[m.from].toUpperCase() === "P") v += 100;
+    if (m.jcap >= 0 && b[m.jcap]) v += evoV(b[m.jcap].toUpperCase());
+    if (m.jcap2 >= 0 && b[m.jcap2]) v += evoV(b[m.jcap2].toUpperCase());
+    return v; };
+  const gen = root => { // inside the tree, each move is tried once: with its strongest evolution if it has any
+    const all = g.pseudo(); if (root) return all;
+    let any = false; for (const m of all) if (m.evo) { any = true; break; } if (!any) return all;
+    const best = new Map();
+    for (const m of all) if (m.evo) { const k = bkey(m), o = best.get(k); if (!o || evoV(m.evo.toUpperCase()) > evoV(o.evo.toUpperCase())) best.set(k, m); }
+    const out = []; for (const m of all) { if (m.evo) { if (best.get(bkey(m)) === m) out.push(m); } else if (!best.has(bkey(m))) out.push(m); }
+    return out;
+  };
+  const score = (moves, ttm, ply, capsOnly) => { // [move, order score, captured value]
+    const kl = killers[ply], out = [];
+    for (const m of moves) { const cv = capVal(m); if (capsOnly && !cv && !m.promo) continue; const k = mkey(m); let sc;
+      if (k === ttm) sc = 1e8; else if (cv) sc = 1e6 + cv * 10 - evoV((g.b[m.from] || "P").toUpperCase()) / 10;
+      else if (m.evo || m.promo) sc = 5e5 + (m.evo ? evoV(m.evo.toUpperCase()) : 800); else if (k === kl) sc = 4e5; else sc = hist.get(k) || 0;
+      out.push([m, sc, cv]); }
+    return out.sort((a, b) => b[1] - a[1]);
+  };
+  const legalAfter = us => { const k = g.kingSq(us); return k < 0 || !g.attacked(k, us === "w" ? "b" : "w"); };
+  function qs(a, b, ply, qd) {
+    if ((++nodes & 2047) === 0 && Date.now() - t0 > ms) stop = true; if (stop) return 0;
+    const st = evalEvo(g); if (st >= b) return st; if (st > a) a = st; if (qd > 6) return st;
+    const us = g.turn;
+    for (const [m, , cv] of score(gen(false), null, ply, true)) {
+      if (st + cv + (m.promo ? 800 : 0) + 200 < a) continue; // can't catch up
+      const u = g._apply(m); if (!legalAfter(us)) { g._undo(u); continue; }
+      const v = -qs(-b, -a, ply + 1, qd + 1); g._undo(u);
+      if (stop) return 0; if (v >= b) return v; if (v > a) a = v;
+    }
+    return a;
+  }
+  function ab(d, a, b, ply, nullOk) {
+    if ((++nodes & 2047) === 0 && Date.now() - t0 > ms) stop = true; if (stop) return 0;
+    const us = g.turn, inChk = g.inCheck();
+    if (d <= 0) { if (!inChk) return qs(a, b, ply, 0); d = 1; } // a check at the horizon is looked at one more move
+    const key = hash();
+    for (let i = ply - 2; i >= 0; i -= 2) if (path[i] === key) return 0; // repeating a position: a draw
+    path[ply] = key;
+    const e = TT.get(key);
+    if (e && e.d >= d) { if (e.f === 0 || (e.f === 1 && e.v >= b) || (e.f === 2 && e.v <= a)) return e.v; }
+    let st = null; const stat = () => st === null ? (st = evalEvo(g)) : st;
+    if (nullOk && !inChk && d >= 3 && b < MATE / 2 && stat() >= b) { // null move: if passing still holds, this line is fine
+      const ep = g.ep; g.turn = us === "w" ? "b" : "w"; g.ep = -1;
+      const v = -ab(d - 3 - (d > 6 ? 1 : 0), -b, -b + 1, ply + 1, false); g.turn = us; g.ep = ep;
+      if (stop) return 0; if (v >= b) return v;
+    }
+    const fut = !inChk && d <= 2 && a > -MATE / 2 && stat() + (d === 1 ? 220 : 420) <= a; // quiet moves can't lift this
+    const a0 = a; let best = -INF, bestK = null, n = 0, searched = 0;
+    for (const [m, , cv] of score(gen(false), e && e.m, ply, false)) {
+      const u = g._apply(m); if (!legalAfter(us)) { g._undo(u); continue; }
+      n++; const quiet = !cv && !m.evo && !m.promo;
+      if (fut && quiet && searched) { g._undo(u); if (st > best) best = st; continue; }
+      let v;
+      if (!searched) v = -ab(d - 1, -b, -a, ply + 1, true);
+      else { const r = quiet && !inChk && d >= 3 && n > 3 ? 1 + (n > 8 ? 1 : 0) + (d > 6 && n > 14 ? 1 : 0) : 0;
+        v = -ab(d - 1 - r, -a - 1, -a, ply + 1, true);
+        if (!stop && v > a && (r || v < b)) v = -ab(d - 1, -b, -a, ply + 1, true); }
+      g._undo(u); searched++; if (stop) return best > -INF ? best : 0;
+      if (v > best) { best = v; bestK = mkey(m); }
+      if (v > a) a = v;
+      if (a >= b) { if (quiet) { const k = mkey(m); killers[ply] = k; hist.set(k, (hist.get(k) || 0) + d * d); } break; }
+    }
+    if (!n) return inChk ? -MATE + ply : 0;
+    if (TT.size > 500000) TT.clear();
+    TT.set(key, { d, v: best, f: best <= a0 ? 2 : best >= b ? 1 : 0, m: bestK });
+    return best;
+  }
+  // root: every move and every evolution choice; exact scores so weaker levels can pick among near-best moves
+  const us = g.turn, root = [];
+  for (const m of g.pseudo()) { const u = g._apply(m); const ok = legalAfter(us); g._undo(u); if (ok) root.push([m, 0]); }
+  if (!root.length) return { move: null, depth: 0, nodes: 0, ranked: [] };
+  path[0] = hash();
+  let done = [], depth = 0;
+  for (let d = 1; d <= maxD && !stop; d++) {
+    const sc = []; let a = -INF;
+    for (const [m] of root) {
+      const u = g._apply(m); let v;
+      if (noise || !sc.length) v = -ab(d - 1, -INF, INF, 1, true);
+      else { v = -ab(d - 1, -a - 1, -a, 1, true); if (!stop && v > a) v = -ab(d - 1, -INF, -a, 1, true); }
+      g._undo(u); if (stop) break;
+      sc.push([m, v]); if (v > a) a = v;
+    }
+    if (stop && sc.length < root.length) { // keep a partial iteration only if it already found a better move
+      if (sc.length && done.length) { const bm = sc.reduce((x, y) => y[1] > x[1] ? y : x); if (bm[1] > done[0][1]) done = [bm].concat(done.filter(x => x[0] !== bm[0])); }
+      break;
+    }
+    sc.sort((x, y) => y[1] - x[1]); done = sc; depth = d;
+    root.length = 0; for (const [m] of sc) root.push([m, 0]); // next depth starts with the best moves
+    if (Math.abs(sc[0][1]) > MATE / 2) break; // a forced mate was found
+    if (Date.now() - t0 > ms * 0.55) break; // the next depth would not finish
+  }
+  if (!done.length) done = root.map(([m]) => [m, 0]);
+  let pick = done;
+  if (noise) pick = done.map(([m, v]) => [m, v + (Math.abs(v) > MATE / 2 ? 0 : (Math.random() - 0.5) * 2 * noise)]).sort((x, y) => y[1] - x[1]);
+  return { move: pick[0][0], depth, nodes, ranked: done.slice(0, 5) };
 }
 
 // Web Worker side: the network runs off the page's main thread so clocks and taps stay smooth.
@@ -2171,8 +2440,11 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
  else for(let i=0;i<sn.length;i+=2)h+='<div class="mr"><span class="n">'+(i/2+1)+'.</span>'+ms(i)+ms(i+1)+'</div>';
  mv.innerHTML=h;mv.classList.toggle('rv',rv);
  if(rv){const c=mv.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'});else if(view==0)mv.scrollTop=0}else mv.scrollTop=1e9;
- $('nav').style.display=rv?'grid':'none';evalUI(wb);explainUI();abilUI();
+ $('nav').style.display=rv?'grid':'none';evalUI(wb);explainUI();abilUI();evoBrUI();
  drawClocks()}
+// Evolution: a Tree button in the game buttons opens the Evolution tree
+function evoBrUI(){const el=$('evotr');if(!el)return;el.style.display=S&&S.rule=='evo'?'':'none';el.onclick=()=>evoTree()}
+function evoTreeAt(k){evoTree();const n=document.querySelector('#evotree .eg-n[data-k="'+k+'"]');if(!n)return;n.scrollIntoView({block:'center',inline:'center'});n.click()}
 function arrowSvg(list,wb){const xy=s=>{const f=s.charCodeAt(0)-97,r=+s[1]-1;return[(wb?f:7-f)+.5,(wb?7-r:r)+.5]};let h='';
  list.forEach(([u,col])=>{const [x1,y1]=xy(u.slice(0,2)),[x2,y2]=xy(u.slice(2,4)),dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,ex=x2-ux*.32,ey=y2-uy*.32;
   h+='<line x1="'+(x1+ux*.25)+'" y1="'+(y1+uy*.25)+'" x2="'+ex+'" y2="'+ey+'" stroke="'+col+'" stroke-width=".17" stroke-linecap="round"/>'+
