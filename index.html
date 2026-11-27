@@ -47,6 +47,9 @@
  .colbtn{flex:1;height:58px;border-radius:8px;background:var(--card);cursor:pointer;display:grid;place-items:center;border:2px solid transparent;font-size:26px;font-weight:800;color:var(--mut)}
  .colbtn:hover{background:var(--card2)}.colbtn.on{border-color:var(--grn);background:#3f4a35}
  .colbtn .pc{width:44px;height:44px;font-size:40px}
+ .colbtn{height:72px;grid-template-rows:1fr auto;padding:4px 0 6px}.colbtn .cl{font-size:12px;font-weight:700;color:var(--mut)}.colbtn.on .cl{color:#fff}
+ #start{position:sticky;bottom:8px;z-index:6;box-shadow:0 6px 16px #000b;line-height:1.1}#start small{display:block;font-size:13px;font-weight:600;opacity:.9;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .lvword{display:inline-block;margin-left:10px;font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:#3f4a35;color:#cfe8b0;vertical-align:middle}
  .more{margin-top:12px;border-top:1px solid #3a3835;padding-top:4px}
  .more summary{cursor:pointer;color:var(--mut);font-size:14px;font-weight:600;padding:8px 0;list-style:none}
  .more summary::before{content:"▸ "}.more[open] summary::before{content:"▾ "}
@@ -59,14 +62,23 @@
  .sq.lastol{outline:3px solid #f6d33cdd;outline-offset:-3px}
  .sq.hkm::before,.sq.hkt::before{content:"👑";position:absolute;top:1px;right:2px;font-size:calc(var(--sq)*.27);line-height:1;z-index:3;pointer-events:none;filter:drop-shadow(0 1px 1px #000a)}
  .sq.hkt{box-shadow:inset 0 0 0 3px #e05a4f}
+ .sq.gu::before,.sq.guc::before{content:"";position:absolute;left:7%;right:7%;bottom:1%;height:36%;border-radius:50%;z-index:0;border-bottom:4px solid #5e0709;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#ff5a4a 0 34%,#b5161a 36% 52%,#e0322a 54% 66%,#8d0f12 68%);box-shadow:0 2px 3px #0009,inset 0 -2px 0 #6d0a0c}
+ .sq.guc::before{outline:2px dashed #ffd54a;outline-offset:1px;background:radial-gradient(ellipse at 50% 40%,#ffd86b 0 34%,#c4161a 36% 52%,#e0322a 54% 66%,#8d0f12 68%)}
  .sq.hkpick{box-shadow:inset 0 0 0 3px #f6d33c;cursor:pointer}
  .evb{position:absolute;right:4%;top:2%;min-width:36%;height:36%;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 calc(var(--sq)*.24)/1 sans-serif;color:#fff;border:2px solid #fff;box-shadow:0 1px 3px #0008;z-index:2}
  .evA{background:#2f8f3f}.evG{background:#c48a12}.evH{background:#2b6cc4}.evM{background:#8a3fc4}
  .evS,.evC{border-color:#f2c94c;font-size:calc(var(--sq)*.17)}.evS{background:#1b4b94}.evC{background:#5f2296}
  .evT,.evD{border-color:#ff9a3c;font-size:calc(var(--sq)*.17);box-shadow:0 0 6px #ff9a3c99}.evT{background:#123a73}.evD{background:#4a1677}
+ .evE,.evX{border-color:#ff4d4d;font-size:calc(var(--sq)*.17);box-shadow:0 0 8px #ff4d4dcc}.evE{background:#0d2b57}.evX{background:#36104f}
+ .evY{background:linear-gradient(90deg,#f0f0f0 50%,#333 50%);color:#d33;font-size:calc(var(--sq)*.2)}
+ .evL,.evW{border-color:#fff3b0;font-size:calc(var(--sq)*.17);box-shadow:0 0 10px #ffe46b}.evL{background:linear-gradient(135deg,#0d2b57,#c99a1b)}.evW{background:linear-gradient(135deg,#1a0526,#5b5b6e)}
  #evopick{position:fixed;inset:0;background:#000a;z-index:70;display:none;align-items:center;justify-content:center}
  #evopick .box{background:#262522;border-radius:12px;padding:18px;width:min(360px,92vw);color:#fff}
  #evopick button{display:block;width:100%;margin-top:8px;padding:11px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;text-align:left;cursor:pointer}
+ #evotree{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;overflow:auto;padding:14px}.et-box{max-width:880px;margin:0 auto;background:#262522;border-radius:10px;padding:14px 16px;color:#ddd}.et-head{display:flex;justify-content:space-between;align-items:center;font-size:19px}.et-head button{background:#3a3936;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:700}.et-box h3{margin:18px 0 4px;color:#81b64c}.et-n{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;background:#302e2b;border-radius:8px;padding:8px;margin:6px 0}.et-ref{color:#bab9b8;align-items:center}.et-pc{position:relative;width:46px;height:46px;flex:none}.et-t{flex:1;min-width:180px}.et-need{margin-left:8px;font-size:12px;background:#4a4844;border-radius:8px;padding:1px 7px;color:#ddd;white-space:nowrap}.et-kids{margin-left:16px;border-left:2px solid #55534e;padding-left:10px}.et-b{display:grid;grid-template-columns:repeat(8,15px);grid-auto-rows:15px;flex:none;border:1px solid #111;width:max-content}.et-b i,.et-leg i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:800;color:#1a1a1a;line-height:1}.et-b i.l{background:#ebecd0}.et-b i.d{background:#9aa680}.et-b i.mc,.et-leg i.mc{background:#3d7fd6;color:#fff}.et-b i.mo,.et-leg i.mo{background:#4caf50;color:#fff}.et-b i.co,.et-leg i.co{background:#d64545;color:#fff}.et-b i.me,.et-leg i.me{background:#1b1a18}.et-leg{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0 6px;font-size:13px}.et-leg span{display:flex;align-items:center;gap:5px}.et-leg i{width:16px;height:16px;background:#9aa680}.et-head button,.eg-top button{background:#3a3936;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:700}.et-b.big{grid-template-columns:repeat(8,24px);grid-auto-rows:24px;margin:6px 0}.et-b.big i{font-size:13px}.eg-wrap{position:fixed;inset:10px;background:#211f1c;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;color:#ddd}.eg-top{padding:10px 14px 0}.eg-tip{padding:2px 14px 6px}.eg-view{flex:1;overflow:auto;cursor:grab;background:radial-gradient(circle,#2e2c28 1px,transparent 1.2px) 0 0/22px 22px}.eg-sz{position:relative}.eg-in{position:absolute;left:0;top:0;transform-origin:0 0}.eg-n{position:absolute;width:128px;height:56px;display:flex;align-items:center;gap:6px;background:#302e2b;border:2px solid #4a4844;border-radius:10px;padding:4px 6px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.35)}.eg-n:hover{border-color:#81b64c}.eg-n.on{border-color:#ffd23a;background:#3a372f}.eg-pc{position:relative;width:40px;height:40px;flex:none}.eg-nm{font-size:12px;font-weight:700;line-height:1.15;color:#eee}.eg-m{position:absolute;transform:translate(-50%,-50%);background:#81b64c;color:#fff;font-size:11px;font-weight:800;border-radius:9px;padding:1px 7px;white-space:nowrap;pointer-events:none}.eg-h{position:absolute;font-size:15px;font-weight:800;color:#81b64c}.eg-info{display:none;position:absolute;right:16px;bottom:16px;width:min(330px,calc(100% - 32px));max-height:calc(100% - 90px);overflow:auto;background:#2b2926;border:2px solid #4a4844;border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}.eg-ih{display:flex;align-items:center;gap:8px;font-size:16px}.eg-ix{float:right;background:#3a3936;color:#fff;border:0;border-radius:6px;padding:4px 9px;cursor:pointer}.eg-info a{color:#9fd36a}.lvb{position:absolute;right:2%;top:1%;font-size:clamp(8px,1.6vw,13px);font-weight:700;color:#fff;background:#c8243c;border-radius:8px;padding:0 4px;line-height:1.4;pointer-events:none;z-index:3}.evp svg{width:94%;height:94%;filter:drop-shadow(0 2px 1.5px #0006)}
+ .evpic{float:left;width:46px;height:46px;margin:-6px 10px 0 -4px;background:#3b3a36;border-radius:8px}
+ .cct{color:#2fbf5b;font-weight:800;white-space:nowrap;cursor:help}
+ .cccode{background:#1b1a18;color:#7fe08f;padding:2px 7px;border-radius:5px;font-weight:800;letter-spacing:.5px;user-select:all}
  #evopick button small{display:block;font-weight:500;color:#cfcdc9;margin-top:2px}
  .sq.hole{background:radial-gradient(circle at 50% 45%,#000 0 55%,#0b0a09 70%,#1a1816) !important;box-shadow:inset 0 0 calc(var(--sq)*.18) #000}
  .sq.hole::after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 10deg,#ffffff06 0 8deg,#0000 8deg 30deg);pointer-events:none}
@@ -197,10 +209,11 @@
  @media (max-width:900px){
   :root{--sq:min(calc((100vw - 8px)/8),calc((100vh - 120px)/8),72px)}
   .wrap{padding:4px;gap:8px;flex-direction:column;align-items:center}
-  .side{width:calc(100vw - 8px);max-height:none}
+  .side{width:calc(100vw - 8px);max-height:none;overflow:visible}.side>.sbody{overflow:visible}
   .clock .t{font-size:22px;min-width:90px}
   #preview{width:288px;--sq:48px}#preview .sq{height:48px}
-  #start{position:sticky;bottom:8px;box-shadow:0 4px 14px #000a}
+  body.setupv .side{order:-1} /* phone: choose first, the board comes after */
+  body.setupv .boardcol{opacity:.55}
   .bwrap{flex-direction:column;gap:4px}
   #evalbar{width:auto;height:16px}
   #evalfill,#evalbar.fl #evalfill{top:0;bottom:0;left:0;right:auto;height:auto;width:var(--ev,50%)}
@@ -247,12 +260,12 @@
  @media (max-width:900px){.hnav a.hprof span#hpname{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pstats{grid-template-columns:repeat(2,1fr)}.pcard .pav{width:64px;height:64px;font-size:28px}.pname{font-size:21px}}
  @media (max-width:900px){
   #home .in{padding:12px 12px 30px}.hnav{margin-bottom:16px}.hnav a{margin-left:12px;font-size:14px}
-  .hero{flex-direction:column;gap:20px}#hboard{--sq:min(calc((100vw - 24px)/8),44px)}
+  .hero{flex-direction:column;gap:20px}#hboard{--sq:min(calc((100vw - 24px)/8),34px);order:2}.htext{order:1} /* phone: the buttons come first */
   .htext h1{font-size:30px}.htext p{font-size:15px}.hbtn{max-width:none}
   .hcards{grid-template-columns:repeat(2,1fr)}
  }
 </style><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#302e2b"><link rel="apple-touch-icon" href="icon-192.png">
-</head><body>
+</head><body class="setupv">
 <div id="home"><div class="in">
  <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span class="hnr"><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a><a id="hprof" class="hprof"><span class="pav" id="hpav">👤</span><span id="hpname">Sign in</span></a></span></div>
  <div class="hero">
@@ -364,7 +377,7 @@
      </div>
     </div>
     <label class="tog"><input type="checkbox" id="show"> Show what the bot was considering</label>
-    <div class="small">Runs on this device · HumanBot 12x192 model, step 400,000 (with human thinking times) · built 26 Nov 2026</div>
+    <div class="small">Runs on this device · HumanBot 12x192 model, step 400,000 (with human thinking times) · built 27 Nov 2026</div>
    </details>
    <button class="play" id="start">Play</button>
   </div>
@@ -428,10 +441,17 @@ const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 // Evolution tree: piece -> [[moves it must have made (counting the evolving move), [forms it may become]]]
 // A = Pawn+, G = Grand pawn, H = Arabian horse, M = Mustang, S = Stallion, C = Bronco.
 // A piece's move count restarts when it evolves, so "2" for H/M means two moves after becoming a horse.
-// T = Sandstorm, D = Dune runner (stage 3: + the camel jump).
-const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]], H: [[2, ["S"]]], M: [[2, ["C"]]], S: [[3, ["T"]]], C: [[3, ["D"]]] };
-// knight-family pieces: [extra step directions, how far they reach, camel jump (3+1 leap)?]
-const HORSE = { H: [R_DIR, 1], M: [B_DIR, 1], S: [R_DIR, 2], C: [B_DIR, 2], T: [R_DIR, 2, 1], D: [B_DIR, 2, 1] };
+// T = Sandstorm, D = Dune runner (stage 3: + the camel jump), E = Pegasus, X = Phantom (stage 4: full rook / bishop reach).
+const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]], H: [[2, ["S"]]], M: [[2, ["C"]]], S: [[3, ["T"]]], C: [[3, ["D"]]],
+  T: [[4, ["E"]]], D: [[4, ["X"]]], E: [[5, ["L"]]], X: [[5, ["W"]]],
+  R: [[2, ["Λ", "Ж", "Я"]]], Q: [[6, ["Ц", "Ч", "Ф"]]], K: [[3, ["К"]]], "К": [[4, ["Г"]]], "Г": [[5, ["Л"]]], "Л": [[5, ["П"]]], "П": [[5, ["Й"]]], "Ц": [[6, ["Б"]]], "Ч": [[6, ["Б"]]], "Б": [[6, ["Д"]]], "Ф": [[6, ["Э"]]], "Э": [[6, ["И"]]], "Ж": [[6, ["Ш"]]], "Ш": [[6, ["Щ"]]], "Щ": [[6, ["Ю"]]], "Λ": [[4, ["Φ"]]], "Φ": [[6, ["Ψ"]]],
+  B: [[2, ["Y"]]], Y: [[2, ["Z", "Γ"]]], "Γ": [[3, ["Δ"]]], "Δ": [[6, ["Θ"]]], "Θ": [[6, ["Ξ", "Π"]]], "Ξ": [[10, ["Ω"]]], "Π": [[10, ["Ω"]]], O: [[10, ["Ω"]]], I: [[10, ["Ω"]]], Z: [[2, ["V"]]], V: [[3, ["U"]]], U: [[2, ["F", "J"]]], F: [[3, ["O"]]], J: [[3, ["I"]]] };
+// other evolved sliders: piece -> list of [directions, reach] it moves and captures along (Y = Two-colored bishop)
+const SLIDERS = { Y: [[B_DIR, 7], [R_DIR, 1]], Z: [[B_DIR, 7], [R_DIR, 1]], V: [[B_DIR, 7], [R_DIR, 1]], U: [[B_DIR, 7], [R_DIR, 1]], F: [[B_DIR, 7], [R_DIR, 1]], J: [[B_DIR, 7], [R_DIR, 1]], O: [[B_DIR, 7], [R_DIR, 1]], I: [[B_DIR, 7], [R_DIR, 1]], "Γ": [[B_DIR, 7], [R_DIR, 1]], "Δ": [[B_DIR, 7], [R_DIR, 2]], "Θ": [[B_DIR, 7], [R_DIR, 2]], "Ξ": [[B_DIR, 7], [R_DIR, 2]], "Π": [[B_DIR, 7], [R_DIR, 2]], "Ω": [[B_DIR, 7], [R_DIR, 7]], "Λ": [[R_DIR, 7]], "Φ": [[R_DIR, 7]], "Ψ": [[R_DIR, 7]], "Ж": [[R_DIR, 7]], "Ш": [[R_DIR, 7]], "Щ": [[R_DIR, 7]], "Ю": [[R_DIR, 7]], "Я": [[R_DIR, 7]], "Ц": [[B_DIR, 7], [R_DIR, 7]], "Ч": [[B_DIR, 7], [R_DIR, 7]], "Ф": [[B_DIR, 7], [R_DIR, 7]], "Б": [[B_DIR, 7], [R_DIR, 7]], "Д": [[B_DIR, 7], [R_DIR, 7]], "Э": [[B_DIR, 7], [R_DIR, 7]], "И": [[B_DIR, 7], [R_DIR, 7]], "К": [[B_DIR, 1], [R_DIR, 1]], "Г": [[B_DIR, 1], [R_DIR, 1]], "Л": [[B_DIR, 1], [R_DIR, 1]], "П": [[B_DIR, 1], [R_DIR, 1]], "Й": [[B_DIR, 1], [R_DIR, 1]] };
+// L = Celestial, W = Wraith (stage 5, final: + the other slider's moves, but only onto empty squares)
+// knight-family pieces: [extra step directions, how far they reach, camel jump (3+1 leap)?, move-only slide directions]
+const HORSE = { H: [R_DIR, 1], M: [B_DIR, 1], S: [R_DIR, 2], C: [B_DIR, 2], T: [R_DIR, 2, 1], D: [B_DIR, 2, 1], E: [R_DIR, 7, 1], X: [B_DIR, 7, 1],
+  L: [R_DIR, 7, 1, B_DIR], W: [B_DIR, 7, 1, R_DIR] };
 const CAMEL = [[1, 3], [3, 1], [3, -1], [1, -3], [-1, -3], [-3, -1], [-3, 1], [-1, 3]];
 
 class Chess {
@@ -445,6 +465,8 @@ class Chess {
     this.hk = { w: -1, b: -1 }; this.hkLost = null;
     this.holes = new Set(); this.boss = null; // boss duel: deleted squares, and the boss side's powers
     this.mc = new Array(64).fill(0); // Evolution: how many moves the piece on each square has made
+    this.lv = new Array(64).fill(0); // Evolution: extra lives of the piece on each square (Life rook)
+    this.gu = new Array(64).fill(0); this.gb = new Array(64).fill(-1); // Guilt: 1 guilty, 2 guilty and confessing next to bishop gb
     this.b = new Array(64).fill(null);
     back = back || "RNBQKBNR";
     for (let f = 0; f < 8; f++) {
@@ -467,7 +489,7 @@ class Chess {
     const c = Object.create(Chess.prototype);
     c.b = this.b.slice(); c.turn = this.turn; c.castle = { ...this.castle }; c.ep = this.ep;
     c.c960 = this.c960; c.kf = this.kf; c.rook = this.rook; c.rule = this.rule; c.hk = { ...this.hk }; c.hkLost = this.hkLost;
-    c.holes = new Set(this.holes); c.boss = this.boss ? { ...this.boss } : null; c.mc = this.mc.slice();
+    c.holes = new Set(this.holes); c.boss = this.boss ? { ...this.boss } : null; c.mc = this.mc.slice(); c.lv = this.lv.slice(); c.gu = this.gu.slice(); c.gb = this.gb.slice();
     c.half = this.half; c.full = this.full; c.stack = []; c.moves = this.moves.slice(); c.keys = this.keys.slice();
     return c;
   }
@@ -480,10 +502,16 @@ class Chess {
     this.boss = { side };
     this.keys = [this.key()];
   }
-  kingSq(color) { const k = color === "w" ? "K" : "k"; return this.b.indexOf(k); }
+  kingSq(color) { // Evolution: an evolved king (К = Strong king) is still the king
+    const W = color === "w", s = this.b.indexOf(W ? "K" : "k");
+    if (s >= 0 || this.rule !== "evo") return s;
+    for (const k of W ? "КГЛПЙ" : "кглпй") { const e = this.b.indexOf(k); if (e >= 0) return e; }
+    return -1;
+  }
   attacked(sq, by) { // is sq attacked by color `by`
     const f = fileOf(sq), r = rankOf(sq), b = this.b, W = by === "w";
-    const at = (ff, rr) => (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 ? b[rr * 8 + ff] : undefined);
+    const gu = this.rule === "guilt" ? this.gu : null; // Guilt: a guilty piece can't capture, so it attacks nothing (but still blocks)
+    const at = (ff, rr) => (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 ? (gu && gu[rr * 8 + ff] && b[rr * 8 + ff] ? "#" : b[rr * 8 + ff]) : undefined);
     const pr = W ? r - 1 : r + 1, pawn = W ? "P" : "p";
     if (at(f - 1, pr) === pawn || at(f + 1, pr) === pawn) return true;
     if (this.rule === "evo") { // evolved pawns: Pawn+ (A) attacks like a pawn; Grand pawn (G) also ahead and sideways
@@ -491,8 +519,25 @@ class Chess {
       for (const x of [at(f - 1, pr), at(f + 1, pr)]) if (x === A || x === G) return true;
       if (at(f, pr) === G || at(f - 1, r) === G || at(f + 1, r) === G) return true;
       // knight-family evolutions: knight jumps + a short straight or diagonal reach (HORSE)
-      for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x && HORSE[x.toUpperCase()] && colorOf(x) === by) return true; }
+      for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x && HORSE[x.toUpperCase()] && colorOf(x) === by) return true; if (x === (W ? "F" : "f") || x === (W ? "O" : "o") || x === (W ? "Ω" : "ω") || x === (W ? "Φ" : "φ") || x === (W ? "Ψ" : "ψ") || x === (W ? "Ц" : "ц") || x === (W ? "Б" : "б") || x === (W ? "Д" : "д")) return true; if ((at(f + 2 * df, r + 2 * dr) === (W ? "Ψ" : "ψ") || at(f + 2 * df, r + 2 * dr) === (W ? "Д" : "д")) && x === null) return true; }
+      for (const [df, dr] of CAMEL) { const x = at(f + df, r + dr); if (x === (W ? "O" : "o") || (x && colorOf(x) === by && "ΘΞΠΩЧБД".includes(x.toUpperCase()))) return true; }
+      for (const [df, dr] of B_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "К" : "к") || x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й"))) return true; } // Strong kings (blocked by a piece in between): 2 squares diagonally
+      for (const [df, dr] of R_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й"))) return true; } // Even stronger king: 2 squares orthogonally
+      for (const [df, dr] of R_DIR) for (let k = 1; ; k++) { // Reaper bishop: rook captures
+        const x = at(f + df * k, r + dr * k);
+        if (x === undefined || this.holes.has((r + dr * k) * 8 + f + df * k)) break;
+        if (x) { if (x === (W ? "Π" : "π")) return true; break; }
+      } // Sun bishop captures with the camel jump // Golden bishop attacks like a knight
       for (const [df, dr] of CAMEL) { const x = at(f + df, r + dr); if (x && colorOf(x) === by && (HORSE[x.toUpperCase()] || [])[2]) return true; }
+      for (const [t, rays] of Object.entries(SLIDERS)) {
+        const me = W ? t : t.toLowerCase();
+        for (const [dirs, reach] of rays) for (const [df, dr] of dirs) for (let k = 1; k <= reach; k++) {
+          const ff = f + df * k, rr = r + dr * k, x = at(ff, rr);
+          if (x === undefined || this.holes.has(rr * 8 + ff)) break;
+          if (x === me) return true;
+          if (x) break;
+        }
+      }
       for (const [t, [dirs, reach]] of Object.entries(HORSE)) {
         const me = W ? t : t.toLowerCase();
         for (const [df, dr] of dirs) for (let k = 1; k <= reach; k++) {
@@ -512,7 +557,7 @@ class Chess {
         let ff = f + df, rr = r + dr;
         while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) {
           if (this.holes.has(rr * 8 + ff)) break; // nothing passes a deleted square
-          const p = b[rr * 8 + ff];
+          const p = gu && gu[rr * 8 + ff] && b[rr * 8 + ff] ? "#" : b[rr * 8 + ff];
           if (p) { if (set.includes(p)) return true; break; }
           ff += df; rr += dr;
         }
@@ -564,8 +609,130 @@ class Chess {
           if (t === "G" && enemy(r * 8 + ff)) add(s, r * 8 + ff); // Grand pawn: sideways captures
         }
         if (t === "G" && r1 >= 0 && r1 < 8 && enemy(r1 * 8 + f)) add(s, r1 * 8 + f); // and straight ahead
+      } else if (SLIDERS[t]) { // Evolution's sliders (e.g. Two-colored bishop): rays with a maximum reach
+        for (const [dirs, reach] of SLIDERS[t]) for (const [df, dr] of dirs) for (let k = 1; k <= reach; k++) {
+          const ff = f + df * k, rr = r + dr * k;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7) break;
+          const to = rr * 8 + ff;
+          if (this.holes.has(to)) break;
+          if (b[to]) { if (colorOf(b[to]) !== us) out.push({ from: s, to, promo: null }); break; }
+          out.push({ from: s, to, promo: null });
+        }
+        if ("UFJOIΩ".includes(t)) for (const [df, dr] of B_DIR) { // Shepherd bishop: swap places with the first piece on a diagonal, if it is yours
+          for (let k = 1; ; k++) {
+            const ff = f + df * k, rr = r + dr * k;
+            if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(rr * 8 + ff)) break;
+            const to = rr * 8 + ff, q = b[to];
+            if (!q) continue;
+            if (colorOf(q) === us && !(q.toUpperCase() === "P" && (r === 0 || r === 7))) out.push({ from: s, to, promo: null, swap: true }); // no pawn onto the first/last rank
+            break;
+          }
+        }
+        if ("VUFJOIΩ".includes(t)) for (const [df, dr] of B_DIR) { // Vaulting bishop: may jump over the first piece on a diagonal, onto empty squares only
+          let jumped = false;
+          for (let k = 1; ; k++) {
+            const ff = f + df * k, rr = r + dr * k;
+            if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(rr * 8 + ff)) break;
+            const to = rr * 8 + ff;
+            if (!jumped) { if (b[to]) jumped = true; continue; }
+            if (b[to]) break; // a second piece: no jumping two, and no capturing after a jump
+            out.push({ from: s, to, promo: null });
+          }
+        }
+        if ("FJOI".includes(t)) for (const [df, dr] of (t === "O" || t === "I") ? N_OFF.concat(CAMEL) : N_OFF) { // Sun / Moon bishop: the same with the camel jump too // Golden bishop: knight jumps that capture only; Silver bishop: knight jumps onto empty squares only
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to)) continue;
+          if (t === "F" || t === "O" ? b[to] && colorOf(b[to]) !== us : !b[to]) out.push({ from: s, to, promo: null });
+        }
+        if ("ΓΔΘΞΠΩ".includes(t)) for (const [df, dr] of B_DIR) { // Guardian bishop: may capture one square diagonally without moving
+          const ff = f + df, rr = r + dr;
+          if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 && !this.holes.has(rr * 8 + ff) && b[rr * 8 + ff] && colorOf(b[rr * 8 + ff]) !== us) out.push({ from: s, to: rr * 8 + ff, promo: null, stay: true });
+        }
+        if ("ΘΞΠΩЧБД".includes(t)) for (const [df, dr] of t === "Ω" ? CAMEL.concat(N_OFF) : CAMEL) { // Camel queen: queen + camel // Supreme bishop: knight jumps too // Warden bishop: the camel jump (3+1), moving or capturing
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to)) continue;
+          if (!b[to] || colorOf(b[to]) !== us) out.push({ from: s, to, promo: null });
+        }
+        if (t === "Ξ" || t === "Π") for (const [df, dr] of R_DIR) { // beyond its 2-square reach: Wanderer moves like a rook (no capture), Reaper captures like a rook (no move)
+          for (let k = 1; ; k++) {
+            const ff = f + df * k, rr = r + dr * k, to = rr * 8 + ff;
+            if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to)) break;
+            if (b[to]) { if (t === "Π" && k > 2 && colorOf(b[to]) !== us) out.push({ from: s, to, promo: null }); break; }
+            if (t === "Ξ" && k > 2) out.push({ from: s, to, promo: null });
+          }
+        }
+        if ("ΔΘΞΠΩ".includes(t)) for (const [df, dr] of R_DIR) { // Crimson bishop: may jump over a piece next to it (orthogonally) onto an empty square, no capture
+          const f1 = f + df, r1 = r + dr, f2 = f + 2 * df, r2 = r + 2 * dr;
+          if (f2 < 0 || f2 > 7 || r2 < 0 || r2 > 7 || this.holes.has(r2 * 8 + f2)) continue;
+          if (b[r1 * 8 + f1] && !b[r2 * 8 + f2]) out.push({ from: s, to: r2 * 8 + f2, promo: null });
+        }
+        if (t === "Ж" || t === "Ш") for (const [df, dr] of R_DIR) { // Jumping rook: may jump over the first piece on a line, onto empty squares only (Jumping rook 2 takes an enemy piece it jumps over)
+          let jumped = false, over = -1;
+          for (let k = 1; ; k++) {
+            const ff = f + df * k, rr = r + dr * k;
+            if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(rr * 8 + ff)) break;
+            const to = rr * 8 + ff;
+            if (!jumped) { if (b[to]) { jumped = true; over = to; } continue; }
+            if (b[to]) break; // no jumping two pieces, and no capturing after a jump
+            out.push(t === "Ш" && colorOf(b[over]) !== us ? { from: s, to, promo: null, jcap: over } : { from: s, to, promo: null });
+          }
+        }
+        if (t === "Щ" || t === "Ю") for (const [df, dr] of R_DIR) { // Jumping master rook: jumps over one or two pieces onto an empty square; takes an enemy it jumps alone (master 2: every enemy it jumps)
+          const caps = []; let n = 0;
+          for (let k = 1; ; k++) {
+            const ff = f + df * k, rr = r + dr * k;
+            if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(rr * 8 + ff)) break;
+            const to = rr * 8 + ff;
+            if (b[to]) { if (++n > 2) break; if (colorOf(b[to]) !== us) caps.push(to); continue; }
+            if (!n) continue; // plain rook moves come from SLIDERS
+            const m = { from: s, to, promo: null };
+            if (n === 1 || t === "Ю") { if (caps.length) m.jcap = caps[0]; if (caps.length > 1) m.jcap2 = caps[1]; }
+            out.push(m);
+          }
+        }
+        // Summoning queens: lv = pawns summoned + 8 × knights summoned
+        if ((t === "Э" || t === "И") && this.lv[s] % 8 < 7) for (const [df, dr] of K_OFF) { // summon one of your pawns next to it (7 in all)
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < (us === "w" ? 1 : 2) || rr > (us === "w" ? 5 : 6) || b[to] || this.holes.has(to)) continue; // ranks 2-6 for white, 3-7 for black: not on your 7th rank
+          out.push({ from: s, to, promo: null, summon: "P" });
+        }
+        if (t === "И" && this.lv[s] < 16) for (const [df, dr] of N_OFF) { // Knight summoning queen: a knight where a knight from here could land (2 in all)
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || b[to] || this.holes.has(to)) continue;
+          out.push({ from: s, to, promo: null, summon: "N" });
+        }
+        if (t === "П" || t === "Й") for (const [df, dr] of t === "Й" ? K_OFF.concat(R_DIR.map(([x, y]) => [2 * x, 2 * y])) : K_OFF) { // Swap king: swap places with one of your pieces next to it (Swap king 2: also 2 squares away orthogonally)
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to)) continue;
+          const q = b[to];
+          if (q && colorOf(q) === us && !(q.toUpperCase() === "P" && (r === 0 || r === 7))) out.push({ from: s, to, promo: null, swap: true }); // no pawn onto the first/last rank
+        }
+        if (t === "К" || t === "Г" || t === "Л" || t === "П" || t === "Й") for (const [df, dr] of t !== "К" ? B_DIR.concat(R_DIR) : B_DIR) { // Strong king: captures (only) 2 squares away diagonally, if the square between is empty; Even stronger king: also orthogonally
+          const ff = f + 2 * df, rr = r + 2 * dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to) || b[(r + dr) * 8 + f + df]) continue; // blocked by a piece in between
+          if (b[to] && colorOf(b[to]) !== us) { out.push({ from: s, to, promo: null }); if (t === "Л" || t === "П" || t === "Й") out.push({ from: s, to, promo: null, stay: true }); } // Stronger stronger king: or a ranged capture, staying put
+        }
+        if (t === "Λ" || t === "Φ" || t === "Ψ" || t === "Ц" || t === "Б" || t === "Д") for (const [df, dr] of N_OFF) { // Amazon: queen + knight // Almost chancellor: knight moves onto empty squares only; Chancellor: knight moves and captures
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to)) continue;
+          if (!b[to] || (t !== "Λ" && colorOf(b[to]) !== us)) out.push({ from: s, to, promo: null });
+          if ((t === "Ψ" || t === "Д") && !b[to]) { // Chancellor+: a second knight jump in the same direction, if the first landing square is empty
+            const f2 = f + 2 * df, r2 = r + 2 * dr, t2 = r2 * 8 + f2;
+            if (f2 >= 0 && f2 < 8 && r2 >= 0 && r2 < 8 && !this.holes.has(t2) && (!b[t2] || colorOf(b[t2]) !== us)) out.push({ from: s, to: t2, promo: null });
+          }
+        }
+        if ("ZVUFJOIΩ".includes(t)) for (const [df, dr] of R_DIR) { // Two-colored ranged bishop: may capture one square orthogonally without moving
+          const ff = f + df, rr = r + dr;
+          if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 && !this.holes.has(rr * 8 + ff) && b[rr * 8 + ff] && colorOf(b[rr * 8 + ff]) !== us) out.push({ from: s, to: rr * 8 + ff, promo: null, stay: true });
+        }
       } else if (HORSE[t]) { // Evolution's horses: knight jumps + a short straight / diagonal reach
-        const [dirs, reach, camel] = HORSE[t];
+        const [dirs, reach, camel, quiet] = HORSE[t];
+        for (const [df, dr] of quiet || []) { // move-only slides: empty squares, never a capture
+          let ff = f + df, rr = r + dr;
+          while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 && !b[rr * 8 + ff] && !this.holes.has(rr * 8 + ff)) {
+            out.push({ from: s, to: rr * 8 + ff, promo: null }); ff += df; rr += dr;
+          }
+        }
         for (const [df, dr] of camel ? N_OFF.concat(CAMEL) : N_OFF) {
           const ff = f + df, rr = r + dr;
           if (ff < 0 || ff > 7 || rr < 0 || rr > 7) continue;
@@ -631,9 +798,14 @@ class Chess {
     }
     if (this.rule === "evo") // Evolution: a piece may evolve as part of the move that reaches its move count
       for (const m of out.slice()) {
-        if (m.promo || m.stay || !b[m.from]) continue;
+        if (m.promo || m.stay || m.summon || m.castle || !b[m.from]) continue;
         const t = b[m.from].toUpperCase(), n = this.mc[m.from] + 1; // moves made after this one
         for (const [need, forms] of EVOLVE[t] || []) if (n >= need) for (const e of forms) out.push({ ...m, evo: e });
+      }
+    if (this.rule === "guilt") // Guilt: guilty pieces move normally but can't capture
+      for (let i = out.length - 1; i >= 0; i--) {
+        const m = out[i];
+        if (this.gu[m.from] && !m.castle && (b[m.to] || m.jcap >= 0 || (b[m.from].toUpperCase() === "P" && m.to === this.ep))) out.splice(i, 1);
       }
     if (!this.holes.size && !this.boss) return out;
     const res = out.filter(m => { // no landing on a deleted square, and no castling across one
@@ -664,22 +836,52 @@ class Chess {
     const b = this.b, p = b[m.from], t = p ? p.toUpperCase() : "", W = this.turn === "w";
     const u = { m, cap: b[m.to], castle: { ...this.castle }, ep: this.ep, half: this.half, full: this.full, epCap: -1,
       hk: { ...this.hk }, hkLost: this.hkLost, mc: this.mc.slice() };
+    if (this.rule === "guilt") { u.gu = this.gu.slice(); u.gb = this.gb.slice(); }
+    if (this.rule === "evo") u.lv = this.lv.slice();
     { // move counts follow the pieces (used by Evolution)
       const mc = this.mc;
       if (m.special) mc[m.sq] = 0;
       else if (m.stay) { mc[m.to] = 0; mc[m.from]++; }
+      else if (m.summon) { mc[m.to] = 0; mc[m.from]++; }
+      else if (m.swap) { const a = mc[m.from]; mc[m.from] = mc[m.to]; mc[m.to] = m.evo ? 0 : a + 1; }
       else if (m.castle) { const k = mc[m.from], r = mc[m.to]; mc[m.from] = mc[m.to] = 0; mc[m.kTo] = k + 1; mc[m.rTo] = r + 1; }
       else {
         const c = mc[m.from];
         if (t === "P" && m.to === this.ep && !b[m.to]) mc[m.to + (W ? -8 : 8)] = 0;
+        if (m.jcap >= 0) mc[m.jcap] = 0;
+        if (m.jcap2 >= 0) mc[m.jcap2] = 0;
         mc[m.from] = 0; mc[m.to] = m.evo ? 0 : c + 1; // evolving restarts the count
         if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { const h = W ? 0 : 56, ks = m.to === h + 6, rf = ks ? h + 7 : h, rt = ks ? h + 5 : h + 3; mc[rt] = mc[rf] + 1; mc[rf] = 0; }
       }
     }
+    if (u.lv && !m.special && !m.castle) {
+      const lv = this.lv;
+      if (m.summon) { lv[m.from] += m.summon === "N" ? 8 : 1; lv[m.to] = 0; } // the Summoning queen used one summon
+      else if (m.swap) { const a = lv[m.from]; lv[m.from] = lv[m.to]; lv[m.to] = m.evo ? 0 : a; }
+      else if (!m.stay) {
+        lv[m.to] = m.evo && m.evo.toUpperCase() === "Я" ? 1 : m.evo && t !== "Э" ? 0 : lv[m.from]; lv[m.from] = 0; // a new Life rook starts with 1 life // a Summoning queen keeps its count when it evolves
+        if (m.jcap >= 0) lv[m.jcap] = 0;
+        if (m.jcap2 >= 0) lv[m.jcap2] = 0;
+        if (t === "Я" && !m.evo && this.mc[m.to] > 0 && this.mc[m.to] % 7 === 0) lv[m.to] = Math.min(4, lv[m.to] + 1);
+      } else lv[m.to] = 0;
+    }
     if (m.stay) { // Evolution, Pawn+: capture without moving
       b[m.to] = null;
       for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.to === sq) this.castle[flag] = false;
+      if (u.lv) this._respawn(u, [[m.to, u.cap]]);
       this.ep = -1; this.half = 0; if (!W) this.full++; this.turn = W ? "b" : "w";
+      return u;
+    }
+    if (m.summon) { // Evolution, Summoning queen: a new pawn appears next to it; the queen stays
+      u.cap = null; b[m.to] = W ? m.summon : m.summon.toLowerCase();
+      this.ep = -1; this.half = 0; if (!W) this.full++; this.turn = W ? "b" : "w";
+      return u;
+    }
+    if (m.swap) { // Evolution, Shepherd bishop: swap places with one of its own pieces
+      const q = b[m.to]; u.cap = null; u.orig = p; b[m.to] = m.evo ? (W ? m.evo : m.evo.toLowerCase()) : p; b[m.from] = q;
+      if (q.toUpperCase() === "K") { if (W) this.castle.K = this.castle.Q = false; else this.castle.k = this.castle.q = false; }
+      for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.from === sq || m.to === sq) this.castle[flag] = false;
+      this.ep = -1; this.half++; if (!W) this.full++; this.turn = W ? "b" : "w";
       return u;
     }
     if (m.special) { // boss powers: delete a square (and whatever is on it) or steal a piece; the turn stays
@@ -705,10 +907,16 @@ class Chess {
       const R = b[m.to];
       b[m.from] = null; b[m.to] = null; b[m.kTo] = p; b[m.rTo] = R; u.cap = null;
       if (W) this.castle.K = this.castle.Q = false; else this.castle.k = this.castle.q = false;
+      if (u.gu) this._guilt(m, u, W);
       this.ep = -1; this.half++; if (!W) this.full++; this.turn = W ? "b" : "w";
       return u;
     }
     if (t === "P" && m.to === this.ep && !b[m.to]) { u.epCap = m.to + (W ? -8 : 8); u.cap = b[u.epCap]; b[u.epCap] = null; }
+    if (m.jcap >= 0) { // Jumping rook 2: takes the piece it jumped over (undone like en passant)
+      u.epCap = m.jcap; u.cap = b[m.jcap]; b[m.jcap] = null;
+      if (m.jcap2 >= 0) { u.cap2 = b[m.jcap2]; b[m.jcap2] = null; } // Jumping master rook: a second piece
+      for (const [sq, flag] of [[this.rook.Q, "Q"], [this.rook.K, "K"], [this.rook.q, "q"], [this.rook.k, "k"]]) if (m.jcap === sq || m.jcap2 === sq) this.castle[flag] = false;
+    }
     b[m.to] = m.promo ? (W ? m.promo.toUpperCase() : m.promo) : p;
     b[m.from] = null;
     if (this.rule === "shape" && u.cap && t !== "K") { // Shapeshift: become the captured piece
@@ -727,13 +935,58 @@ class Chess {
       if (m.from === sq || m.to === sq) this.castle[flag] = false;
     this.ep = t === "P" && Math.abs(m.to - m.from) === 16 ? (m.from + m.to) / 2 : -1;
     this.half = "PAG".includes(t) || u.cap ? 0 : this.half + 1;
+    if (u.lv && u.cap) this._respawn(u, [[u.epCap >= 0 ? u.epCap : m.to, u.cap]].concat(m.jcap2 >= 0 ? [[m.jcap2, u.cap2]] : []));
+    if (u.gu) this._guilt(m, u, W);
     if (!W) this.full++;
     this.turn = W ? "b" : "w";
     return u;
   }
+  // Guilt: whoever captures becomes guilty (can't capture). A guilty piece is forgiven after it and one of its bishops stand
+  // orthogonally next to each other through one whole turn of its side; a guilty bishop is forgiven after one turn without moving.
+  // Life rook: when taken with a life left, it comes back (one life less) on the empty square of its own half
+  // closest to its own back-rank corner on the side where it was taken.
+  _respawn(u, taken) {
+    const b = this.b;
+    for (const [sq, p] of taken) {
+      if (!p || p.toUpperCase() !== "Я" || !(u.lv[sq] > 0)) continue;
+      const w = isWhite(p), cf = fileOf(sq) < 4 ? 0 : 7, cr = w ? 0 : 7;
+      let best = -1, bd = 1e9;
+      for (let s = 0; s < 64; s++) {
+        if (b[s] || this.holes.has(s) || (w ? rankOf(s) > 3 : rankOf(s) < 4)) continue;
+        const d = (fileOf(s) - cf) ** 2 + (rankOf(s) - cr) ** 2;
+        if (d < bd) { bd = d; best = s; }
+      }
+      if (best < 0) continue;
+      b[best] = p; this.lv[best] = u.lv[sq] - 1; this.mc[best] = u.mc[sq];
+      (u.resp = u.resp || []).push(best);
+    }
+  }
+  _guilt(m, u, W) {
+    const g = this.gu, gb = this.gb, b = this.b, B = W ? "B" : "b", moved = [];
+    const carry = (from, to, fresh) => { const v = g[from]; g[from] = 0; gb[from] = -1; g[to] = fresh || v ? 1 : 0; gb[to] = -1; moved.push(to); };
+    if (m.castle) { const k = g[m.from], r = g[m.to]; g[m.from] = g[m.to] = 0; g[m.kTo] = k ? 1 : 0; g[m.rTo] = r ? 1 : 0; moved.push(m.kTo, m.rTo); }
+    else {
+      if (u.epCap >= 0) { g[u.epCap] = 0; gb[u.epCap] = -1; }
+      if (m.jcap2 >= 0) { g[m.jcap2] = 0; gb[m.jcap2] = -1; }
+      carry(m.from, m.to, !!u.cap);
+      const t = (b[m.to] || "").toUpperCase();
+      if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) { const h = W ? 0 : 56, ks = m.to === h + 6; carry(ks ? h + 7 : h, ks ? h + 5 : h + 3, false); }
+    }
+    const nextTo = s => { for (const [df, dr] of R_DIR) { const ff = fileOf(s) + df, rr = rankOf(s) + dr; if (ff >= 0 && ff < 8 && rr >= 0 && rr < 8 && b[rr * 8 + ff] === B) return rr * 8 + ff; } return -1; };
+    for (let s = 0; s < 64; s++) {
+      if (!g[s] || !b[s] || isWhite(b[s]) !== W) continue;
+      const still = !moved.includes(s);
+      if (b[s] === B) { if (still) { g[s] = 0; gb[s] = -1; } continue; } // a bishop: one quiet turn
+      if (still && g[s] === 2 && b[gb[s]] === B && gb[s] !== m.from) { g[s] = 0; gb[s] = -1; continue; } // stayed together a turn
+      const n = nextTo(s); g[s] = n >= 0 ? 2 : 1; gb[s] = n;
+    }
+  }
   _undo(u) {
     const m = u.m, b = this.b;
     if (u.mc) this.mc = u.mc;
+    if (u.lv) this.lv = u.lv;
+    if (u.resp) for (const s of u.resp) b[s] = null; // a Life rook that came back
+    if (u.gu) { this.gu = u.gu; this.gb = u.gb; }
     if (m.special) { // the turn never passed
       b[m.sq] = u.cap; if (m.special === "del") this.holes.delete(m.sq);
       this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full;
@@ -743,6 +996,8 @@ class Chess {
     const W = this.turn === "w";
     this.hk = u.hk; this.hkLost = u.hkLost;
     if (m.stay) { b[m.to] = u.cap; this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full; return; }
+    if (m.summon) { b[m.to] = null; this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full; return; }
+    if (m.swap) { const q = b[m.from]; b[m.from] = u.orig; b[m.to] = q; this.castle = u.castle; this.ep = u.ep; this.half = u.half; this.full = u.full; return; }
     if (m.castle) {
       const K = b[m.kTo], R = b[m.rTo];
       b[m.kTo] = null; b[m.rTo] = null; b[m.from] = K; b[m.to] = R;
@@ -752,6 +1007,7 @@ class Chess {
     b[m.from] = u.orig ? u.orig : m.promo ? (W ? "P" : "p") : b[m.to];
     b[m.to] = u.epCap >= 0 ? null : u.cap;
     if (u.epCap >= 0) b[u.epCap] = u.cap;
+    if (m.jcap2 >= 0) b[m.jcap2] = u.cap2;
     const t = b[m.from].toUpperCase();
     if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) {
       const home = W ? 0 : 56;
@@ -779,6 +1035,8 @@ class Chess {
   key() {
     return this.b.map(p => p || ".").join("") + this.turn + ["K", "Q", "k", "q"].filter(c => this.castle[c]).join("") +
       (this.holes && this.holes.size ? "#" + [...this.holes].sort((a, b) => a - b).join(",") : "") +
+      (this.rule === "guilt" ? "g" + this.gu.join("") : "") +
+      (this.rule === "evo" && this.lv.some(x => x) ? "l" + this.lv.join("") : "") +
       (this.ep >= 0 ? this.legalEpFileFast() : "-");
   }
   legalEpFileFast() { return this.ep >= 0 && this.legal().some(m => m.to === this.ep && this.b[m.from].toUpperCase() === "P") ? fileOf(this.ep) : "-"; }
@@ -794,27 +1052,29 @@ class Chess {
     return u.m;
   }
   // uci: e2e4 · e7e8q · Evolution: e4d5! (capture and stay) · e2e4^a (evolve to Pawn+) · boss: @del:e4
-  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || "") + (m.stay ? "!" : "") + (m.evo ? "^" + m.evo.toLowerCase() : ""); }
+  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || "") + (m.stay ? "!" : "") + (m.summon ? (m.summon === "N" ? "*n" : "*") : "") + (m.evo ? "^" + m.evo.toLowerCase() : ""); }
   fromUci(s) {
     if (s[0] === "@") { const [k, q] = s.slice(1).split(":"), sq = sqFrom(q); return this.specials().find(m => m.special === k && m.sq === sq) || null; }
-    if (s.length > 5 || /[!^]/.test(s)) {
-      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), ev = (rest.match(/\^([a-z])/) || [])[1];
+    if (s.length > 5 || /[!^*]/.test(s)) {
+      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), summon = rest.includes("*n") ? "N" : rest.includes("*") ? "P" : null, ev = (rest.match(/\^([a-zα-ωа-я])/) || [])[1];
       const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), evo = ev ? ev.toUpperCase() : undefined;
-      return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === pr && !!m.stay === stay && m.evo === evo) || null;
+      return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === pr && !!m.stay === stay && (m.summon || null) === summon && m.evo === evo) || null;
     }
     const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), promo = s[4] || null;
-    return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === promo && !m.stay && !m.evo) || null;
+    return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === promo && !m.stay && !m.summon && !m.evo) || null;
   }
   san(m) {
     const p = this.b[m.from], t = p ? p.toUpperCase() : "";
     let s;
     if (m.special) return ({ del: "🕳", steal: "🕵x", pawn: "♟@" })[m.special] + sqName(m.sq);
     else if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
+    else if (m.summon) s = (m.summon === "N" ? "♞@" : "♟@") + sqName(m.to);
+    else if (m.swap) s = t + "⇄" + sqName(m.to);
     else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) s = m.to > m.from ? "O-O" : "O-O-O";
     else if (t === "A" || t === "G") // Evolution: P+ = Pawn+, GP = Grand pawn; ↺ = captured without moving
       s = (t === "A" ? "P+" : "GP") + (this.b[m.to] ? "x" : "") + sqName(m.to) + (m.stay ? "↺" : "") + (m.promo ? "=" + m.promo.toUpperCase() : "");
     else {
-        const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep);
+        const cap = !!this.b[m.to] || (t === "P" && m.to === this.ep) || m.jcap >= 0;
       if (t === "P") s = (cap ? "abcdefgh"[fileOf(m.from)] + "x" : "") + sqName(m.to) + (m.promo ? "=" + m.promo.toUpperCase() : "");
       else {
         const others = this.legal().filter(o => o.to === m.to && o.from !== m.from && this.b[o.from] === p);
@@ -829,14 +1089,14 @@ class Chess {
         s = t + dis + (cap ? "x" : "") + sqName(m.to);
       }
     }
-    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang", S: "Stallion", C: "Bronco", T: "Sandstorm", D: "Dune runner" })[m.evo];
+    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang", S: "Stallion", C: "Bronco", T: "Sandstorm", D: "Dune runner", E: "Pegasus", X: "Phantom", L: "Celestial", W: "Wraith", Y: "Two-colored bishop", Z: "Ranged bishop", V: "Vaulting bishop", U: "Shepherd bishop", F: "Golden bishop", J: "Silver bishop", O: "Sun bishop", I: "Moon bishop", "Γ": "Guardian bishop", "Δ": "Crimson bishop", "Θ": "Warden bishop", "Ξ": "Wanderer bishop", "Π": "Reaper bishop", "Ω": "Supreme bishop", "Λ": "Almost chancellor", "Φ": "Chancellor", "Ψ": "Chancellor+", "Ж": "Jumping rook", "Ш": "Jumping rook 2", "Щ": "Jumping master rook", "Ю": "Jumping master rook 2", "Я": "Life rook", "Ц": "Amazon", "Ч": "Camel queen", "Ф": "Queen of queens", "Б": "Mega queen", "Д": "Double knight camel queen", "Э": "Summoning queen", "И": "Knight summoning queen", "К": "Strong king", "Г": "Even stronger king", "Л": "Stronger stronger king", "П": "Swap king", "Й": "Swap king 2" })[m.evo];
     const u = this._apply(m);
     const chk = this.inCheck(), mate = chk && this.legal().length === 0;
     this._undo(u);
     return s + (mate ? "#" : chk ? "+" : "");
   }
   insufficient() {
-    const pcs = this.b.map((p, s) => [p, s]).filter(([p]) => p && p.toUpperCase() !== "K");
+    const pcs = this.b.map((p, s) => [p, s]).filter(([p]) => p && !"KКГЛПЙ".includes(p.toUpperCase()));
     if (pcs.length === 0) return true;
     if (pcs.length === 1 && "NBnb".includes(pcs[0][0])) return true;
     if (pcs.every(([p]) => "Bb".includes(p))) {
@@ -1210,7 +1470,7 @@ function predictMaia(net, game) {
 
 // Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
 // deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
-const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420, S: 560, C: 520, T: 660, D: 620 };
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420, S: 560, C: 520, T: 660, D: 620, E: 1000, X: 820, L: 1080, W: 920, Y: 430, Z: 470, V: 540, U: 600, F: 720, J: 680, O: 820, I: 760, "Γ": 480, "Δ": 560, "Θ": 680, "Ξ": 760, "Π": 800, "Ω": 1500, "Λ": 620, "Φ": 850, "Ψ": 1000, "Ж": 580, "Ш": 680, "Щ": 740, "Ю": 820, "Я": 560, "Ц": 1200, "Ч": 1000, "Ф": 900, "Б": 1300, "Д": 1400, "Э": 1000, "И": 1100, "К": 0, "Г": 0, "Л": 0, "П": 0, "Й": 0 };
 function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
   let s = 0;
   for (let q = 0; q < 64; q++) {
@@ -1358,7 +1618,7 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
   last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
   start:LG.back?startFen960(LG.back):null,rule:LG.rule,
   holes:[...g.holes].map(sqName),boss:g.boss?{side:g.boss.side=='w'?'white':'black'}:null,
-  specials:g.boss?g.specials().map(m=>g.uci(m)):[],
+  specials:g.boss?g.specials().map(m=>g.uci(m)):[],guilt:LG.rule=='guilt'?Object.fromEntries(g.gu.map((v,s)=>[sqName(s),v]).filter(([s,v])=>v)):null,lives:LG.rule=='evo'?Object.fromEntries(g.b.map((p,s)=>!p?null:p.toUpperCase()=='Я'&&g.lv[s]?[sqName(s),'❤'+g.lv[s]]:p.toUpperCase()=='Э'?[sqName(s),'♟'+(7-g.lv[s]%8)]:p.toUpperCase()=='И'?[sqName(s),'♟'+(7-g.lv[s]%8)+' ♞'+(2-Math.floor(g.lv[s]/8))]:null).filter(x=>x)):null,
   hk:LG.rule=='hidden'?{mine:g.hk[LG.color[0]]>=0?sqName(g.hk[LG.color[0]]):null,theirs:o&&g.hk[LG.color=='white'?'b':'w']>=0?sqName(g.hk[LG.color=='white'?'b':'w']):null,taken:g.hkLost?g.hkLostP:null}:null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
 function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
  return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
@@ -1373,7 +1633,7 @@ async function api(path,d){d=d||{};await new Promise(r=>setTimeout(r,20));
  if(path=='/api/new'){await loadNet();let lvl=+d.level,you=+(d.you||d.level);if(d.chesscom){lvl=Math.round(0.8*lvl+550);you=Math.round(0.8*you+550)}
   let base=null,inc=null;if(d.tc!='none'){const[m,i]=d.tc.split('+');base=Math.round(parseFloat(m)*60);inc=parseInt(i)}
   const back=/^[RNBQK]{8}$/.test(d.back||'')&&d.back!='RNBQKBNR'?d.back:null;
-  const rule=['shape','fog','hidden','boss','evo'].includes(d.rule)?d.rule:null;
+  const rule=['shape','fog','hidden','boss','evo','guilt'].includes(d.rule)?d.rule:null;
   LG={game:new Chess(back||undefined,rule),back,rule,hk0:{w:-1,b:-1},sans:[],level:lvl,you,color:d.color=='random'?(Math.random()<.5?'white':'black'):d.color,base,inc};
   if(rule=='boss'&&d.boss)LG.game.setupBoss(d.boss.side=='black'?'b':'w');
   if(rule=='hidden')for(const c of ['w','b']){ // bots' secret kings: a random non-pawn piece (online: the other side is unknown)
@@ -1584,7 +1844,7 @@ function botUI(){const b=opts.bot,mag=PB.test(b),eng=b=='stockfish'||b=='leela'|
  $('leelaopts').style.display=b=='leela'?'block':'none';$('youopts').style.display=eng?'none':'block';$('lvlhint').textContent=b=='maia2'?'rating · best 1100–2000':b=='maia1'?'rating · 1100–1900 (nearest level)':'rating';
  $('modelopts').style.display=b=='humanbot'?'block':'none';$('modeopts').style.display=sf?'none':'block';$('bothelp').textContent=BOTHELP[b];drawClocks()}
 function colorsUI(){const el=$('cols');el.innerHTML='';[['white','K'],['random','?'],['black','k']].forEach(([v,p])=>{const b=document.createElement('div');
- b.className='colbtn'+(opts.color==v?' on':'');b.title=v;b.innerHTML=p=='?'?'?':piece(p);b.onclick=()=>{opts.color=v;colorsUI()};el.appendChild(b)})}
+ b.className='colbtn'+(opts.color==v?' on':'');b.title=v;b.innerHTML=(p=='?'?'<span style="font-size:30px">?</span>':piece(p))+'<span class="cl">'+{white:'White',random:'Random',black:'Black'}[v]+'</span>';b.onclick=()=>{opts.color=v;colorsUI();startLbl()};el.appendChild(b)})}
 function BN(){return GAME&&gameOn?GAME.names.bot:specName(specFromMain())}
 function lvlLichess(){const v=+$('lvl').value;return $('cc').checked?Math.round(0.8*v+550):v}
 function shortName(b){if(/^p_/.test(b))return (BOTS.find(x=>x[0]==b)||[,'Player'])[1]+' bot';return {magnus:'Magnus bot',hikaru:'Hikaru bot',stockfish:'Stockfish',maia1:'Maia-1',maia2:'Maia-2',leela:'Leela',worstfish:'Worstfish'}[b]||'HumanBot'}
@@ -1621,7 +1881,7 @@ function sfWorst(ucis){sfStart();return new Promise(res=>{const sc={};
 async function botMove(my,s,who){const oth=who=='me'?'bot':'me';
  if(S.rule=='fog'){const pos=parseFen(S.fen),kill=S.legal.find(u=>{const q=pos[u.slice(2,4)];return q&&q.toUpperCase()=='K'});
   if(kill){const st=await api('/api/move',{uci:kill});if(st.error)return st;return Object.assign(st,{bot_move:kill,bot_san:st.sans[st.sans.length-1],think:0.8,cands:[]})}} // fog: an exposed king is taken
- if(S.rule=='shape'||S.rule=='hidden'||S.rule=='evo')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
+ if(S.rule=='shape'||S.rule=='hidden'||S.rule=='evo'||S.rule=='guilt')return api('/api/bot',{variant:1,bot_clock:clk[who],your_clock:clk[oth],level:s.bot=='stockfish'?s.sfelo:s.bot=='worstfish'?600:PB.test(s.bot)?2400:(s.lvl||1500)});
  if(s.bot=='leela'){const secs=S.base!=null?Math.max(0.5,Math.min(10,clk[who]/30+inc*0.6)):10;
   return api('/api/bot',{bot:'leela',nodes:s.nodes,secs})}
  if(s.bot=='worstfish'){const t0=performance.now(),w=await sfWorst(S.ucis||[]);if(my!=gid)return{stale:true};
@@ -1660,7 +1920,9 @@ $('tcm').oninput=tcUI;$('tci').oninput=tcUI;
 $('lnodes').oninput=()=>{$('lnv').textContent=NODES[+$('lnodes').value];drawClocks()};
 ['cut','temp','tcm','tci','sfelo','lnodes'].forEach(k=>{const v=localStorage.getItem('hb_'+k);if(v!=null)$(k).value=v;$(k).addEventListener('change',()=>localStorage.setItem('hb_'+k,$(k).value))});
 $('snd').checked=LS('snd','1')=='1';$('snd').onchange=()=>localStorage.setItem('hb_snd',$('snd').checked?'1':'0');
-$('lvl').oninput=()=>$('lvlv').textContent=$('lvl').value;
+function lvWord(v){return v<900?'Beginner':v<1300?'Casual':v<1700?'Club player':v<2100?'Strong':v<2400?'Expert':'Master'}
+function lvlShow(){const v=+$('lvl').value;$('lvlv').innerHTML=v+'<span class="lvword">'+lvWord(v)+'</span>';startLbl()}
+$('lvl').oninput=lvlShow;setTimeout(lvlShow);
 $('you').oninput=()=>$('youv').textContent=$('you').value;
 $('cut').oninput=()=>$('cutv').textContent=$('cut').value;$('cut').oninput();
 $('temp').oninput=()=>{const v=+$('temp').value;$('tempv').textContent=v<0.85?'steadier':v>1.15?'wilder':'normal'};$('temp').oninput();
@@ -1690,9 +1952,110 @@ var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time
  S:['N','✚²','evS','✚² Stallion','Moves like a knight, and can also move or capture 1 or 2 squares orthogonally (a short rook move).'],
  C:['N','✖²','evC','✖² Bronco','Moves like a knight, and can also move or capture 1 or 2 squares diagonally (a short bishop move).'],
  T:['N','✚³','evT','🏜 Sandstorm','Everything the Stallion does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces.'],
- D:['N','✖³','evD','🏜 Dune runner','Everything the Bronco does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces.']};
-function piece(p,set){const E=EVOP[p.toUpperCase()];if(E){const w=p==p.toUpperCase(); // Evolution: the base piece + a badge
-  return piece(w?E[0]:E[0].toLowerCase(),set).replace('</div>','<span class="evb '+E[2]+'">'+E[1]+'</span></div>')}
+ D:['N','✖³','evD','🏜 Dune runner','Everything the Bronco does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces.'],
+ E:['N','✚⁴','evE','🪽 Pegasus','Moves like a knight, a full rook (any distance orthogonally) and the camel jump.'],
+ X:['N','✖⁴','evX','👻 Phantom','Moves like a knight, a full bishop (any distance diagonally) and the camel jump.'],
+ L:['N','✚⁵','evL','🌟 Celestial','Everything the Pegasus does, plus bishop moves (diagonally, any distance) onto empty squares only: it can\'t capture that way.'],
+ Γ:['B','◐','evGd','🛡️ Guardian bishop','Everything the Two-colored bishop does, and its one-square diagonal capture can be made without moving: it takes the piece and stays where it is.'],
+ Δ:['B','◐','evCr','🩸 Crimson bishop','Everything the Guardian bishop does, and it moves up to 2 squares orthogonally. It can jump over a piece right next to it (orthogonally) onto an empty square 2 squares away, but it can\'t capture with that jump.'],
+ Θ:['B','◐','evWd','🐪 Warden bishop','Everything the Crimson bishop does, plus the camel jump: leaps 3 squares one way and 1 the other, over any pieces, moving or capturing.'],
+ Ξ:['B','◐','evWn','⚪ Wanderer bishop','Everything the Warden bishop does, and it moves like a rook (any distance orthogonally) onto empty squares. It can\'t capture like a rook (only up to 2 squares, as before).'],
+ Π:['B','◐','evRp','🔴 Reaper bishop','Everything the Warden bishop does, and it captures like a rook (the first enemy piece any distance orthogonally). It can\'t move like a rook onto empty squares (only up to 2 squares, as before).'],
+ Ω:['B','◐','evSu','🔥 Supreme bishop','The final bishop. It has every ability of every evolved bishop: moves like a queen (bishop + rook, any distance), jumps like a knight and a camel (moving or capturing), captures one square around it without moving, vaults over one piece on a diagonal, jumps over a piece right next to it orthogonally, and swaps places with the first piece of yours on a diagonal.'],
+ Λ:['R','♜','evAc','🐴 Almost chancellor','Moves like a rook, and can also move like a knight, but only onto empty squares: it can\'t capture with a knight jump.'],
+ Φ:['R','♜','evCh','👑 Chancellor','Moves and captures like a rook and like a knight.'],
+ Ψ:['R','♜','evCp','✨ Chancellor+','Everything the Chancellor does, plus a double knight jump: two knight jumps in the same direction in one move (for example b1 → c3 → d5). The first landing square must be empty; it can capture on the second.'],
+ Ж:['R','♜','evJr','🌀 Jumping rook','Moves like a rook, and on its springs it can jump over one piece on its line and land on an empty square beyond it. It can\'t jump over two pieces, and it can\'t capture with a jump.'],
+ Ш:['R','♜','evJ2','🌀🌀 Jumping rook 2','Everything the Jumping rook does, but when it jumps over an enemy piece it takes that piece (it still lands on an empty square). Jumping over your own piece takes nothing.'],
+ Щ:['R','♜','evJm','🌀🌀🌀 Jumping master rook','Everything the Jumping rook 2 does, and it can also jump over two pieces on its line, landing on an empty square beyond them. Jumping over one enemy piece takes it; jumping over two pieces takes nothing.'],
+ Ю:['R','♜','evJn','🌀🌀🌀 Jumping master rook 2','Everything the Jumping master rook does, and now it also takes the enemy pieces when it jumps over two pieces. Your own pieces are always jumped safely.'],
+ Я:['R','♜','evLf','❤️ Life rook','Moves like a rook. It starts with 1 extra life and gains another every 7 moves (at most 4). If it is taken while it has a life, it loses one life and comes back on the empty square of your half of the board closest to your corner (on the side where it was taken).'],
+ Ц:['Q','♛','evAm','🐴 Amazon','Moves and captures like a queen and like a knight.'],
+ Ч:['Q','♛','evCq','🐪 Camel queen','Moves and captures like a queen, plus the camel jump: 3 squares one way and 1 the other, over any pieces.'],
+ Ф:['Q','♛','evQq','👑 Queen of queens','Moves like a normal queen for now. It is the start of a line whose next evolutions will make it really powerful.'],
+ Б:['Q','♛','evMq','🐴🐪 Mega queen','Moves and captures like a queen, like a knight and with the camel jump (3 squares one way and 1 the other, over any pieces).'],
+ Д:['Q','♛','evDq','🐴🐴🐪 Double knight camel queen','Everything the Mega queen does (queen + knight + camel), plus a double knight jump: two knight jumps in the same direction in one move. The first landing square must be empty; it can capture on the second.'],
+ Э:['Q','♛','evSq','🪄 Summoning queen','Moves like a queen. Instead of moving, it can wave its wand and summon one of your pawns on an empty square next to it (not on your first rank, your 7th rank or the last rank). It can summon 7 pawns in all.'],
+ И:['Q','♛','evKs','🪄♞ Knight summoning queen','Moves like a queen and summons pawns like the Summoning queen (same 7 in all). It can also summon one of your knights on an empty square a knight could jump to from the queen (2 knights in all). Summoned pieces can evolve.'],
+ К:['K','♚','evSk','💪 Strong king','Moves like a king, and can also capture a piece 2 squares away diagonally, if the square between is empty. It can only capture that way, not move there. It is still your king: it can be checked and checkmated.'],
+ Г:['K','♚','evEk','💪💪 Even stronger king','Everything the Strong king does, and it can also capture a piece 2 squares away orthogonally, if the square between is empty. It can only capture those ways, not move there. It is still your king.'],
+ Л:['K','♚','evSs','⚡ Stronger stronger king','Everything the Even stronger king does, and its captures 2 squares away (diagonally and orthogonally) can now be ranged: it can take the piece and stay where it is, or jump in. It is still your king.'],
+ П:['K','♚','evSw','🔄 Swap king','Everything the Stronger stronger king does, and it can swap places with one of your own pieces on a square next to it (no pawn onto the first or last rank). It is still your king.'],
+ Й:['K','♚','evS2','🔄🔄 Swap king 2','Everything the Swap king does, and it can also swap places with one of your pieces 2 squares away orthogonally. The last king evolution. It is still your king.'],
+ Y:['B','◐','evY','◐ Two-colored bishop','Moves like a bishop, and can also move or capture one square orthogonally, so it can switch square colour.'],
+ U:['B','◐','evU','🔀 Shepherd bishop','Everything the Vaulting bishop does, and it can swap places with one of your own pieces: the first piece on one of its diagonals (where a normal bishop could see it), like castling. A pawn can\'t be swapped onto the first or last rank.'],
+ F:['B','◐','evF','👑 Golden bishop','Everything the Shepherd bishop does, and it can capture like a knight. It can only capture with a knight jump: it can\'t make a knight jump onto an empty square.'],
+ O:['B','◐','evO','☀️ Sun bishop','Everything the Golden bishop does, and it can also capture with the camel jump (3 squares one way and 1 the other, over any pieces). Its knight and camel jumps can only capture.'],
+ I:['B','◐','evI','🌙 Moon bishop','Everything the Silver bishop does, and it can also move with the camel jump (3 squares one way and 1 the other, over any pieces) onto empty squares. Its knight and camel jumps can\'t capture.'],
+ J:['B','◐','evJ','🥈 Silver bishop','Everything the Shepherd bishop does, and it can move like a knight onto empty squares. It can\'t capture with a knight jump.'],
+ V:['B','◐','evV','🦯 Vaulting bishop','Everything the Two-colored ranged bishop does, and with its staff it can vault over one piece on its diagonal and land on an empty square beyond it. It can\'t vault over two pieces, and it can\'t capture with a vault.'],
+ Z:['B','◐','evZ','🎯 Two-colored ranged bishop','Everything the Two-colored bishop does, and its one-square orthogonal capture can be made without moving: it takes the piece and stays where it is.'],
+ W:['N','✖⁵','evW','🌑 Wraith','Everything the Phantom does, plus rook moves (orthogonally, any distance) onto empty squares only: it can\'t capture that way.']};
+// Evolution pieces: each has its own drawing (own art). $A = accent fill + outline, $a = accent colour, $S = outline, $F = body, $H = detail
+var EVMANE='<path $A d="M25 6Q35 6 39.5 13L35.5 14.5Q39.5 17 40.5 21.5L36 22.5Q39.5 25.5 40 30L35 31Z"/>',
+ EVSPIKE='<path $A d="M25 6L37 7.5 34.5 11 41 13.5 36 16 41.5 20.5 36 22 40.5 27.5 35 29Z"/>',
+ EVPLUS='<path $A d="M24.8 19.6h2.4v3.2h3.2v2.4h-3.2v3.2h-2.4v-3.2h-3.2v-2.4h3.2z"/>',
+ EVCROSS='<path $A transform="rotate(45 26 24)" d="M24.8 19.6h2.4v3.2h3.2v2.4h-3.2v3.2h-2.4v-3.2h-3.2v-2.4h3.2z"/>',
+ EVBAND='<path $A d="M14.6 28.2c6.4-2 13.6-2.3 20.6-.4l.2 5.5H13.6z"/>',
+ EVWING='<path $A d="M27 20c2-8 8-13 16-16-.8 4-2.4 6.6-4.4 8.2 1.8 0 3 .4 3.6 1-1.8 2.6-4.2 4.2-7 4.6 1.2.6 1.8 1.4 2 2.2-3.2 1-6.4.6-10.2 0z"/><path fill="none" stroke="$S" stroke-width=".8" d="M30.5 17.5l9-9M31 20l7.5-4"/>',
+ EVWISP='<path $A d="M9 33.5h27l-1.8 6-2.8-3-2.4 5-2.8-4-2.6 5-2.6-5-2.8 4-2.4-5-2.8 3z"/>',
+ EVEYE='<circle fill="$a" stroke="none" cx="18.6" cy="12.4" r="1.8"/>';
+var EVART={
+ A:{b:'P',a:'#3fbf55',o:'<path $A d="M15.6 24.6h13.8l.9 3.2H14.7z"/><path $A d="M21.3 27.6h2.4v2.2h2.2v2.2h-2.2v.9h-2.4V32h-2.2v-2.2h2.2z"/><path fill="none" stroke="$a" stroke-width="1.8" d="M18.6 5.2l3.9-3 3.9 3"/>'},
+ G:{b:'P',a:'#e0a419',o:'<path $A d="M16.9 9.6l.9-6.4 2.6 3.2 2.1-4.4 2.1 4.4 2.6-3.2.9 6.4z"/><path $A d="M22.5 22.4l1.4 2.9 3.2.4-2.3 2.2.6 3.2-2.9-1.5-2.9 1.5.6-3.2-2.3-2.2 3.2-.4z"/>'},
+ H:{b:'N',a:'#3a86e8',u:EVMANE,o:EVPLUS},
+ M:{b:'N',a:'#a35be0',u:EVSPIKE,o:EVCROSS},
+ S:{b:'N',a:'#2f6fd0',u:EVMANE,o:EVBAND+'<path fill="$F" stroke="$S" stroke-width=".9" d="M23.1 28.9h1.8v1.6h1.6v1.8h-1.6v1.1h-1.8v-1.1h-1.6v-1.8h1.6z"/><path $A d="M21 4.6c1.2-3 5.4-4.2 8.6-2.6-2.2.2-3.8 1.2-4.8 3z"/>'},
+ C:{b:'N',a:'#8b3fd6',u:EVSPIKE,o:EVBAND+'<path fill="$F" stroke="$S" stroke-width=".9" transform="rotate(45 24 31.4)" d="M23.1 28.9h1.8v1.6h1.6v1.8h-1.6v1.6h-1.8v-1.6h-1.6v-1.8h1.6z"/><path fill="none" stroke="$a" stroke-width="1.8" d="M27.5 5.5a3 3 0 1 1 5 2.6"/>'},
+ T:{b:'N',a:'#e08a2c',u:EVMANE,o:EVPLUS+'<path fill="none" stroke="$a" stroke-width="1.7" d="M2.5 13.5q3-3.4 6.4-.6M1.5 19q3.4-3 6.4 0M2.5 31q3-3.4 6.4-.4M38 38q2.6-3 5.6 0"/>'},
+ D:{b:'N',a:'#d6ad52',u:EVSPIKE,o:EVCROSS+'<path $A d="M3 44.5q5-6 10.5-1.6 5-5 10.5-.8 5.2-5 10.8-.6 4.4-4.2 8.2 0V45H3z"/>'},
+ E:{b:'N',a:'#57c8f5',u:EVMANE,o:EVWING},
+ X:{b:'N',a:'#7fe3cf',op:.72,f:EVWISP,u:EVSPIKE,o:EVEYE},
+ L:{b:'N',a:'#ffcf3a',u:EVMANE,o:EVWING+'<ellipse fill="none" stroke="$a" stroke-width="1.8" cx="21.5" cy="2.4" rx="6" ry="1.6"/><path fill="$a" stroke="none" d="M6 8l.9 2.1 2.1.9-2.1.9L6 14l-.9-2.1L3 11l2.1-.9zM39 26l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z"/>'},
+ W:{b:'N',a:'#d23a4c',op:.85,f:EVWISP,u:'<path $A d="M27 20l16-15-1.6 7.6 3.6-1.4-2.6 6.6 3-.4-6.8 6z"/>'+EVSPIKE,o:EVEYE},
+ Y:{b:'B',a:'#d33',y:1,o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/>'},
+ Γ:{b:'B',a:'#3a9be0',y:1,o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path $A d="M30.6 6.2h9.6v5.2c0 4-2.2 6.4-4.8 7.6-2.6-1.2-4.8-3.6-4.8-7.6z"/><path fill="none" stroke="$S" stroke-width="1" d="M35.4 7.6v9.6M31.8 11h7.2"/>'},
+ Δ:{b:'B',a:'#c41e3a',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.4" d="M8.5 41V12"/><path fill="none" stroke="$a" stroke-width="1.8" d="M8.5 41V12"/><path $A d="M8.5 6l2.6 4.2-2.6 3.4-2.6-3.4z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path fill="$a" stroke="$S" stroke-width="1" d="M30.6 6.2h9.6v5.2c0 4-2.2 6.4-4.8 7.6-2.6-1.2-4.8-3.6-4.8-7.6z"/><path fill="none" stroke="$S" stroke-width="1" d="M35.4 7.6v9.6M31.8 11h7.2"/><path fill="none" stroke="$a" stroke-width="1.6" d="M13 16.5h-3M13 16.5l-1.4-1.4M13 16.5l-1.4 1.4"/>'},
+ Θ:{b:'B',a:'#9e1030',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.4" d="M8.5 41V12"/><path fill="none" stroke="$a" stroke-width="1.8" d="M8.5 41V12"/><path $A d="M8.5 6l2.6 4.2-2.6 3.4-2.6-3.4z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path fill="$a" stroke="$S" stroke-width="1" d="M30.6 6.2h9.6v5.2c0 4-2.2 6.4-4.8 7.6-2.6-1.2-4.8-3.6-4.8-7.6z"/><path fill="none" stroke="$S" stroke-width="1" d="M35.4 7.6v9.6M31.8 11h7.2"/><path $A d="M18.6 6.4l1-3.6 1.4 2 1.5-3 1.5 3 1.4-2 1 3.6z"/><path fill="none" stroke="$a" stroke-width="1.6" d="M13 16.5h-3M13 16.5l-1.4-1.4M13 16.5l-1.4 1.4"/>'},
+ Ξ:{b:'B',a:'#9e1030',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.4" d="M8.5 41V12"/><path fill="none" stroke="$a" stroke-width="1.8" d="M8.5 41V12"/><path $A d="M8.5 6l2.6 4.2-2.6 3.4-2.6-3.4z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path fill="$a" stroke="$S" stroke-width="1" d="M30.6 6.2h9.6v5.2c0 4-2.2 6.4-4.8 7.6-2.6-1.2-4.8-3.6-4.8-7.6z"/><path fill="none" stroke="$S" stroke-width="1" d="M35.4 7.6v9.6M31.8 11h7.2"/><path $A d="M18.6 6.4l1-3.6 1.4 2 1.5-3 1.5 3 1.4-2 1 3.6z"/><path fill="none" stroke="$a" stroke-width="1.6" d="M13 16.5h-3M13 16.5l-1.4-1.4M13 16.5l-1.4 1.4"/><circle fill="#e8e8e8" stroke="$S" stroke-width=".7" cx="17.6" cy="30.6" r="1.5"/><circle fill="#e8e8e8" stroke="$S" stroke-width=".7" cx="22.5" cy="31.6" r="1.5"/><circle fill="#e8e8e8" stroke="$S" stroke-width=".7" cx="27.4" cy="30.6" r="1.5"/><circle fill="#e8e8e8" stroke="$S" stroke-width=".7" cx="22.5" cy="13.4" r="1.3"/>'},
+ Π:{b:'B',a:'#9e1030',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.4" d="M8.5 41V12"/><path fill="none" stroke="$a" stroke-width="1.8" d="M8.5 41V12"/><path $A d="M8.5 6l2.6 4.2-2.6 3.4-2.6-3.4z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path fill="$a" stroke="$S" stroke-width="1" d="M30.6 6.2h9.6v5.2c0 4-2.2 6.4-4.8 7.6-2.6-1.2-4.8-3.6-4.8-7.6z"/><path fill="none" stroke="$S" stroke-width="1" d="M35.4 7.6v9.6M31.8 11h7.2"/><path $A d="M18.6 6.4l1-3.6 1.4 2 1.5-3 1.5 3 1.4-2 1 3.6z"/><path fill="none" stroke="$a" stroke-width="1.6" d="M13 16.5h-3M13 16.5l-1.4-1.4M13 16.5l-1.4 1.4"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="17.6" cy="30.6" r="1.5"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="22.5" cy="31.6" r="1.5"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="27.4" cy="30.6" r="1.5"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="22.5" cy="13.4" r="1.3"/>'},
+ Ω:{b:'B',a:'#ffd23a',y:1,u:'<path fill="#e8401c" stroke="none" opacity=".9" d="M4 44C1 34 6 28 8 20c1.5 5 4 6 5 3 0-6 3-11 7-16 0 5 2 8 4 9 1-4 3-7 6-9-1 6 2 10 4 12 1-3 3-5 5-6-.5 5 1 9 3 12 1.5 6 1 13-2 19z"/><path fill="#ffb627" stroke="none" opacity=".9" d="M9 44c-2-6 1-11 3-15 1 3 3 4 4 2 0-4 2-7 5-10 0 4 2 6 3 7 1-3 3-5 5-6-.5 4 1 7 3 9 1-2 2-3 3-4 .5 5 2 8 1 17z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path $A d="M17.6 7l1.2-5 1.8 2.6 1.9-3.6 1.9 3.6 1.8-2.6 1.2 5z"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="17.6" cy="30.6" r="1.5"/><circle fill="#e8e8e8" stroke="$S" stroke-width=".7" cx="22.5" cy="31.6" r="1.5"/><circle fill="#ff2a2a" stroke="$S" stroke-width=".7" cx="27.4" cy="30.6" r="1.5"/>'},
+ Λ:{b:'R',a:'#8fb3d6',o:'<g transform="translate(26 0) scale(.44)" fill="none" stroke-dasharray="3 2" stroke="$S" stroke-width="2.2">'+ST.N.replace(/class="h"[^/]*/g,'fill="none"')+'</g>'+'<path $A d="M14 24h17v2.4H14z"/>'},
+ Φ:{raw:'<path fill="$F" d="M14 34.2C14 28.4 13.6 24.4 17 21.8 20 19.6 21.6 17.2 22.2 14.6L8.6 17.2C6 17.6 4.8 15.6 5.4 13.6 6 11.8 7.6 11 10 10.6 17 9.4 24 7.6 30.4 6.2L34.2 1.8C35 4 35.2 6 34.7 7.7 38.4 10.6 39.6 16 39 22 38.6 26 39.4 30.4 39.4 34.2Z"/><path fill="none" stroke-width="1.3" d="M27.4 9.6h3.2M22.2 14.6l6.8.6"/><path fill="$H" d="M13.2 34.2h26.6v3.4H13.2z"/><path fill="$F" d="M13.6 37.6H39.4V43.6H34.6V40.4H29.2V43.6H24V40.4H18.4V43.6H13.6Z"/>'},
+ Ж:{b:'R',a:'#b8c2cc',plain:1,bt:'translate(2.25 -4.2) scale(.9)',o:'<path fill="none" stroke="$S" stroke-width="2.6" d="M15.6 26.4L29.4 28 15.6 29.6 29.4 31.2 15.6 32.8"/><path fill="none" stroke="$a" stroke-width="1.2" d="M15.6 26.4L29.4 28 15.6 29.6 29.4 31.2 15.6 32.8"/>'},
+ Ш:{b:'R',a:'#ffb347',plain:1,bt:'translate(3.4 -5.6) scale(.85)',o:'<path fill="none" stroke="$S" stroke-width="2.4" d="M14.4 24.6L21 26.2 14.4 27.8 21 29.4 14.4 31 21 32.6M24 24.6L30.6 26.2 24 27.8 30.6 29.4 24 31 30.6 32.6"/><path fill="none" stroke="$a" stroke-width="1.1" d="M14.4 24.6L21 26.2 14.4 27.8 21 29.4 14.4 31 21 32.6M24 24.6L30.6 26.2 24 27.8 30.6 29.4 24 31 30.6 32.6"/>'},
+ Щ:{b:'R',a:'#ffd23a',plain:1,bt:'translate(3.4 -6) scale(.85)',o:'<path fill="none" stroke="$S" stroke-width="2.3" d="M12.8 25.2L17.6 26.8 12.8 28.4 17.6 30 12.8 31.6 17.6 33.2M20.1 25.2L24.9 26.8 20.1 28.4 24.9 30 20.1 31.6 24.9 33.2M27.4 25.2L32.2 26.8 27.4 28.4 32.2 30 27.4 31.6 32.2 33.2"/><path fill="none" stroke="$a" stroke-width="1.05" d="M12.8 25.2L17.6 26.8 12.8 28.4 17.6 30 12.8 31.6 17.6 33.2M20.1 25.2L24.9 26.8 20.1 28.4 24.9 30 20.1 31.6 24.9 33.2M27.4 25.2L32.2 26.8 27.4 28.4 32.2 30 27.4 31.6 32.2 33.2"/><path $A d="M16.6 3.6l1-3 1.5 1.8 1.4-2.4 1.4 2.4 1.5-1.8 1 3z" transform="translate(2.4 1)"/>'},
+ Ю:{b:'R',a:'#ff6a3a',plain:1,bt:'translate(3.4 -6) scale(.85)',o:'<path fill="none" stroke="$S" stroke-width="2.3" d="M12.8 25.2L17.6 26.8 12.8 28.4 17.6 30 12.8 31.6 17.6 33.2M20.1 25.2L24.9 26.8 20.1 28.4 24.9 30 20.1 31.6 24.9 33.2M27.4 25.2L32.2 26.8 27.4 28.4 32.2 30 27.4 31.6 32.2 33.2"/><path fill="none" stroke="$a" stroke-width="1.05" d="M12.8 25.2L17.6 26.8 12.8 28.4 17.6 30 12.8 31.6 17.6 33.2M20.1 25.2L24.9 26.8 20.1 28.4 24.9 30 20.1 31.6 24.9 33.2M27.4 25.2L32.2 26.8 27.4 28.4 32.2 30 27.4 31.6 32.2 33.2"/><path $A d="M16.6 3.6l1-3 1.5 1.8 1.4-2.4 1.4 2.4 1.5-1.8 1 3z" transform="translate(2.4 1)"/><path $A d="M8 9.2l1.3 2.7 3 .4-2.2 2 .6 3-2.7-1.5-2.7 1.5.6-3-2.2-2 3-.4z"/>'},
+ Я:{b:'R',a:'#e8364f',o:'<path $A d="M22.5 16.2c-1.6-2.6-5.6-2.2-5.6 1 0 2.4 3 4.2 5.6 6.4 2.6-2.2 5.6-4 5.6-6.4 0-3.2-4-3.6-5.6-1z"/><path fill="none" stroke="$a" stroke-width="1.4" d="M5 21h3l1.4-3 2 6 1.6-3h2.6M30 21h2.6l1.4-3 2 6 1.6-3H40"/>'},
+ Ц:{b:'Q',a:'#888',plain:1,bt:'translate(-3 5.2) scale(.85)',u:'<g transform="translate(11 4.2) scale(.85)" fill="$F" stroke="$S" stroke-width="1.35">'+ST.N.replace(/class="h"/g,'fill="none" stroke="$H"').replace('<circle fill="none"','<circle fill="$H"')+'</g>'},
+ Б:{b:'Q',a:'#e0b23a',plain:1,bt:'translate(-3 5.2) scale(.85)',u:'<g transform="translate(11 4.2) scale(.85)" fill="$F" stroke="$S" stroke-width="1.35">'+ST.N.replace(/class="h"/g,'fill="none" stroke="$H"').replace('<circle fill="none"','<circle fill="$H"')+'</g>',o:'<g transform="translate(-21 -13) scale(.8)"><path $A d="M31 30.5v-3.2c-1.6-.2-2.6-1.4-2.4-3 .4-2.4 2.6-3.6 4.2-2.6.8-2.4 3.4-3.2 4.8-1.4.8-1.4 2.6-1.6 3.4-.4l1.4 2.2-1.6.4-.6 3.4c-.4 1.4-1.2 2.2-2.4 2.4v2.2h-1.4v-2.2h-3.4v2.2z"/></g>'},
+ Д:{b:'Q',a:'#f08a24',plain:1,bt:'translate(-3 5.2) scale(.85)',u:'<g transform="translate(16.5 1.2) scale(.78)" fill="$F" stroke="$S" stroke-width="1.45">'+ST.N.replace(/class="h"/g,'fill="none" stroke="$H"').replace('<circle fill="none"','<circle fill="$H"')+'</g>'+'<g transform="translate(11 4.2) scale(.85)" fill="$F" stroke="$S" stroke-width="1.35">'+ST.N.replace(/class="h"/g,'fill="none" stroke="$H"').replace('<circle fill="none"','<circle fill="$H"')+'</g>',o:'<g transform="translate(-21 -13) scale(.8)"><path $A d="M31 30.5v-3.2c-1.6-.2-2.6-1.4-2.4-3 .4-2.4 2.6-3.6 4.2-2.6.8-2.4 3.4-3.2 4.8-1.4.8-1.4 2.6-1.6 3.4-.4l1.4 2.2-1.6.4-.6 3.4c-.4 1.4-1.2 2.2-2.4 2.4v2.2h-1.4v-2.2h-3.4v2.2z"/></g>'},
+ Э:{b:'Q',a:'#9b59d0',u:'<path fill="none" stroke="$S" stroke-width="3.2" d="M38.6 41.6L36.2 15"/><path fill="none" stroke="$a" stroke-width="1.6" d="M38.6 41.6L36.2 15"/><g transform="translate(26.6 -1.4) scale(.42)" fill="$F" stroke="$S" stroke-width="2.6">'+ST.P+'</g>',o:'<path fill="$a" stroke="none" d="M31 5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM41.6 9.6l.5 1.1 1.1.5-1.1.5-.5 1.1-.5-1.1-1.1-.5 1.1-.5z"/>'},
+ И:{b:'Q',a:'#5b3fd0',u:'<path fill="none" stroke="$S" stroke-width="3.2" d="M38.6 41.6L36.2 15"/><path fill="none" stroke="$a" stroke-width="1.6" d="M38.6 41.6L36.2 15"/><g transform="translate(27 -1.6) scale(.42)" fill="$F" stroke="$S" stroke-width="2.6">'+ST.N.replace(/class="h"[^/]*/g,'fill="none"')+'</g>',o:'<path fill="$a" stroke="none" d="M31 5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM41.6 9.6l.5 1.1 1.1.5-1.1.5-.5 1.1-.5-1.1-1.1-.5 1.1-.5z"/>'},
+ К:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/>'},
+ Г:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/><g transform="translate(45 0) scale(-1 1)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g>'},
+ Л:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/><g transform="translate(45 0) scale(-1 1)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g>',o:'<g transform="translate(12.6 15.4) scale(.72)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g><path fill="#ffd23a" stroke="$S" stroke-width=".7" d="M41.6 1.4l-3.4 4.4h2.4l-1.8 3.8 4.4-5h-2.4l1.8-3.2z"/><g transform="translate(45 0) scale(-1 1)"><path fill="#ffd23a" stroke="$S" stroke-width=".7" d="M41.6 1.4l-3.4 4.4h2.4l-1.8 3.8 4.4-5h-2.4l1.8-3.2z"/></g>'},
+ П:{b:'K',a:'#3a9be0',o:'<path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/>'},
+ Й:{b:'K',a:'#7b3fd1',o:'<path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><g transform="translate(45 0) scale(-1 1)"><path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/></g>'},
+ Ч:{b:'Q',a:'#d6a04a',o:'<path $A d="M31 30.5v-3.2c-1.6-.2-2.6-1.4-2.4-3 .4-2.4 2.6-3.6 4.2-2.6.8-2.4 3.4-3.2 4.8-1.4.8-1.4 2.6-1.6 3.4-.4l1.4 2.2-1.6.4-.6 3.4c-.4 1.4-1.2 2.2-2.4 2.4v2.2h-1.4v-2.2h-3.4v2.2z"/>'},
+ Ф:{b:'Q',a:'#ffd23a',o:'<path $A d="M13.6 7.6l1.6-6 3.4 3.2 3.9-4.4 3.9 4.4 3.4-3.2 1.6 6z"/><circle fill="#e8364f" stroke="$S" stroke-width=".6" cx="22.5" cy="5" r="1.1"/>'},
+ Ψ:{b:'R',a:'#f08a24',o:'<g transform="translate(26 0) scale(.44)" fill="$a" stroke="$S" stroke-width="2.2">'+ST.N.replace(/class="h"[^/]*/g,'fill="none"')+'</g>'+'<g transform="translate(-2 0)" opacity=".85">'+'<g transform="translate(26 0) scale(.44)" fill="$a" stroke="$S" stroke-width="2.2">'+ST.N.replace(/class="h"[^/]*/g,'fill="none"')+'</g></g>'+'<path $A d="M14 24h17v2.4H14z"/><path $A d="M5.2 9.4h2.2v-2.2h2v2.2h2.2v2h-2.2v2.2h-2v-2.2H5.2z"/><path $A d="M13.4 4.6l1.1-3.4 1.6 2 1.4-2.6 1.4 2.6 1.6-2 1.1 3.4z"/>'},
+ U:{b:'B',a:'#e0b23a',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.6" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><path fill="none" stroke="#c9902f" stroke-width="2" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><circle $A cx="36.9" cy="16" r="1.9"/><path $A d="M35.3 25.5h3.2l-.2 1.8h-2.8z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path fill="$a" stroke="none" d="M22.5 2.2l.7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z"/>'},
+ V:{b:'B',a:'#8a5cf0',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.4" d="M36.5 41V9.5a3.6 3.6 0 0 0-7.2 0"/><path fill="none" stroke="#b07a3c" stroke-width="1.8" d="M36.5 41V9.5a3.6 3.6 0 0 0-7.2 0"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/>'},
+ F:{b:'B',a:'#f2c230',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.6" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><path fill="none" stroke="$a" stroke-width="2" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><circle $A cx="36.9" cy="16" r="2.3"/><circle $A cx="36.9" cy="24" r="1.7"/><path $A d="M35.3 31.5h3.2l-.2 1.8h-2.8z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path $A d="M18.4 6.6l1.2-4.4 1.6 2.4 1.3-3.4 1.3 3.4 1.6-2.4 1.2 4.4z"/>'},
+ J:{b:'B',a:'#c9d1db',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.6" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><path fill="none" stroke="$a" stroke-width="2" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><circle $A cx="36.9" cy="16" r="2.3"/><path $A d="M35.3 31.5h3.2l-.2 1.8h-2.8z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path $A d="M22.5 1.6l1.1 2.4 2.5.3-1.9 1.7.5 2.5-2.2-1.3-2.2 1.3.5-2.5-1.9-1.7 2.5-.3z"/>'},
+ O:{b:'B',a:'#ff9f1a',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.6" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><path fill="none" stroke="$a" stroke-width="2" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><circle $A cx="36.9" cy="16" r="2.3"/><circle $A cx="36.9" cy="24" r="1.7"/><path $A d="M35.3 31.5h3.2l-.2 1.8h-2.8z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><circle fill="none" stroke="$a" stroke-width="1.4" cx="36.9" cy="6" r="4.6" stroke-dasharray="1.6 1.4"/><path $A d="M18.4 6.6l1.2-4.4 1.6 2.4 1.3-3.4 1.3 3.4 1.6-2.4 1.2 4.4z"/>'},
+ I:{b:'B',a:'#b9c8ff',y:1,u:'<path fill="none" stroke="$S" stroke-width="3.6" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><path fill="none" stroke="$a" stroke-width="2" d="M36.8 41C37.4 30 36 20 37 12.5c.6-4.6-1.6-8.4-5.6-8.4-3.4 0-5 2.6-4.6 5 .4 2.2 2.6 3.2 4.2 2.4 1.4-.7 1.4-2.6.2-3.1"/><circle $A cx="36.9" cy="16" r="2.3"/><path $A d="M35.3 31.5h3.2l-.2 1.8h-2.8z"/>',o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><path $A d="M33.4 2.2a5 5 0 1 0 6 6.2 4 4 0 0 1-6-6.2z"/><path $A d="M22.5 1.6l1.1 2.4 2.5.3-1.9 1.7.5 2.5-2.2-1.3-2.2 1.3.5-2.5-1.9-1.7 2.5-.3z"/>'},
+ Z:{b:'B',a:'#e8532f',y:1,o:'<path $A d="M17.4 19.6h10.2l-.4 2.4H17.8z"/><circle fill="none" stroke="$S" stroke-width="2.6" cx="35.5" cy="10" r="5.6"/><circle fill="none" stroke="$a" stroke-width="1.5" cx="35.5" cy="10" r="5.6"/><circle $A cx="35.5" cy="10" r="2"/><path fill="none" stroke="$a" stroke-width="1.4" d="M35.5 2v3M35.5 15v3M28 10h3M40 10h3"/>'}};
+var EVCID=0;function evoPiece(k,w){const D=EVART[k],F=w?'#f6f3ea':'#2c2b29',F2=w?'#2c2b29':'#f6f3ea',S=w?'#1e1c19':'#000',H=w?'#4a4238':'#cfcfcf';
+ const sub=s=>(s||'').replace(/\$A/g,'fill="'+D.a+'" stroke="'+S+'" stroke-width="1"').replace(/\$a/g,D.a).replace(/\$S/g,S).replace(/\$F/g,F).replace(/\$H/g,H);
+ if(D.raw)return '<div class="pc '+(w?'wht':'blk')+' evp"><svg viewBox="0 0 45 45"><g stroke="'+S+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">'+sub(D.raw)+'</g></svg></div>';
+ const body=ST[D.b].replace(/class="h"/g,'fill="none" stroke="'+H+'" stroke-width="1"').replace('<circle fill="none"','<circle fill="'+H+'"');
+ const foot=D.f?sub(D.f):'<g fill="'+(D.y||D.plain?F:D.a)+'">'+STFOOT+'</g>';
+ const cid='evyc'+(++EVCID),half=D.y?'<clipPath id="'+cid+'"><rect x="22.5" y="0" width="23" height="45"/></clipPath><g clip-path="url(#'+cid+')" fill="'+F2+'">'+ST[D.b].replace(/class="h"[^/]*/g,'fill="none"')+'</g>':'';
+ return '<div class="pc '+(w?'wht':'blk')+' evp"><svg viewBox="0 0 45 45"><g stroke="'+S+'" stroke-width="1.15" stroke-linejoin="round" stroke-linecap="round">'+sub(D.u)+
+  '<g fill="'+F+'"'+(D.op?' opacity="'+D.op+'"':'')+(D.bt?' transform="'+D.bt+'"':'')+'>'+body+'</g>'+half+foot+sub(D.o)+'</g></svg></div>'}
+function piece(p,set){if(EVART[p.toUpperCase()])return evoPiece(p.toUpperCase(),p==p.toUpperCase());
  set=set||opts.set;const k=p.toUpperCase(),w=p==k,cls='pc '+(w?'wht':'blk');
  if(set=='minimal'){const f=w?'#f7f5ef':'#2b2b2b',s=w?'#222':'#000',x=w?'#222':'#ddd';
   return '<div class="'+cls+'"><svg viewBox="0 0 45 45"><g fill="'+f+'" stroke="'+s+'" stroke-width="1.6" stroke-linejoin="round">'+
@@ -1720,9 +2083,12 @@ function myColor(){return S?S.you:'white'}
 const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pawn'){const w=S&&S.boss&&S.boss.side=='white';b[q]=w?'P':'p'}else delete b[q];return} // boss powers
  const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
- if(u.includes('!')){delete b[t];return} // Evolution: Pawn+ captured without moving
- const ev=(u.match(/\^([a-z])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
- if(ev){if(f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];delete b[f];b[t]=p==p.toUpperCase()?ev.toUpperCase():ev;return} // the pawn evolved as it moved
+  if(u.includes('*')){const k=u.includes('*n')?'N':'P';b[t]=p==p.toUpperCase()?k:k.toLowerCase();return} // Evolution: a Summoning queen summoned a pawn or knight
+  if(u.includes('!')){delete b[t];return} // Evolution: Pawn+ captured without moving
+ const ev=(u.match(/\^([a-zα-ωа-я])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
+ if('UFJOIПЙ'.includes(p.toUpperCase())&&b[t]&&(b[t]==b[t].toUpperCase())==(p==p.toUpperCase())){const q=b[t];b[t]=ev?(p==p.toUpperCase()?ev.toUpperCase():ev):p;b[f]=q;return} // Shepherd bishop: swap
+ if('ШЩЮ'.includes(p.toUpperCase())&&!b[t]){const df=Math.sign(t.charCodeAt(0)-f.charCodeAt(0)),dr=Math.sign(+t[1]-+f[1]),ov=[];for(let x=f.charCodeAt(0)+df,y=+f[1]+dr;x!=t.charCodeAt(0)||y!=+t[1];x+=df,y+=dr){const s=String.fromCharCode(x)+y;if(b[s])ov.push(s)}if(ov.length==1||p.toUpperCase()=='Ю')for(const s of ov)if((b[s]==b[s].toUpperCase())!=(p==p.toUpperCase()))delete b[s]} // jumping rooks take the enemy pieces they jump over (master: only when jumping one; master 2: always)
+  if(ev){if(p.toUpperCase()=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];delete b[f];b[t]=p==p.toUpperCase()?ev.toUpperCase():ev;return} // the pawn evolved as it moved
  if(p.toUpperCase()=='K'&&b[t]&&(b[t]==b[t].toUpperCase())==(p=='K')){ // Chess960 castling: king onto its own rook
   const r=f[1],ks=t[0]>f[0],R=b[t];delete b[f];delete b[t];b[(ks?'g':'c')+r]=p;b[(ks?'f':'d')+r]=R;return}
  const was=b[t];let cap=was;if(!cap&&p.toUpperCase()=='P'&&f[0]!=t[0])cap='p';
@@ -1732,7 +2098,8 @@ function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pa
  if(k=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];
  if(k=='K'&&!(S&&S.start)&&Math.abs(f.charCodeAt(0)-t.charCodeAt(0))==2){const r=f[1],[a,c]=t[0]=='g'?['h','f']:['a','d'];b[c+r]=b[a+r];delete b[a+r]}
  b[t]=pr?(p==k?pr.toUpperCase():pr):p}
-function posAt(n){const b=parseFen(S&&S.start||START),us=S&&S.ucis||[];for(let i=0;i<n&&i<us.length;i++)applyUci(b,us[i]);return b}
+function posAt(n){if(S&&S.rule=='evo'&&typeof Chess!='undefined')try{const st=S.start?S.start.split(' ')[0].split('/')[7]:undefined,g=new Chess(st,'evo'),us=S.ucis||[];for(let i=0;i<n&&i<us.length;i++)g.push(g.fromUci(us[i]));const o={};g.b.forEach((p,s)=>{if(p)o['abcdefgh'[s%8]+(Math.floor(s/8)+1)]=p});return o}catch(e){} // Evolution: replay with the engine (Life rooks come back)
+ const b=parseFen(S&&S.start||START),us=S&&S.ucis||[];for(let i=0;i<n&&i<us.length;i++)applyUci(b,us[i]);return b}
 let view=null; // null = live position; otherwise number of half-moves shown
 const RV={ev:[],best:[],tok:0,busy:null,n:0}; // ev[n]: White's score after n half-moves {cp} or {mate}
 function nPly(){return S&&S.ucis?S.ucis.length:0}
@@ -1749,11 +2116,13 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
   if(ABIL&&!rv&&S&&S.specials&&S.specials.includes('@'+ABIL+':'+sq))d.classList.add('abt');
   if(!rv&&S&&S.hk&&!HKP){if(S.hk.mine==sq&&p)d.classList.add('hkm');if(S.hk.theirs==sq)d.classList.add('hkt')}
   if(HKP&&p&&(p==p.toUpperCase())==(S.you=='white'))d.classList.add('hkpick');
+  if(!rv&&p&&S&&S.guilt&&S.guilt[sq])d.classList.add(S.guilt[sq]==2?'guc':'gu'); // Guilt: red checker under a guilty piece
+  const LV=!rv&&p&&S&&S.lives&&S.lives[sq]; // Evolution: a Life rook's extra lives
   if(!hid&&lastU&&(lastU.slice(0,2)==sq||lastU.slice(2,4)==sq))d.classList.add('last',...(V>=5?['lastol']:[]));
   if(sq==sel&&!rv)d.classList.add('sel');
   if(targets.includes(sq))d.classList.add(p?'cap':'dot');
-  if(p){d.innerHTML=visPiece(p,V);
-   if(inChk&&!FOG&&p.toUpperCase()=='K'&&((p=='K')==turnW))d.classList.add('chk')}
+  if(p){d.innerHTML=visPiece(p,V);if(LV)d.insertAdjacentHTML('beforeend','<span class="lvb">'+LV+'</span>');
+   if(inChk&&!FOG&&'KКГЛПЙ'.includes(p.toUpperCase())&&((p==p.toUpperCase())==turnW))d.classList.add('chk')}
   if(r==7){const c=document.createElement('span');c.className='coord cf';c.textContent='abcdefgh'[file];d.appendChild(c)}
   if(f==0){const c=document.createElement('span');c.className='coord cr';c.textContent=rank+1;d.appendChild(c)}
   if(PREM&&(PREM.f==sq||PREM.t==sq))d.classList.add('pre');if(MK.h.includes(sq))d.classList.add('mk');
@@ -1790,7 +2159,8 @@ function slide(B,u,wb){const el=B.querySelector('[data-sq="'+u.slice(2,4)+'"] .p
 function isMine(p){return p&&((p==p.toUpperCase())==(S.you=='white'))}
 function canPre(){return S&&gameOn&&!S.over&&!(GAME&&(GAME.bvb||GAME.lib))&&!reviewOn()&&S.turn!=S.you}
 function sqAt(x,y){const el=document.elementFromPoint(x,y),s=el&&el.closest?el.closest('#board .sq'):null;return s?s.dataset.sq:null}
-function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t)&&!/[!^]/.test(m));
+function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t)&&!/[!^*]/.test(m));
+ if(!ms.length&&S.legal.some(x=>x.startsWith(f+t+'*'))){noAnim=!!drag;evoMove(f,t,f+t);return true} // only a summon there
  if(!ms.length)ms=Object.entries(S.castles||{}).filter(([u,d])=>u.startsWith(f)&&d==t).map(([u])=>u); // 960: king to g/c castles
  if(!ms.length)return false;
  if(S.rule=='evo'&&ms.length==1){noAnim=!!drag;evoMove(f,t,ms[0]);return true}
@@ -1887,11 +2257,11 @@ document.addEventListener('keydown',e=>{if(!reviewOn()||/INPUT|SELECT|TEXTAREA/.
  const k={ArrowLeft:view-1,ArrowRight:view+1,Home:0,End:nPly(),ArrowUp:0,ArrowDown:nPly()}[e.key];if(k!=null){e.preventDefault();go(k)}});
 function drawClocks(){const hasC=S&&S.base!=null;const meTop=flip;
  const nm=w=>GAME?GAME.names[w]:(w=='me'?'You':BN()),avv=w=>GAME?GAME.av[w]:(w=='me'?'me':opts.bot);
- [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),GAME&&GAME.online?(isMod(GAME.online[who=='me'?'me':'opp'].uid)&&'mod'):PB.test(avv(who))&&avv(who));$('t'+k).textContent=hasC?fmt(Math.max(0,t)):'–';
+ [['top',meTop?'me':'bot'],['bot',meTop?'bot':'me']].forEach(([k,who])=>{const t=clk[who];nameEl($('n'+k),nm(who),GAME&&GAME.online?(isMod(GAME.online[who=='me'?'me':'opp'].uid)&&'mod'):PB.test(avv(who))&&avv(who),GAME&&GAME.online&&GAME.online[who=='me'?'me':'opp'].cc);$('t'+k).textContent=hasC?fmt(Math.max(0,t)):'–';
   const av=$('a'+k),v=avv(who);if(av.dataset.v!=v){setAv(av,v);av.dataset.v=v}
   const el=$('c'+k);el.classList.toggle('active',running==who);el.classList.toggle('low',hasC&&t<10)})}
 // a name with a Discord-style blue BOT tag (the Magnus Carlsen bot; BOTTAG is defined next to BOTINFO)
-function nameEl(el,txt,tag){el.textContent=txt;if(tag=='mod'){el.insertAdjacentHTML('afterbegin',MODTAG);return}if(tag){el.insertAdjacentHTML('afterbegin',ttl(tag));el.insertAdjacentHTML('beforeend',BOTTAG)}}
+function nameEl(el,txt,tag,cc){el.textContent=txt;if(cc&&cc.user)el.insertAdjacentHTML('beforeend',ccTag(cc));if(tag=='mod'){el.insertAdjacentHTML('afterbegin',MODTAG);return}if(tag){el.insertAdjacentHTML('afterbegin',ttl(tag));el.insertAdjacentHTML('beforeend',BOTTAG)}}
 function myTurn(){return S&&!S.over&&S.turn==S.you&&gameOn&&!busy&&!HKP&&!(GAME&&GAME.bvb)&&hkReady()}
 function sideOf(color){return GAME&&GAME.bvb?(color=='white'?'me':'bot'):(color==S.you?'me':'bot')}
 function click(sq,p){if(!myTurn())return;const mine=p&&((p==p.toUpperCase())==(S.you=='white'));
@@ -1958,12 +2328,13 @@ $('ovpgn').onclick=e=>copyPgn(e.currentTarget);$('pgnbtn').onclick=e=>copyPgn(e.
 // keep the phone screen on during a game
 let WL=null;async function wake(on){try{if(on&&!WL&&navigator.wakeLock){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>WL=null)}else if(!on&&WL){WL.release();WL=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&gameOn)wake(true)});
-function showView(v){$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
+function showView(v){document.body.classList.toggle('setupv',v!='game');$('setup').style.display=v=='game'?'none':'block';$('gameview').style.display=v=='game'?'block':'none';
  const bvb=GAME&&GAME.bvb;['hint','undo','resign'].forEach(id=>$(id).style.display=bvb||(GAME&&GAME.lib)||(GAME&&GAME.online&&id!='resign')||(id=='hint'&&S&&S.rule)?'none':'');$('score').style.display=bvb?'block':'none';
  if(v=='game'&&GAME&&GAME.lib){const g=GAME.lib;setAv($('vsav'),'gm');$('vsname').textContent=g.title;$('vstc').textContent=g.white+' – '+g.black+' · '+g.event+' '+g.year+' · '+g.result;return}
  if(v=='game'&&GAME){setAv($('vsav'),bvb?GAME.av.me:GAME.av.bot);nameEl($('vsname'),bvb?GAME.names.me+'  vs  '+GAME.names.bot:GAME.names.bot,GAME.online?isMod(GAME.online.opp.uid)&&'mod':!bvb&&PB.test(GAME.av.bot)&&GAME.av.bot);$('vstc').innerHTML=$('tclabel').innerHTML;
   if(GAME.online){const g=GAME.online.g;$('vstc').textContent='🌐 '+tcInfo(g.tc)[1]+' · '+modeName(g.mode)}}}
 $('newgame').onclick=()=>{if(GAME&&GAME.online&&gameOn){if(!confirm('Leave this game? It counts as resigning.'))return;end('you resigned')}
+ else if(gameOn&&S&&S.ucis&&S.ucis.length>1&&!(GAME&&(GAME.bvb||GAME.lib))&&!confirm('Leave this game? It will count as a loss.'))return;
  if(GAME&&GAME.online)onLeave();
  if(gameOn||MATCH){gid++;gameOn=false;busy=false;stopClock();drawClocks();msg('')}MATCH=null;reviewStop().then(()=>{draw();showView('setup')})};
 async function newGame(white,black){ // white/black: spec, or null for you
@@ -1976,12 +2347,17 @@ async function newGame(white,black){ // white/black: spec, or null for you
   :{bvb,spec:{bot:botSpec},names:{me:'You',bot:specName(botSpec)},short:{me:'You',bot:shortName(botSpec.bot)},av:{me:'me',bot:avOf(botSpec)}};
  if(bvb&&GAME.short.me==GAME.short.bot){GAME.short.me+=' (White)';GAME.short.bot+=' (Black)'}
  $('over').style.display='none';showView('game');flip=false;sel=null;inc=S.inc||0;clk.me=clk.bot=S.base||0;gameOn=true;draw();wake(true);mgStart();return S}
+function startLbl(){const b=$('start');if(!b)return;try{const vs=opts.vs;if(vs!='human'&&vs!='bots'){return}
+ const nm=vs=='bots'?'':BN(),tc=($('tclabel').textContent||'').trim(),col={white:'as White',black:'as Black',random:'random colour'}[opts.color]||'',mk=typeof modeKey=='function'?modeKey():'std|v0';
+ const bits=[nm&&'vs '+nm,tc,vs=='human'&&col,mk!='std|v0'&&modeName(mk)].filter(Boolean);
+ b.innerHTML=(vs=='bots'?'Start match':'Play')+(bits.length?'<small>'+esc(bits.join(' · '))+'</small>':'')}catch(e){}}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#setup'))setTimeout(startLbl,30)});document.addEventListener('change',()=>setTimeout(startLbl,30));
 $('start').onclick=async()=>{addRecent(tcValue());
  if(opts.vs=='bots')return startMatch();
  const sp=specFromMain(),color=opts.color=='random'?(Math.random()<.5?'white':'black'):opts.color;
  S=await newGame(color=='white'?null:sp,color=='black'?null:sp);if(!S||S.error)return;
  if(S.rule=='hidden'){const my=gid;if(!await hkPick()||my!=gid)return;if(S.turn!=S.you)botTurn();else startClock('me');return}
- msg((S.has_clock||sp.bot!='humanbot'?'':'(This model has no thinking-time head, so the bot\'s timing is a rough guess.) ')+($('cc').checked&&sp.bot!='stockfish'&&sp.bot!='leela'?'Bot ≈ '+sp.lvl+' on Lichess. ':'')+'You play '+S.you+'.');
+ msg((S.has_clock||sp.bot!='humanbot'?'':'(This model has no thinking-time head, so the bot\'s timing is a rough guess.) ')+($('cc').checked&&sp.bot!='stockfish'&&sp.bot!='leela'?'Bot ≈ '+sp.lvl+' on Lichess. ':'')+'You play '+(S.you=='white'?'White':'Black')+'. '+(S.turn==S.you?'Your move: drag a piece, or tap it and then tap where it should go.':BN()+' moves first.'));
  if(S.turn!=S.you)botTurn();else startClock('me')};
 // ---- bot vs bot: two sides, a match of N games with colours swapped every game
 let MATCH=null;
@@ -2002,7 +2378,7 @@ document.querySelectorAll('#bvbn .chip').forEach(c=>c.classList.toggle('on',+c.d
 function vsUI(){document.querySelectorAll('#vsmode span').forEach(s=>s.classList.toggle('on',s.dataset.v==opts.vs));
  const L=opts.vs=='lib';$('lib').style.display=L?'block':'none';['tcwrap','moreopts','start'].forEach(id=>$(id).style.display=L?'none':'');
  $('bvb').style.display=opts.vs=='bots'?'block':'none';$('pvb').style.display=$('colwrap').style.display=opts.vs=='human'?'block':'none';
- $('start').textContent=opts.vs=='bots'?'Start match':'Play';
+ $('start').textContent=opts.vs=='bots'?'Start match':'Play';setTimeout(startLbl);
  const O=opts.vs=='online';$('online').style.display=O?'block':'none';if(O){$('moreopts').style.display=$('start').style.display='none';setTimeout(onOpen)}
  const M=opts.vs=='modes';$('gmodes').style.display=M?'block':'none';if(M)['tcwrap','moreopts','start'].forEach(id=>$(id).style.display='none');
  setTimeout(modesUI)}
@@ -2022,7 +2398,7 @@ $('hint').onclick=async()=>{if(!myTurn())return;const r=await api('/api/hint',{y
  $('info').innerHTML='Players at your level here play: '+r.cands.map(([s,p])=>s+' '+p+'%').join(', ')+(r.think?'<br>They spend about '+r.think+' s here.':'')};
 $('undo').onclick=async()=>{if(!S||busy)return;PREM=null;await reviewStop();S=await api('/api/undo');sel=null;gameOn=true;draw();
  if(S.turn==S.you)startClock('me');else botTurn()};
-$('resign').onclick=()=>{if(gameOn){end('you resigned')}};
+$('resign').onclick=()=>{if(gameOn&&confirm('Resign this game?')){end('you resigned')}};
 $('flip').onclick=()=>{flip=!flip;draw()};
 // ---- Online: accounts and games against other people (Firebase Auth + Firestore, loaded only when opened).
 // Each side checks moves with its own rules engine (the same /api/move as bot games) and sends them through the
@@ -2033,6 +2409,30 @@ const FBCFG={apiKey:'AIzaSyDZq-joHgXMDGSPFGnjjwtMchkt7sGKtD8',authDomain:'humanb
 // moderators: Firebase account IDs (not names, which anyone can pick); shown with a green MOD tag online
 const MODS=new Set(['3236SVNT2sWDxrfNONH39zLLtBk2' /* leoniiy (site owner) */]),MODTAG='<span class="modtag">MOD</span>',isMod=uid=>!!uid&&MODS.has(uid);
 const modName=(name,uid)=>(isMod(uid)?MODTAG:'')+esc(name);
+// ---- chess.com link: a verified chess.com account shows its rating with a green star
+const ccR=c=>(c&&(c.rapid||c.blitz||c.bullet))||0;
+const ccTip=c=>'chess.com: '+c.user+(c.rapid?' · rapid '+c.rapid:'')+(c.blitz?' · blitz '+c.blitz:'')+(c.bullet?' · bullet '+c.bullet:'');
+const ccTag=c=>c&&c.user?' <span class="cct" title="'+esc(ccTip(c))+'">★'+(ccR(c)||'')+'</span>':'';
+const ccSmall=c=>c&&c.user?{user:c.user,rapid:c.rapid||null,blitz:c.blitz||null,bullet:c.bullet||null}:null;
+async function ccGet(path){let r;try{r=await fetch('https://api.chess.com/pub/player/'+path,{cache:'no-store'})}catch(e){throw new Error('Couldn\'t reach chess.com. Check your internet and try again.')}
+ if(r.status==404)throw new Error('There is no chess.com account with that username.');if(!r.ok)throw new Error('chess.com didn\'t answer ('+r.status+'). Try again in a minute.');return r.json()}
+async function ccStats(u){const s=await ccGet(encodeURIComponent(u.toLowerCase())+'/stats'),g=k=>(s[k]&&s[k].last&&s[k].last.rating)||null;return {rapid:g('chess_rapid'),blitz:g('chess_blitz'),bullet:g('chess_bullet')}}
+function ccCode(){let c=localStorage.getItem('hb_cccode');if(!c){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';c='HB-';for(let i=0;i<6;i++)c+=A[Math.floor(Math.random()*A.length)];localStorage.setItem('hb_cccode',c)}return c}
+async function ccConnect(user){user=(user||'').trim().replace(/^@/,'');if(!/^[A-Za-z0-9_-]{3,25}$/.test(user))throw new Error('Type your chess.com username.');
+ const pr=await ccGet(encodeURIComponent(user.toLowerCase())),code=ccCode();
+ if(!((pr.location||'')+' '+(pr.name||'')).toUpperCase().includes(code))throw new Error('Didn\'t find '+code+' in the Location of chess.com/member/'+(pr.username||user)+'. Save it there, wait a minute, then press Verify again.');
+ const {F,db}=ON.fb,un=pr.username||user.toLowerCase();
+ const taken=await F.getDocs(F.query(F.collection(db,'users'),F.where('cc.user','==',un),F.limit(3)));
+ if(taken.docs.some(d=>d.id!=ON.user.uid))throw new Error('That chess.com account is already connected to another HumanBot account.');
+ const st=await ccStats(un);await F.updateDoc(F.doc(db,'users',ON.user.uid),{cc:Object.assign({user:un,url:pr.url||('https://www.chess.com/member/'+un),at:Date.now()},st)})}
+// ratings follow chess.com by themselves: checked on sign-in, every 10 minutes while the site is open, and when you come back to the tab
+async function ccRefresh(force){const p=ON.prof;if(!p||!p.cc||!p.cc.user||!ON.user)return;
+ const k='hb_ccchk_'+ON.user.uid;if(!force&&Date.now()-(+localStorage.getItem(k)||0)<10*60e3)return;localStorage.setItem(k,Date.now());
+ const st=await ccStats(p.cc.user),same=['rapid','blitz','bullet'].every(x=>(p.cc[x]||null)==(st[x]||null));
+ if(same&&!force&&Date.now()-(p.cc.at||0)<24*3600e3)return; // nothing changed: no need to write
+ const {F,db}=ON.fb;await F.updateDoc(F.doc(db,'users',ON.user.uid),{cc:Object.assign({},p.cc,st,{at:Date.now()})})}
+setInterval(()=>ccRefresh().catch(()=>{}),10*60e3+5e3);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)ccRefresh().catch(()=>{})});
 BOTINFO.opp=['👤','#5a5754',''];BOTINFO.modes=['960','#6b4fa3',''];
 const ON={fb:null,user:null,prof:null,err:'',seek:null,seekUnsub:null,seekBeat:null,chal:null,gref:null,gunsub:null,applying:false,top:null,busy:false};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -2042,7 +2442,7 @@ async function fbLoad(){if(ON.fb)return ON.fb;if(!FBCFG)throw new Error('Online 
  const app=A.initializeApp(FBCFG);ON.fb={A,AU,F,auth:AU.getAuth(app),db:F.getFirestore(app)};
  AU.getRedirectResult(ON.fb.auth).catch(e=>{ON.err=authErr(e);onUI()});
  AU.onAuthStateChanged(ON.fb.auth,u=>{ON.user=u;ON.prof=null;if(ON.profUnsub){ON.profUnsub();ON.profUnsub=null}
-  if(u){ON.loadingProf=true;ON.profUnsub=F.onSnapshot(F.doc(ON.fb.db,'users',u.uid),s=>{ON.loadingProf=false;ON.prof=s.exists()?s.data():null;onUI();onJoinFromLink();profSync()},e=>{ON.loadingProf=false;ON.err=e.message;onUI()})}
+  if(u){ON.loadingProf=true;ON.profUnsub=F.onSnapshot(F.doc(ON.fb.db,'users',u.uid),s=>{ON.loadingProf=false;ON.prof=s.exists()?s.data():null;onUI();onJoinFromLink();profSync();ccRefresh().catch(()=>{})},e=>{ON.loadingProf=false;ON.err=e.message;onUI()})}
   onUI();profSync()});
  return ON.fb}
 function authErr(e){const c=(e&&e.code)||'';return {'auth/invalid-credential':'Wrong email or password.','auth/wrong-password':'Wrong email or password.','auth/user-not-found':'No account with that email: press Create account.',
@@ -2063,7 +2463,7 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
   '<input id="onname" maxlength="20" placeholder="name" style="width:100%;box-sizing:border-box;padding:9px;border-radius:6px;border:0;margin:8px 0">'+
   '<button class="play" id="onsave">Save</button><div class="small" style="margin-top:8px"><a href="#" id="onout" style="color:#bab9b8">Sign out</a></div>';
  else{const p=ON.prof,tl=tcInfo(tcValue())[1];
-  h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+modName(p.name,ON.user.uid)+' <span style="color:#81b64c">'+p.rating+'</span></div>'+
+  h='<div class="vs" style="margin:6px 0 10px"><span class="av" style="background:#5a5754">👤</span><div><div style="font-weight:700">'+modName(p.name,ON.user.uid)+' <span style="color:#81b64c">'+p.rating+'</span>'+ccTag(p.cc)+'</div>'+
    '<div class="small">'+(p.w||0)+' wins · '+(p.d||0)+' draws · '+(p.l||0)+' losses · <a href="#" id="onout" style="color:#bab9b8">Sign out</a> · <a href="#" id="onuid" style="color:#bab9b8">copy my account ID</a></div></div></div>';
   const mk=modeKey();h+='<div class="small" style="margin-bottom:8px">Mode: <b>'+esc(modeName(mk))+'</b>'+(ON.seek||ON.chal?'':' · <a href="#" id="onmode" style="color:#bab9b8">change</a>')+'</div>';
   if(ON.seek)h+='<div class="small" style="margin:8px 0">🔎 Looking for an opponent ('+esc(tl)+', '+esc(modeName(mk))+')… it starts as soon as someone with the same time and mode joins.</div><button class="play" id="oncancel" style="background:#4b4847">Cancel</button>';
@@ -2077,7 +2477,7 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
     '<div class="small" style="margin:6px 0">The Boss gets only a king and one pawn, plus free powers on their turn (they don\'t end it, no limits): 🕳 delete any square, 🕵 steal any piece, ♟ put the pawn back after losing it. The other side plays normal chess with a full army. Time: as picked below.</div>'+
     '<div class="lbl">Who is the Boss</div><div class="row" id="bwho"></div><div class="lbl">My colour</div><div class="row" id="bcol"></div>'+
     '<button class="play" id="onboss" style="background:#7b3fd1;border-bottom-color:#5a2ca0">Create boss duel link</button></details>':'');
-  h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>').join('<br>'):'…')+'</div>';
+  h+='<div class="lbl" style="margin-top:14px">Top players</div><div id="ontop" class="small">'+(ON.top?ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>'+ccTag(u.cc)).join('<br>'):'…')+'</div>';
   if(!ON.top)onTop()}
  if(ON.err)h+='<div class="small" style="color:#e05a4f;margin-top:10px">'+esc(ON.err)+'</div>';
  el.innerHTML=h;const B=(id,f)=>{const b=$(id);if(b)b.onclick=async e=>{e.preventDefault();if(ON.busy)return;ON.busy=true;ON.err='';try{await f()}catch(x){ON.err=authErr(x)}ON.busy=false;onUI()}};
@@ -2097,13 +2497,13 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  B('onmode',()=>{opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()});
  B('oncopy',async()=>{const i=$('onlink');try{await navigator.clipboard.writeText(i.value)}catch(e){i.select();document.execCommand('copy')}})}
 async function onTop(){if(ON.topBusy)return;ON.topBusy=true;try{const {F,db}=ON.fb;const s=await F.getDocs(F.query(F.collection(db,'users'),F.orderBy('rating','desc'),F.limit(10)));
- ON.top=s.docs.map(d=>Object.assign({uid:d.id},d.data()));const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>').join('<br>')}catch(e){}ON.topBusy=false}
-function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating}}
+ ON.top=s.docs.map(d=>Object.assign({uid:d.id},d.data()));const el=$('ontop');if(el)el.innerHTML=ON.top.map((u,i)=>(i+1)+'. '+modName(u.name,u.uid)+' <b>'+u.rating+'</b>'+ccTag(u.cc)).join('<br>')}catch(e){}ON.topBusy=false}
+function onMe(){return {uid:ON.user.uid,name:ON.prof.name,rating:ON.prof.rating,cc:ccSmall(ON.prof.cc)}}
 function onTc(){const tc=tcValue();if(!tc||tc=='none')throw new Error('Online games need a clock: pick a time under Time.');return tc}
 // a game's mode travels with it (both players play the same mode); new modes only need a field here + in onStart
 function modeKey(){return (opts.variant=='960'?'960':'std')+'|v'+(+opts.vis||0)+(opts.rule&&opts.rule!='none'?'|'+opts.rule:'')}
 function modeName(k){if(k=='boss')return 'Standard'; // a boss duel looks like a normal game to everyone
- const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king',evo:'Evolution'}[r]||r);
+ const [v,s,r]=(k||'std|v0').split('|'),p=[];p.push(v=='960'?'Chess960':'Standard');if(r)p.push({shape:'Shapeshift',fog:'Fog of war',hidden:'Hidden king',evo:'Evolution',guilt:'Guilt'}[r]||r);
  if(s&&s!='v0')p.push('Visualization L'+s.slice(1));return p.join(' · ')}
 function onGameData(w,b,tc,status){const [m,i]=tc.split('+'),base=Math.round(parseFloat(m)*60),inc=parseInt(i)||0;
  return {white:w,black:b,players:[w&&w.uid,b&&b.uid].filter(x=>x),tc,base,inc,moves:[],wt:base,bt:base,status,result:null,reason:null,rated:{},
@@ -2114,11 +2514,11 @@ async function onQuick(){const {F,db}=ON.fb,tc=onTc(),me=onMe();
   if(x.uid==me.uid){F.deleteDoc(d.ref).catch(()=>{});continue}
   if(x.gameId||Date.now()-(x.t||0)>90000||(x.mode||'std|v0')!=modeKey())continue; // taken, owner left, or another mode
   try{const id=await F.runTransaction(db,async tx=>{const c=await tx.get(d.ref);if(!c.exists()||c.data().gameId)throw new Error('taken');
-    const g=F.doc(F.collection(db,'games')),meW=Math.random()<.5,them={uid:x.uid,name:x.name,rating:x.rating};
+    const g=F.doc(F.collection(db,'games')),meW=Math.random()<.5,them={uid:x.uid,name:x.name,rating:x.rating,cc:x.cc||null};
     tx.set(g,onGameData(meW?me:them,meW?them:me,tc,'live'));tx.update(d.ref,{gameId:g.id});return g.id});
    return onWatch(id)}catch(e){}}
  // nobody waiting: wait for someone (the seek's time is refreshed while this page is open)
- const ref=await F.addDoc(F.collection(db,'seeks'),{uid:me.uid,name:me.name,rating:me.rating,tc,mode:modeKey(),t:Date.now(),gameId:null});
+ const ref=await F.addDoc(F.collection(db,'seeks'),{uid:me.uid,name:me.name,rating:me.rating,cc:me.cc,tc,mode:modeKey(),t:Date.now(),gameId:null});
  ON.seek=ref;ON.seekBeat=setInterval(()=>F.updateDoc(ref,{t:Date.now()}).catch(()=>{}),30000);
  ON.seekUnsub=F.onSnapshot(ref,x=>{const g=x.exists()&&x.data().gameId;if(g){onStopSeek(true);onWatch(g)}})}
 async function onStopSeek(){const {F}=ON.fb||{};if(ON.seekUnsub){ON.seekUnsub();ON.seekUnsub=null}if(ON.seekBeat){clearInterval(ON.seekBeat);ON.seekBeat=null}
@@ -2191,7 +2591,7 @@ async function onEnd(t){const O=GAME.online,{F,db}=ON.fb,my=O.color,r=/you win/i
  if(O.g.rule=='hidden'&&S.hk&&S.hk.mine)F.updateDoc(ON.gref,{['hk_'+my]:S.hk.mine,['hk0_'+my]:ON.hk0||'',['hs_'+my]:ON.hkSalt||''}).catch(()=>{}); // reveal
  const myg=gid;setTimeout(()=>{if(myg!=gid)return;const h=$('ovhd');h.className='hd '+r;
   h.innerHTML=(r=='win'?'🏆 You won!':r=='draw'?'½ Draw':esc(O.opp.name)+' won')+'<div class="why">'+esc(REASON(t))+'</div>';
-  $('ovrec').innerHTML='vs '+modName(O.opp.name,O.opp.uid)+' ('+O.opp.rating+')'+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
+  $('ovrec').innerHTML='vs '+modName(O.opp.name,O.opp.uid)+' ('+O.opp.rating+')'+ccTag(O.opp.cc)+(delta==null?'':'<br>Your rating: <b>'+(O.me.rating+delta)+'</b> <b style="color:'+(delta>=0?'#81b64c':'#e05a4f')+'">'+(delta>=0?'+':'')+delta+'</b>');
   $('ovre').textContent='New game';$('ovpgn').textContent='Copy PGN';$('over').style.display='flex'},700)}
 function onLeave(){if(ON.gunsub){ON.gunsub();ON.gunsub=null}ON.gref=null;ON.top=null;$('ovre').textContent='Rematch';GAME=null}
 if(new URLSearchParams(location.search).get('play')){opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}
@@ -2206,22 +2606,23 @@ function fogSquares(pos,white){const v=new Set(),F='abcdefgh',at=(f,r)=>f>=0&&f<
   else if(t=='N')[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]].forEach(([a,b])=>ray(a,b,1));
   else{const dirs=t=='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t=='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];dirs.forEach(([a,b])=>ray(a,b,t=='K'))}}
  return v}
-const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war'],['hidden','Hidden king'],['evo','Evolution']];
+const RULES=[['none','No twist'],['shape','Shapeshift'],['fog','Fog of war'],['hidden','Hidden king'],['guilt','Guilt'],['evo','Evolution']];
 // Hidden king: before the first move you tap the piece that will be your secret king
 let HKP=null;
 function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
-const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang',S:'Stallion',C:'Bronco',T:'Sandstorm',D:'Dune runner'};
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang',S:'Stallion',C:'Bronco',T:'Sandstorm',D:'Dune runner',E:'Pegasus',X:'Phantom',L:'Celestial',W:'Wraith',Y:'Two-colored bishop',Z:'Two-colored ranged bishop',V:'Vaulting bishop',U:'Shepherd bishop',F:'Golden bishop',J:'Silver bishop',O:'Sun bishop',I:'Moon bishop','Γ':'Guardian bishop','Δ':'Crimson bishop','Θ':'Warden bishop','Ξ':'Wanderer bishop','Π':'Reaper bishop','Ω':'Supreme bishop','Λ':'Almost chancellor','Φ':'Chancellor','Ψ':'Chancellor+','Ж':'Jumping rook','Ш':'Jumping rook 2','Щ':'Jumping master rook','Ю':'Jumping master rook 2','Я':'Life rook','Ц':'Amazon','Ч':'Camel queen','Ф':'Queen of queens','Б':'Mega queen','Д':'Double knight camel queen','Э':'Summoning queen','И':'Knight summoning queen','К':'Strong king','Г':'Even stronger king','Л':'Stronger stronger king','П':'Swap king','Й':'Swap king 2'};
 // ---- Evolution: after moving a pawn you may evolve it; Pawn+ may capture without moving
 function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el){el=document.createElement('div');el.id='evopick';document.body.appendChild(el)}
- el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
+ el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+(o[3]?'<span class="evpic">'+piece(o[3])+'</span>':'')+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.style.display='none';res(list[+b.dataset.i][0])})})}
 async function evoMove(f,t,u){
- if(S.legal.includes(f+t+'!')&&await pickBox('Pawn+ capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay')u=f+t+'!';
+  {const su=S.legal.filter(x=>x.startsWith(f+t+'*'));if(su.length&&(!S.legal.includes(u)||await pickBox('🪄 Summoning queen',[['move','Move the queen here'],['summon','Summon a pawn here','The queen stays where she is.']])=='summon')){play(su[0]);return}}
+ if(S.legal.includes(f+t+'!')&&await pickBox((PNAME[(CUR[f]||'A').toUpperCase()]||'Pawn+')+' capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay')u=f+t+'!';
  const forms=S.legal.filter(x=>x.startsWith(u+'^')).map(x=>x.slice(u.length+1)); // any piece that may evolve now
  if(forms.length){const nm=PNAME[(CUR[f]||'p').toUpperCase()]||'piece';
-  const c=await pickBox('Evolve this '+nm+'?',[['','Keep it a '+nm,'You can evolve it after a later move.']].concat(forms.map(e=>{const E=EVOP[e.toUpperCase()];return [e,E[3],E[4]]})));if(c)u+='^'+c}
+  const c=await pickBox('Evolve this '+nm+'?',[['','Keep it a '+nm,'You can evolve it after a later move.']].concat(forms.map(e=>{const E=EVOP[e.toUpperCase()];return [e,E[3],E[4],S.turn=='black'?e.toLowerCase():e.toUpperCase()]})));if(c)u+='^'+c}
  play(u)}
 // ---- Boss duel (mods only, online): the boss has a king + one pawn and free powers on its own turn
 let ABIL=null,ABK='';
@@ -2266,10 +2667,75 @@ function hkReveal(){if(!S||!S.hk||!S.hk.theirs)return '';const p=parseFen(S.fen)
  const tk=S.hk.taken;
  return ' · 👑 Their secret king was '+(theirs?'the '+PNAME[p.toUpperCase()]+' on '+S.hk.theirs:tk&&(tk==tk.toUpperCase())!=(S.you=='white')?'the '+PNAME[tk.toUpperCase()]+' you took on '+S.hk.theirs:'on '+S.hk.theirs)}
 async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+// ---- Evolution tree: every branch, with move diagrams worked out by the engine itself
+const EVBASE={P:'Pawn',N:'Knight',B:'Bishop',R:'Rook',Q:'Queen',K:'King'};
+function evoDiag(k,big){const C=27,g=new Chess(undefined,'evo'),mv=new Set,cap=new Set,rng=new Set,sw=new Set,sp=new Set,sn=new Set;
+ const fresh=()=>{g.b.fill(null);g.castle={K:false,Q:false,k:false,q:false};g.ep=-1;g.turn='w';g.lv.fill(0);g.mc.fill(0);g.b[C]=k};
+ fresh();for(const m of g.pseudo())if(m.from===C&&!m.evo){if(m.summon)(m.summon=='N'?sn:sp).add(m.to);else if(!m.swap&&!m.stay&&!m.castle)mv.add(m.to)}
+ for(let s=0;s<64;s++){if(s===C)continue;
+  fresh();g.b[s]='n';for(const m of g.pseudo())if(m.from===C&&m.to===s&&!m.evo&&!m.summon&&!m.swap){if(m.stay)rng.add(s);else cap.add(s)}
+  fresh();g.b[s]='N';for(const m of g.pseudo())if(m.from===C&&m.to===s&&m.swap)sw.add(s)}
+ let h='<div class="et-b'+(big?' big':'')+'">';
+ for(let r=7;r>=0;r--)for(let f=0;f<8;f++){const s=r*8+f,M=mv.has(s),X=cap.has(s);let c=(f+r)%2?'l':'d',tx='';
+  if(s===C)c+=' me';else{if(M&&X)c+=' mc';else if(M)c+=' mo';else if(X||rng.has(s))c+=' co';
+   if(rng.has(s))tx+='R';if(sw.has(s))tx+='⇄';if(sp.has(s))tx+='♟';if(sn.has(s))tx+='♞'}
+  h+='<i class="'+c+'">'+tx+'</i>'}
+ return h+'</div>'}
+function evoTree(view){if(view!='list')return evoGraph();let el=$('evotree');if(!el){el=document.createElement('div');el.id='evotree';document.body.appendChild(el)}
+ const seen=new Set(),nmOf=k=>EVOP[k]?EVOP[k][3]:EVBASE[k];
+ const need=n=>n?'<span class="et-need">after '+n+' move'+(n>1?'s':'')+'</span>':'';
+ const node=(k,n)=>{if(seen.has(k))return '<div class="et-n et-ref">↪ '+esc(nmOf(k))+need(n)+' <span class="small">(shown above)</span></div>';seen.add(k);
+  const ds=EVOP[k]?EVOP[k][4]:'The normal '+EVBASE[k].toLowerCase()+'.';
+  let h='<div class="et-n"><div class="et-pc">'+piece(k)+'</div>'+evoDiag(k)+'<div class="et-t"><b>'+esc(nmOf(k))+'</b>'+need(n)+'<div class="small">'+esc(ds)+'</div></div></div>';
+  const kids=[];for(const [m,forms] of EVOLVE[k]||[])for(const f of forms)kids.push(node(f,m));
+  if(kids.length)h+='<div class="et-kids">'+kids.join('')+'</div>';return h};
+ const legend='<div class="et-leg"><span><i class="mc"></i>move or capture</span><span><i class="mo"></i>move only</span><span><i class="co"></i>capture only</span>'+
+  '<span><i class="co">R</i>ranged capture: takes it without moving</span><span><i>⇄</i>swap with your own piece</span><span><i>♟</i><i>♞</i>summon a pawn / knight</span><span><i class="me"></i>where the piece stands</span></div>'+
+  '<div class="small">Each branch shows how many moves the piece has to make before it can evolve. Jumps that need a piece in the way (vaulting bishops, jumping rooks, double knight jumps over a blocker) are explained in the text.</div>';
+ el.innerHTML='<div class="et-box"><div class="et-head"><b>🌳 Evolution tree</b><span><button id="etg">🗺 Map view</button> <button id="etx">✕ Close</button></span></div>'+legend+
+  Object.keys(EVBASE).map(k=>'<h3>'+EVBASE[k]+'s</h3>'+node(k,0)).join('')+'</div>';
+ el.style.display='block';$('etx').onclick=()=>{el.style.display='none'};$('etg').onclick=()=>evoGraph();el.onclick=e=>{if(e.target===el)el.style.display='none'}}
+
+const EVLEG='<div class="et-leg"><span><i class="mc"></i>move or capture</span><span><i class="mo"></i>move only</span><span><i class="co"></i>capture only</span><span><i class="co">R</i>ranged capture (takes without moving)</span><span><i>⇄</i>swap</span><span><i>♟</i><i>♞</i>summon</span></div>';
+function evoGraph(){let el=$('evotree');if(!el){el=document.createElement('div');el.id='evotree';document.body.appendChild(el)}
+ const nmOf=k=>EVOP[k]?EVOP[k][3]:EVBASE[k],pos={},edges=[],heads=[],parents={};let row=0,maxD=0;
+ const place=(k,d)=>{pos[k]={d,y:0};maxD=Math.max(maxD,d);const ys=[];
+  for(const [n,forms] of EVOLVE[k]||[])for(const f of forms){edges.push([k,f,n]);(parents[f]=parents[f]||[]).push([k,n]);if(!pos[f])ys.push(place(f,d+1))}
+  pos[k].y=ys.length?(Math.min(...ys)+Math.max(...ys))/2:row++;return pos[k].y};
+ for(const k of Object.keys(EVBASE)){heads.push([EVBASE[k]+'s',row]);row+=.55;place(k,0);row+=.35}
+ const CW=212,RH=84,X=d=>24+d*CW,Y=y=>34+y*RH,W=X(maxD)+170,H=Y(row)+20;
+ let svg='',nodes='';
+ for(const [a,b,n] of edges){const x1=X(pos[a].d)+128,y1=Y(pos[a].y)+26,x2=X(pos[b].d)+2,y2=Y(pos[b].y)+26,mx=(x1+x2)/2,my=(y1+y2)/2,c=Math.max(36,(x2-x1)/2);
+  svg+='<path d="M'+x1+' '+y1+'C'+(x1+c)+' '+y1+' '+(x2-c)+' '+y2+' '+x2+' '+y2+'" fill="none" stroke="#6d8f4a" stroke-width="2.4"/>';
+  nodes+='<div class="eg-m" style="left:'+mx+'px;top:'+my+'px">'+n+' move'+(n>1?'s':'')+'</div>'}
+ for(const [h,y] of heads)nodes+='<div class="eg-h" style="left:12px;top:'+(Y(y)-14)+'px">'+h+'</div>';
+ for(const k in pos)nodes+='<div class="eg-n" data-k="'+k+'" style="left:'+X(pos[k].d)+'px;top:'+Y(pos[k].y)+'px"><div class="eg-pc">'+piece(k)+'</div><div class="eg-nm">'+esc(nmOf(k))+'</div></div>';
+ el.innerHTML='<div class="eg-wrap"><div class="et-head eg-top"><b>🌳 Evolution tree</b><span><button id="egzo">−</button> <button id="egzi">+</button> <button id="egl">☰ List</button> <button id="etx">✕</button></span></div>'+
+  '<div class="small eg-tip">Drag to move around. Tap a piece to see how it moves. The numbers on the lines are the moves needed to evolve.</div>'+
+  '<div class="eg-view" id="egv"><div class="eg-sz" id="egsz"><div class="eg-in" id="egin" style="width:'+W+'px;height:'+H+'px"><svg width="'+W+'" height="'+H+'" style="position:absolute;left:0;top:0">'+svg+'</svg>'+nodes+'</div></div></div>'+
+  '<div class="eg-info" id="egi"></div></div>';
+ el.style.display='block';el.onclick=null;
+ let z=+(localStorage.getItem('hb_egz')||(innerWidth<700?.8:1));const zoom=v=>{z=Math.max(.4,Math.min(1.6,v));localStorage.setItem('hb_egz',z);$('egin').style.transform='scale('+z+')';$('egsz').style.width=W*z+'px';$('egsz').style.height=H*z+'px'};zoom(z);
+ $('egzi').onclick=()=>zoom(z+.15);$('egzo').onclick=()=>zoom(z-.15);$('egl').onclick=()=>evoTree('list');$('etx').onclick=()=>{el.style.display='none'};
+ const v=$('egv');let drag=null;  // drag the empty space to pan
+ v.onpointerdown=e=>{if(e.pointerType!='mouse'||e.target.closest('.eg-n'))return;drag={x:e.clientX,y:e.clientY,l:v.scrollLeft,t:v.scrollTop};v.setPointerCapture(e.pointerId);v.style.cursor='grabbing'};
+ v.onpointermove=e=>{if(!drag)return;v.scrollLeft=drag.l-(e.clientX-drag.x);v.scrollTop=drag.t-(e.clientY-drag.y)};
+ v.onpointerup=v.onpointercancel=()=>{drag=null;v.style.cursor=''};
+ el.querySelectorAll('.eg-n').forEach(n=>n.onclick=()=>{const k=n.dataset.k,E=EVOP[k],ds=E?E[4]:'The normal '+EVBASE[k].toLowerCase()+'.';
+  el.querySelectorAll('.eg-n.on').forEach(x=>x.classList.remove('on'));n.classList.add('on');
+  const from=(parents[k]||[]).map(([p,m])=>esc(nmOf(p))+' after '+m+' move'+(m>1?'s':'')).join(' or ');
+  const into=[];for(const [m,forms] of EVOLVE[k]||[])for(const f of forms)into.push('<a href="#" data-k="'+f+'">'+esc(nmOf(f))+'</a> ('+m+' move'+(m>1?'s':'')+')');
+  const i=$('egi');i.innerHTML='<button class="eg-ix" id="egix">✕</button><div class="eg-ih"><div class="et-pc">'+piece(k)+'</div><b>'+esc(nmOf(k))+'</b></div>'+
+   evoDiag(k,true)+EVLEG+'<div class="small" style="margin:6px 0">'+esc(ds)+'</div>'+
+   (from?'<div class="small">Evolves from: '+from+'</div>':'')+'<div class="small">'+(into.length?'Evolves into: '+into.join(', '):'This is a final form.')+'</div>';
+  i.style.display='block';$('egix').onclick=()=>{i.style.display='none';n.classList.remove('on')};
+  i.querySelectorAll('a[data-k]').forEach(a=>a.onclick=ev=>{ev.preventDefault();const t2=el.querySelector('.eg-n[data-k="'+a.dataset.k+'"]');t2.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});t2.click()})})}
+
 const RULEHELP={none:'Normal rules.',
  shape:'Shapeshift: when a piece captures, it turns into the piece it took. A pawn that takes a queen becomes a queen; a queen that takes a pawn becomes a pawn! Kings stay kings. A piece that becomes a pawn on the far rank turns into a queen. Bots play this with a small search engine (our human-like bots only know normal chess).',
  fog:'Fog of war: you only see your own pieces and the squares they can move to. There is no check: you may move into check, and you win by capturing the king. Their moves stay hidden in the move list until the game ends.',
- evo:'🔧 In development (only mods can see this). Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step orthogonally) or ✖ Mustang (+ one step diagonally); two moves later they evolve again: ✚² Stallion (+ 1–2 squares orthogonally) or ✖² Bronco (+ 1–2 squares diagonally); three moves after that they gain the camel jump (3+1 leap): 🏜 Sandstorm / 🏜 Dune runner. More pieces coming. Website only; bots play it with a small search engine.',
+ evo:'Evolution: pieces evolve as they move (free, right after the move). Pawns from their 1st move: ➕ Pawn+ (1 or 2 steps any time, can capture without moving) or ★ Grand pawn (also captures straight ahead and sideways). Knights from their 2nd move: ✚ Arabian horse (+ one step orthogonally) or ✖ Mustang (+ one step diagonally); two moves later they evolve again: ✚² Stallion (+ 1–2 squares orthogonally) or ✖² Bronco (+ 1–2 squares diagonally); three moves after that they gain the camel jump (3+1 leap): 🏜 Sandstorm / 🏜 Dune runner; four moves later the full reach: 🪽 Pegasus (+ full rook) / 👻 Phantom (+ full bishop); five moves later the final form: 🌟 Celestial (+ bishop moves, no captures) / 🌑 Wraith (+ rook moves, no captures). Bishops from their 2nd move: ◐ Two-colored bishop (+ one step orthogonally, so it can change colour); two moves later the path splits: 🎯 Two-colored ranged bishop (can capture one square orthogonally without moving); two moves later: 🦯 Vaulting bishop (can vault over one piece on its diagonal onto an empty square, no capturing with a vault); three moves later: 🔀 Shepherd bishop (can swap places with the first piece of yours on one of its diagonals); two moves later it chooses: 👑 Golden bishop (also captures like a knight, but can\'t make a knight jump without capturing) or 🥈 Silver bishop (also moves like a knight onto empty squares, but can\'t capture that way); three moves later they add the camel jump (3+1): ☀️ Sun bishop (captures with it) or 🌙 Moon bishop (moves with it). The other branch from the Two-colored bishop (2 moves): 🛡️ Guardian bishop (captures one square diagonally without moving); three moves later: 🩸 Crimson bishop (also moves up to 2 squares orthogonally and can jump over a piece next to it that way, without capturing); six moves later: 🐪 Warden bishop (adds the camel jump); six moves later it chooses: ⚪ Wanderer bishop (moves like a rook, can\'t capture that way) or 🔴 Reaper bishop (captures like a rook, can\'t move that way). The last bishops of every line (Sun, Moon, Wanderer, Reaper) become the 🔥 Supreme bishop after 10 more moves: it has every bishop ability of the evolution. Rooks from their 2nd move: 🐴 Almost chancellor (also moves like a knight, but can\'t capture that way); four moves later: 👑 Chancellor (rook + knight, moving and capturing); six moves later: ✨ Chancellor+ (adds a double knight jump in one direction). Or the rook becomes a 🌀 Jumping rook (can jump over one piece on its line onto an empty square, no capturing with a jump); six moves later: 🌀🌀 Jumping rook 2 (takes an enemy piece it jumps over); six moves later: 🌀🌀🌀 Jumping master rook (can also jump over two pieces, but takes only when it jumps one); six moves later: Jumping master rook 2 (also takes the enemy pieces when it jumps two). Or the rook becomes a ❤️ Life rook (starts with 1 life and gains one every 7 moves, at most 4; when taken with a life it comes back near your corner). Queens from their 6th move: 🐴 Amazon (queen + knight), 🐪 Camel queen (queen + camel jump) or 👑 Queen of queens (no new power yet; its later evolutions will be). Six moves later the Amazon and the Camel queen both become the 🐴🐪 Mega queen (queen + knight + camel); six moves later: 🐴🐴🐪 Double knight camel queen (adds a double knight jump in one direction). The Queen of queens becomes the 🪄 Summoning queen six moves later (summons your pawns next to it, 7 in all); six moves later: 🪄♞ Knight summoning queen (also summons knights where a knight could jump from it, 2 in all). Summoned pieces can evolve. Kings from their 3rd move: 💪 Strong king (also captures 2 squares away diagonally, if the square between is empty); four moves later: 💪💪 Even stronger king (also captures 2 squares away orthogonally); five moves later: ⚡ Stronger stronger king (those captures can be ranged: take and stay put); five moves later: 🔄 Swap king (also swaps places with a piece of yours next to it); five moves later, the last: 🔄🔄 Swap king 2 (also swaps with a piece of yours 2 squares away orthogonally). More pieces coming. Website only; bots play it with a small search engine.',
+ guilt:'Guilt: a piece that captures becomes guilty and gets a red checker under it. A guilty piece still moves normally, but it can\'t capture (so it can\'t give check either). To be forgiven, it has to confess: stand one square orthogonally next to one of your bishops (move the piece or the bishop there) and stay there, both of them, through one more turn of yours; the checker turns gold while it confesses. A bishop that captures is forgiven after one turn of yours without moving it. Win by checkmate. Website only; bots play it with a small search engine.',
  hidden:'Hidden king: before the game you secretly pick one of your pieces (a knight, a rook, a pawn… or the king) as your real king; it gets a 👑 only you can see. The piece that looks like a king is a decoy unless you picked it. There is no check: capture their secret king to win. Both are revealed at the end.'};
 function rand960(){const b=Array(8).fill(null),free=()=>b.map((x,i)=>x?null:i).filter(i=>i!=null),R=a=>a[Math.floor(Math.random()*a.length)];
  b[R([0,2,4,6])]='B';b[R([1,3,5,7])]='B';b[R(free())]='Q';b[R(free())]='N';b[R(free())]='N';
@@ -2291,16 +2757,16 @@ function modesUI(){const ms=$('mvar');if(!ms.children.length){
   chips($('mvis'),VISL,'vis',()=>{modesUI();draw()});
   // Evolution is still being designed: only mods see it (signed in as a mod on this device, or ?dev=1)
   const devOK=isMod((profCached()||{}).uid)||/[?&]dev=1/.test(location.search);
-  if(!devOK&&opts.rule=='evo'){opts.rule='none';localStorage.setItem('hb_rule','none')}
-  chips($('mrule'),RULES.filter(([v])=>v!='evo'||devOK),'rule',modesUI);
+  chips($('mrule'),RULES,'rule',modesUI);
   $('mgo').onclick=()=>{opts.vs='human';localStorage.setItem('hb_vs','human');vsUI()};
   $('mgon').onclick=()=>{opts.vs='online';localStorage.setItem('hb_vs','online');vsUI()}}
  $('mvarhelp').textContent=opts.variant=='960'?'Bobby Fischer\'s chess: the back pieces start in a random order (960 possible), so opening theory is useless. Bishops on opposite colours, king between the rooks. Castle by moving your king onto your rook (or to g/c). New position every game.':'Normal chess.';
  $('mvishelp').textContent=VISHELP[+opts.vis||0];$('mrulehelp').textContent=RULEHELP[opts.rule]||RULEHELP.none;
+ if(opts.rule=='evo'){const eb=document.createElement('button');eb.textContent='🌳 Open the Evolution tree';eb.style.cssText='display:block;margin-top:8px;padding:8px 14px;border:0;border-radius:6px;background:#81b64c;color:#fff;font-weight:700;cursor:pointer';eb.onclick=evoTree;$('mrulehelp').appendChild(eb)}
  const demo=$('mvisdemo'),row=(opts.variant=='960'?rand960():'RNBQKBNR');demo.className='set-'+opts.set;
  const fen=[...row.toLowerCase(),...'pppppppp',...Array(32).fill(''),...'PPPPPPPP',...row];
  let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8;h+='<div class="sq '+((r+f)%2?'d':'l')+'">'+(fen[i]?visPiece(fen[i],+opts.vis||0):'')+'</div>'}demo.innerHTML=h;
- const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(opts.rule=='hidden')parts.push('👑 Hidden king');if(opts.rule=='evo')parts.push('🧬 Evolution');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
+ const parts=[];if(opts.variant=='960')parts.push('♜ Chess960');if(opts.rule=='shape')parts.push('🔄 Shapeshift');if(opts.rule=='fog')parts.push('🌫 Fog of war');if(opts.rule=='hidden')parts.push('👑 Hidden king');if(opts.rule=='evo')parts.push('🧬 Evolution');if(opts.rule=='guilt')parts.push('🔴 Guilt');if(+opts.vis)parts.push('👁 Visualization level '+opts.vis);
  const ml=$('modeline');ml.style.display=parts.length&&(opts.vs=='human'||opts.vs=='bots')?'block':'none';
  ml.innerHTML='Mode: <b>'+parts.join(' · ')+'</b> · <a href="#" style="color:#bab9b8" id="mlchg">change</a>';const c=$('mlchg');if(c)c.onclick=e=>{e.preventDefault();opts.vs='modes';localStorage.setItem('hb_vs','modes');vsUI()}}
 // ---- Home page: shown when the app opens (not when opening a friend's game link); ⌂ in the panel brings it back
@@ -2327,10 +2793,10 @@ $('homebtn').onclick=homeShow;
 // ---- Profile: avatar + name button in the top bar, and the profile page it opens
 function avColor(uid){let h=7;for(const c of uid||'x')h=(h*31+c.charCodeAt(0))%360;return 'hsl('+h+',45%,40%)'}
 function profCached(){try{return JSON.parse(localStorage.getItem('hb_prof')||'null')}catch(e){return null}}
-function profNav(){const live=ON.user&&ON.prof,pr=live?{name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid}:(ON.fb?null:profCached()),av=$('hpav'),nm=$('hpname');
- if(pr){av.textContent=pr.name[0].toUpperCase();av.style.background=avColor(pr.uid);nm.innerHTML=modName(pr.name,pr.uid)+' <span style="color:#81b64c">'+pr.rating+'</span>'}
+function profNav(){const live=ON.user&&ON.prof,pr=live?{name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid,cc:ccSmall(ON.prof.cc)}:(ON.fb?null:profCached()),av=$('hpav'),nm=$('hpname');
+ if(pr){av.textContent=pr.name[0].toUpperCase();av.style.background=avColor(pr.uid);nm.innerHTML=modName(pr.name,pr.uid)+' <span style="color:#81b64c">'+pr.rating+'</span>'+ccTag(pr.cc)}
  else{av.textContent='👤';av.style.background='#5a5754';nm.textContent=ON.user&&!ON.prof&&!ON.loadingProf?'Pick a name':'Sign in'}}
-function profSync(){if(ON.user&&ON.prof)localStorage.setItem('hb_prof',JSON.stringify({name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid}));
+function profSync(){if(ON.user&&ON.prof)localStorage.setItem('hb_prof',JSON.stringify({name:ON.prof.name,rating:ON.prof.rating,uid:ON.user.uid,cc:ccSmall(ON.prof.cc)}));
  else if(ON.fb&&!ON.user)localStorage.removeItem('hb_prof');profNav();
  if($('profile').style.display=='block'){if(ON.fb&&!ON.user){$('profile').style.display='none';homeGo('online')}else profUI()}}
 $('hprof').onclick=()=>{if(ON.user&&ON.prof||(!ON.fb&&profCached()))profShow();else homeGo('online')};
@@ -2339,26 +2805,39 @@ function profShow(){$('profile').style.display='block';$('profile').scrollTop=0;
 function profUI(){const p=ON.prof,u=ON.user,el=$('pbody');if(!p||!u){el.innerHTML='<div class="small">Loading your profile…</div>';return}
  const w=p.w||0,d=p.d||0,l=p.l||0,n=w+d+l,since=p.created&&p.created.toDate?p.created.toDate().toLocaleDateString():'';
  let h='<div class="pcard"><span class="pav" style="background:'+avColor(u.uid)+'">'+esc(p.name[0].toUpperCase())+'</span><div><div class="pname">'+modName(p.name,u.uid)+'</div>'+
-  '<div class="prt">Online rating <b style="color:#81b64c;font-size:19px">'+p.rating+'</b>'+(since?' · member since '+since:'')+'</div></div></div>';
+  '<div class="prt">Online rating <b style="color:#81b64c;font-size:19px">'+p.rating+'</b>'+(p.cc&&p.cc.user?' · chess.com'+ccTag(p.cc):'')+(since?' · member since '+since:'')+'</div></div></div>';
  h+='<div class="pstats">'+[['Games',n],['Wins',w],['Draws',d],['Losses',l]].map(([k,v])=>'<div class="pstat"><b>'+v+'</b><span>'+k+'</span></div>').join('')+'</div>';
  if(n)h+='<div class="pbar"><div style="width:'+100*w/n+'%;background:#81b64c"></div><div style="width:'+100*d/n+'%;background:#8b8987"></div><div style="width:'+100*l/n+'%;background:#e05a4f"></div></div>';
  h+='<button class="play" id="pplay" style="max-width:340px">🌐 Play online</button>';
  h+='<h2>Recent online games</h2><div class="pgames" id="pgames"><div class="small">Loading…</div></div>';
  const R=REC(),bs=Object.entries(R).map(([k,c])=>[k,c.w,c.d,c.l]).sort((a,b)=>(b[1]+b[2]+b[3])-(a[1]+a[2]+a[3])).slice(0,6);
  if(bs.length)h+='<h2>Against bots (on this device)</h2><div class="pgames">'+bs.map(([k,a,b,c])=>'<div class="pg"><span>'+esc(k)+'</span><span><b class="rw">'+a+'</b> W · '+b+' D · <b class="rl">'+c+'</b> L</span></div>').join('')+'</div>';
+ h+='<h2>chess.com</h2><div class="pcc" id="pcc">'+ccBox(p)+'</div>';
  h+='<h2>Account</h2><div class="small" style="line-height:1.9">Signed in'+(u.email?' as '+esc(u.email):'')+'<br>Account ID: <code>'+esc(u.uid)+'</code> · <a href="#" id="pcopy" style="color:#bab9b8">copy</a> · <a href="#" id="pout" style="color:#bab9b8">Sign out</a></div>';
  el.innerHTML=h;
  $('pplay').onclick=()=>{$('profile').style.display='none';homeGo('online')};
  $('pcopy').onclick=async e=>{e.preventDefault();try{await navigator.clipboard.writeText(u.uid);e.target.textContent='copied ✓'}catch(x){}};
  $('pout').onclick=async e=>{e.preventDefault();await onStopSeek();await ON.fb.AU.signOut(ON.fb.auth);$('profile').style.display='none'};
+ ccWire();
  profGames()}
+function ccBox(p){const c=p.cc;if(c&&c.user)return '<div class="small" style="line-height:1.9">Connected to <a href="'+esc(c.url||'https://www.chess.com/member/'+c.user)+'" target="_blank" rel="noopener" style="color:#fff"><b>'+esc(c.user)+'</b></a>'+ccTag(c)+'<br>'+
+  [['Rapid',c.rapid],['Blitz',c.blitz],['Bullet',c.bullet]].filter(x=>x[1]).map(([k,v])=>k+' <b>'+v+'</b>').join(' · ')+'<br>Everyone sees the green ★ with your chess.com rating next to your name. It updates by itself when your chess.com rating changes.<br>'+
+  '<a href="#" id="ccref" style="color:#bab9b8">Update ratings</a> · <a href="#" id="ccoff" style="color:#bab9b8">Disconnect</a></div><div class="small" id="ccmsg"></div>';
+ const code=ccCode();return '<div class="small" style="line-height:1.6">Connect your chess.com account to show your chess.com rating with a green <span class="cct">★</span> next to your name.<br>'+
+  '1. On chess.com open <b>Settings → Profile</b> and put this code in <b>Location</b>, then save: <code class="cccode">'+code+'</code> <a href="#" id="cccopy" style="color:#bab9b8">copy</a><br>'+
+  '2. Type your chess.com username and press Verify. (You can remove the code afterwards.)</div>'+
+  '<div class="row" style="margin-top:8px;max-width:420px"><input id="ccuser" maxlength="25" placeholder="chess.com username" style="flex:1;min-width:0;padding:9px;border-radius:6px;border:0"><button class="play" id="ccgo" style="width:auto;padding:9px 18px;margin:0">Verify</button></div><div class="small" id="ccmsg" style="margin-top:6px"></div>'}
+function ccWire(){const m=t=>{const e=$('ccmsg');if(e)e.innerHTML=t},B=(id,f)=>{const b=$(id);if(b)b.onclick=async e=>{e.preventDefault();if(ON.ccBusy)return;ON.ccBusy=1;m('Checking chess.com…');try{await f();m('')}catch(x){m('<span style="color:#e05a4f">'+esc(x.message)+'</span>')}ON.ccBusy=0}};
+ B('ccgo',()=>ccConnect($('ccuser').value));B('ccref',()=>ccRefresh(true));
+ B('ccoff',async()=>{const {F,db}=ON.fb;await F.updateDoc(F.doc(db,'users',ON.user.uid),{cc:F.deleteField()})});
+ const cp=$('cccopy');if(cp)cp.onclick=async e=>{e.preventDefault();try{await navigator.clipboard.writeText(ccCode());cp.textContent='copied ✓'}catch(x){}}}
 async function profGames(){const {F,db}=ON.fb,uid=ON.user.uid,el=$('pgames');
  try{const s=await F.getDocs(F.query(F.collection(db,'games'),F.where('players','array-contains',uid),F.limit(40)));
   const gs=s.docs.map(x=>x.data()).filter(g=>g.status=='over').sort((a,b)=>((b.created&&b.created.seconds)||0)-((a.created&&a.created.seconds)||0)).slice(0,10);
   if(!el)return;if(!gs.length){el.innerHTML='<div class="small">No finished online games yet.</div>';return}
   el.innerHTML=gs.map(g=>{const my=g.white&&g.white.uid==uid?'white':'black',op=g[my=='white'?'black':'white']||{},dr=g.result=='1/2-1/2',won=g.result==(my=='white'?'1-0':'0-1');
    const dl=g.rated&&g.rated[my]!=null?g.rated[my]:null,dt=g.created&&g.created.toDate?g.created.toDate().toLocaleDateString():'';
-   return '<div class="pg"><span><b class="r '+(dr?'rd':won?'rw':'rl')+'">'+(dr?'½':won?'Won':'Lost')+'</b> vs '+modName(op.name||'?',op.uid)+' ('+(op.rating||'?')+')<br><span class="small">'+esc(tcInfo(g.tc)[1])+' · '+esc(modeName(g.mode))+(g.reason?' · '+esc(g.reason):'')+'</span></span>'+
+   return '<div class="pg"><span><b class="r '+(dr?'rd':won?'rw':'rl')+'">'+(dr?'½':won?'Won':'Lost')+'</b> vs '+modName(op.name||'?',op.uid)+' ('+(op.rating||'?')+')'+ccTag(op.cc)+'<br><span class="small">'+esc(tcInfo(g.tc)[1])+' · '+esc(modeName(g.mode))+(g.reason?' · '+esc(g.reason):'')+'</span></span>'+
     '<span style="text-align:right">'+(dl==null?'':'<b class="'+(dl>=0?'rw':'rl')+'">'+(dl>=0?'+':'')+dl+'</b>')+'<br><span class="small">'+dt+'</span></span></div>'}).join('')}
  catch(e){if(el)el.innerHTML='<div class="small">Couldn\'t load games: '+esc(e.message)+'</div>'}}
 profNav();if(FBCFG&&profCached())setTimeout(()=>fbLoad().catch(()=>{}),1200); // refresh the button in the background
