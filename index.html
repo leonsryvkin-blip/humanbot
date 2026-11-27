@@ -193,7 +193,7 @@
  #promo{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:20}
  #promo>div{background:var(--pn);padding:14px;border-radius:10px;display:flex;gap:8px}
  #promo .sq{width:68px;height:68px;font-size:52px;border-radius:8px;background:#e8e2d4}
- #look{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:10}
+ #look{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:60}
  #look .box{background:var(--pn);border-radius:12px;width:min(640px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
  #look .sbody{display:flex;flex-direction:column}#look .sbody>*{flex:none}
  #preview{display:grid;grid-template-columns:repeat(6,1fr);border-radius:6px;overflow:hidden;--sq:56px;align-self:center;width:336px;margin-bottom:6px}
@@ -242,6 +242,8 @@
  .hcard .nm{font-weight:800;font-size:16px}.hcard .tg{color:var(--mut);font-size:13px;margin-top:4px;line-height:1.35}
  .hfoot{color:#7f7d79;font-size:13px;margin-top:34px;line-height:1.5;border-top:1px solid #3a3836;padding-top:14px}
  #homebtn{margin-right:6px}
+ .hnav a.hlook{font-size:22px;line-height:1;margin-right:12px;cursor:pointer;color:#ddd}.hnav a.hlook:hover{color:#fff}
+ .logo,.shead .ttl{cursor:pointer}
  .hnr{display:flex;align-items:center}
  .hnav a.hprof{display:inline-flex;align-items:center;gap:8px;background:var(--card);padding:5px 12px 5px 5px;border-radius:20px;color:#fff}
  .hnav a.hprof:hover{background:var(--card2)}
@@ -267,7 +269,7 @@
 </style><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#302e2b"><link rel="apple-touch-icon" href="icon-192.png">
 </head><body class="setupv">
 <div id="home"><div class="in">
- <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span class="hnr"><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a><a id="hprof" class="hprof"><span class="pav" id="hpav">👤</span><span id="hpname">Sign in</span></a></span></div>
+ <div class="hnav"><span class="logo">♞ Human<b>Bot</b></span><span class="hnr"><a data-go="human">Play</a><a data-go="online">Online</a><a data-go="lib">Masters</a><a id="hlook" class="hlook" title="Board &amp; pieces">⚙</a><a id="hprof" class="hprof"><span class="pav" id="hpav">👤</span><span id="hpname">Sign in</span></a></span></div>
  <div class="hero">
   <div id="hboard"></div>
   <div class="htext">
@@ -396,7 +398,7 @@
     <button class="act" id="hint">💡<small>Hint</small></button>
     <button class="act" id="undo">↶<small>Take back</small></button>
     <button class="act" id="flip">⇅<small>Flip</small></button>
-    <button class="act" id="resign">⚑<small>Resign</small></button>
+    <button class="act" id="resign">⚑<small>Resign / draw</small></button>
     <button class="act" id="pgnbtn">📋<small>PGN</small></button>
    </div>
    <button class="play" id="newgame" style="font-size:19px;padding:11px">New game</button>
@@ -1913,7 +1915,7 @@ function lookUI(){const sc='set-'+opts.set;$('board').className=sc;$('preview').
  $('preview').innerHTML=sqs(12,6,['r','n','b','q','k','p','P','N','B','Q','K','R']);
  document.querySelectorAll('#sets .tile').forEach(x=>{x.classList.toggle('on',x.dataset.v==opts.set);x.firstChild.innerHTML=sqs(3,3,['K','q','N'],x.dataset.v)});
  document.querySelectorAll('#themes .tile').forEach(x=>x.classList.toggle('on',x.dataset.v==opts.theme));colorsUI();draw()}
-$('lookbtn').onclick=()=>{$('look').style.display='flex'};$('lookclose').onclick=()=>{$('look').style.display='none'};
+$('lookbtn').onclick=$('hlook').onclick=()=>{$('look').style.display='flex'};$('lookclose').onclick=()=>{$('look').style.display='none'};
 $('look').onclick=e=>{if(e.target.id=='look')$('look').style.display='none'};
 chips($('modes'),MODES,'mode',modeUI);
 $('tcm').oninput=tcUI;$('tci').oninput=tcUI;
@@ -2398,7 +2400,17 @@ $('hint').onclick=async()=>{if(!myTurn())return;const r=await api('/api/hint',{y
  $('info').innerHTML='Players at your level here play: '+r.cands.map(([s,p])=>s+' '+p+'%').join(', ')+(r.think?'<br>They spend about '+r.think+' s here.':'')};
 $('undo').onclick=async()=>{if(!S||busy)return;PREM=null;await reviewStop();S=await api('/api/undo');sel=null;gameOn=true;draw();
  if(S.turn==S.you)startClock('me');else botTurn()};
-$('resign').onclick=()=>{if(gameOn&&confirm('Resign this game?')){end('you resigned')}};
+$('resign').onclick=async()=>{if(!gameOn)return;
+ const c=await pickBox('Resign or offer a draw?',[['resign','⚑ Resign','You lose this game.'],['draw','½ Offer a draw','The game ends as a draw if they accept.'],['','Cancel']]);
+ if(!gameOn||!c)return;if(c=='resign'){end('you resigned');return}
+ if(GAME&&GAME.online){const O=GAME.online;if(O.g&&O.g.drawOffer&&O.g.drawOffer.by==O.color){msg('Your draw offer is still waiting for an answer.');return}
+  try{await ON.fb.F.updateDoc(ON.gref,{drawOffer:{by:O.color,n:S.ucis.length}});msg('You offered a draw. Waiting for '+O.opp.name+'…')}catch(e){msg('Couldn\'t send the draw offer: '+e.message)}return}
+ const n=S.ucis.length;if(GAME.drawAt===n){msg(BNshort()+' already declined a draw in this position.');return}GAME.drawAt=n;
+ if(botTakesDraw()){end('Draw (agreement)');return}msg(BNshort()+' declines the draw.')};
+// a bot accepts a draw when it is not ahead: by material, and by its own win chance when it reports one
+function botTakesDraw(){if(!S||!S.ucis||S.ucis.length<10)return false;const V=typeof VAL!='undefined'?VAL:{P:100,N:300,B:320,R:500,Q:900,K:0};let me=0,it=0;
+ for(const k in CUR){const p=CUR[k];if(!p)continue;const v=V[p.toUpperCase()]||0;if((p==p.toUpperCase())==(S.you=='white'))me+=v;else it+=v}
+ if(it-me>=150)return false;if(S.win!=null&&S.win>45)return false;return true}
 $('flip').onclick=()=>{flip=!flip;draw()};
 // ---- Online: accounts and games against other people (Firebase Auth + Firestore, loaded only when opened).
 // Each side checks moves with its own rules engine (the same /api/move as bot games) and sends them through the
@@ -2547,7 +2559,10 @@ let ONQ=Promise.resolve();
 function onSnap(id,g){ONQ=ONQ.then(()=>onApply(id,g)).catch(e=>msg('Error: '+e.message))}
 async function onApply(id,g){if(g.status=='waiting'||g.status=='cancelled')return;
  if(!GAME||!GAME.online||GAME.online.id!=id){if(g.status!='live')return;if(ON.chal&&ON.chal.ref.id==id)ON.chal=null;await onStart(id,g)}
- const O=GAME.online,my=O.color,op=my=='white'?'black':'white',wasReady=hkReady();O.g=g;
+ const O=GAME.online,my=O.color,op=my=='white'?'black':'white',wasReady=hkReady(),prevOffer=O.g&&O.g.drawOffer;O.g=g;
+ if(g.status=='live'&&gameOn){const d=g.drawOffer;
+  if(d&&d.by==op&&O.seenOffer!=d.n){O.seenOffer=d.n;onDrawAsk(d)}
+  if(!d&&prevOffer&&prevOffer.by==my&&g.drawNo)msg(O.opp.name+' declined your draw offer.')}
  if(g.rule=='hidden'){if(!wasReady&&hkReady()&&!HKP&&gameOn)msg(S.turn==S.you?'Both secret kings are chosen. Your move.':'Both secret kings are chosen. Waiting for '+O.opp.name+'…');
   if(g['hk_'+op]&&S.hk){S.hk.theirs=g['hk_'+op];draw()}}
  while(S.ucis.length<g.moves.length){const u=g.moves[S.ucis.length];
@@ -2573,6 +2588,11 @@ async function onStart(id,g){gid++;stopClock();gameOn=false;busy=false;PREM=null
   ON.hkSalt=Math.random().toString(36).slice(2)+Date.now().toString(36);ON.hk0=S.hk.mine;
   const {F}=ON.fb;await F.updateDoc(ON.gref,{['hc_'+my]:await sha(S.hk.mine+':'+ON.hkSalt)});
   msg(GAME.online.g['hc_'+(my=='white'?'black':'white')]?(S.turn==S.you?'Your move.':'Waiting for '+opp.name+'…'):'Waiting for '+opp.name+' to pick their secret king…')}}
+async function onDrawAsk(d){const O=GAME.online,{F}=ON.fb;
+ const c=await pickBox('½ '+O.opp.name+' offers a draw',[['yes','Accept the draw','The game ends as a draw.'],['no','Decline','Keep playing.']]);
+ if(!gameOn||!GAME.online||GAME.online!==O)return;
+ if(c=='yes'){end('Draw (agreement)');return}
+ try{await F.updateDoc(ON.gref,{drawOffer:null,drawNo:Date.now()})}catch(e){}}
 function hkReady(){const O=GAME&&GAME.online;return !O||O.g.rule!='hidden'||(O.g.hc_white&&O.g.hc_black)}
 async function onSend(){const O=GAME.online,{F}=ON.fb;
  try{await F.updateDoc(ON.gref,{moves:S.ucis.slice(),[O.color[0]+'t']:Math.max(0,clk.me)})}catch(e){msg('Couldn\'t send your move: '+e.message)}}
@@ -2790,6 +2810,7 @@ function homeGo(vs,bot){$('home').style.display='none';if(!gameOn)showView('setu
 function homeShow(){homeUI();$('home').style.display='block';$('home').scrollTop=0}
 document.querySelectorAll('#home [data-go]').forEach(b=>b.onclick=()=>homeGo(b.dataset.go));
 $('homebtn').onclick=homeShow;
+document.querySelectorAll('.logo,.shead .ttl').forEach(l=>l.onclick=()=>{$('profile').style.display='none';homeShow()});
 // ---- Profile: avatar + name button in the top bar, and the profile page it opens
 function avColor(uid){let h=7;for(const c of uid||'x')h=(h*31+c.charCodeAt(0))%360;return 'hsl('+h+',45%,40%)'}
 function profCached(){try{return JSON.parse(localStorage.getItem('hb_prof')||'null')}catch(e){return null}}
