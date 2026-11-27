@@ -446,10 +446,10 @@ const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 // T = Sandstorm, D = Dune runner (stage 3: + the camel jump), E = Pegasus, X = Phantom (stage 4: full rook / bishop reach).
 const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]], H: [[2, ["S"]]], M: [[2, ["C"]]], S: [[3, ["T"]]], C: [[3, ["D"]]],
   T: [[4, ["E"]]], D: [[4, ["X"]]], E: [[5, ["L"]]], X: [[5, ["W"]]],
-  R: [[2, ["Λ", "Ж", "Я"]]], Q: [[6, ["Ц", "Ч", "Ф"]]], K: [[3, ["К"]]], "К": [[4, ["Г"]]], "Г": [[5, ["Л"]]], "Л": [[5, ["П"]]], "П": [[5, ["Й"]]], "Ц": [[6, ["Б"]]], "Ч": [[6, ["Б"]]], "Б": [[6, ["Д"]]], "Ф": [[6, ["Э"]]], "Э": [[6, ["И"]]], "Ж": [[6, ["Ш"]]], "Ш": [[6, ["Щ"]]], "Щ": [[6, ["Ю"]]], "Λ": [[4, ["Φ"]]], "Φ": [[6, ["Ψ"]]],
+  R: [[2, ["Λ", "Ж", "Я"]]], Q: [[6, ["Ц", "Ч", "Ф"]]], K: [[3, ["К"]]], "К": [[4, ["Г"]]], "Г": [[5, ["Л", "З"]]], "З": [[5, ["Ъ"]]], "Ь": [[3, ["Є"]]], "Є": [[4, ["Ґ"]]], "Л": [[5, ["П", "Ы"]]], "П": [[5, ["Й"]]], "Ц": [[6, ["Б"]]], "Ч": [[6, ["Б"]]], "Б": [[6, ["Д"]]], "Ф": [[6, ["Э"]]], "Э": [[6, ["И"]]], "Ж": [[6, ["Ш"]]], "Ш": [[6, ["Щ"]]], "Щ": [[6, ["Ю"]]], "Λ": [[4, ["Φ"]]], "Φ": [[6, ["Ψ"]]],
   B: [[2, ["Y"]]], Y: [[2, ["Z", "Γ"]]], "Γ": [[3, ["Δ"]]], "Δ": [[6, ["Θ"]]], "Θ": [[6, ["Ξ", "Π"]]], "Ξ": [[10, ["Ω"]]], "Π": [[10, ["Ω"]]], O: [[10, ["Ω"]]], I: [[10, ["Ω"]]], Z: [[2, ["V"]]], V: [[3, ["U"]]], U: [[2, ["F", "J"]]], F: [[3, ["O"]]], J: [[3, ["I"]]] };
 // other evolved sliders: piece -> list of [directions, reach] it moves and captures along (Y = Two-colored bishop)
-const SLIDERS = { Y: [[B_DIR, 7], [R_DIR, 1]], Z: [[B_DIR, 7], [R_DIR, 1]], V: [[B_DIR, 7], [R_DIR, 1]], U: [[B_DIR, 7], [R_DIR, 1]], F: [[B_DIR, 7], [R_DIR, 1]], J: [[B_DIR, 7], [R_DIR, 1]], O: [[B_DIR, 7], [R_DIR, 1]], I: [[B_DIR, 7], [R_DIR, 1]], "Γ": [[B_DIR, 7], [R_DIR, 1]], "Δ": [[B_DIR, 7], [R_DIR, 2]], "Θ": [[B_DIR, 7], [R_DIR, 2]], "Ξ": [[B_DIR, 7], [R_DIR, 2]], "Π": [[B_DIR, 7], [R_DIR, 2]], "Ω": [[B_DIR, 7], [R_DIR, 7]], "Λ": [[R_DIR, 7]], "Φ": [[R_DIR, 7]], "Ψ": [[R_DIR, 7]], "Ж": [[R_DIR, 7]], "Ш": [[R_DIR, 7]], "Щ": [[R_DIR, 7]], "Ю": [[R_DIR, 7]], "Я": [[R_DIR, 7]], "Ц": [[B_DIR, 7], [R_DIR, 7]], "Ч": [[B_DIR, 7], [R_DIR, 7]], "Ф": [[B_DIR, 7], [R_DIR, 7]], "Б": [[B_DIR, 7], [R_DIR, 7]], "Д": [[B_DIR, 7], [R_DIR, 7]], "Э": [[B_DIR, 7], [R_DIR, 7]], "И": [[B_DIR, 7], [R_DIR, 7]], "К": [[B_DIR, 1], [R_DIR, 1]], "Г": [[B_DIR, 1], [R_DIR, 1]], "Л": [[B_DIR, 1], [R_DIR, 1]], "П": [[B_DIR, 1], [R_DIR, 1]], "Й": [[B_DIR, 1], [R_DIR, 1]] };
+const SLIDERS = { Y: [[B_DIR, 7], [R_DIR, 1]], Z: [[B_DIR, 7], [R_DIR, 1]], V: [[B_DIR, 7], [R_DIR, 1]], U: [[B_DIR, 7], [R_DIR, 1]], F: [[B_DIR, 7], [R_DIR, 1]], J: [[B_DIR, 7], [R_DIR, 1]], O: [[B_DIR, 7], [R_DIR, 1]], I: [[B_DIR, 7], [R_DIR, 1]], "Γ": [[B_DIR, 7], [R_DIR, 1]], "Δ": [[B_DIR, 7], [R_DIR, 2]], "Θ": [[B_DIR, 7], [R_DIR, 2]], "Ξ": [[B_DIR, 7], [R_DIR, 2]], "Π": [[B_DIR, 7], [R_DIR, 2]], "Ω": [[B_DIR, 7], [R_DIR, 7]], "Λ": [[R_DIR, 7]], "Φ": [[R_DIR, 7]], "Ψ": [[R_DIR, 7]], "Ж": [[R_DIR, 7]], "Ш": [[R_DIR, 7]], "Щ": [[R_DIR, 7]], "Ю": [[R_DIR, 7]], "Я": [[R_DIR, 7]], "Ц": [[B_DIR, 7], [R_DIR, 7]], "Ч": [[B_DIR, 7], [R_DIR, 7]], "Ф": [[B_DIR, 7], [R_DIR, 7]], "Б": [[B_DIR, 7], [R_DIR, 7]], "Д": [[B_DIR, 7], [R_DIR, 7]], "Э": [[B_DIR, 7], [R_DIR, 7]], "И": [[B_DIR, 7], [R_DIR, 7]], "К": [[B_DIR, 1], [R_DIR, 1]], "Г": [[B_DIR, 1], [R_DIR, 1]], "Л": [[B_DIR, 1], [R_DIR, 1]], "П": [[B_DIR, 1], [R_DIR, 1]], "Й": [[B_DIR, 1], [R_DIR, 1]], "Ы": [[B_DIR, 1], [R_DIR, 1]], "З": [[B_DIR, 1], [R_DIR, 1]], "Ъ": [[B_DIR, 1], [R_DIR, 1]], "Ь": [[B_DIR, 1], [R_DIR, 1]], "Є": [[B_DIR, 1], [R_DIR, 1]], "Ґ": [[B_DIR, 1], [R_DIR, 1]] };
 // L = Celestial, W = Wraith (stage 5, final: + the other slider's moves, but only onto empty squares)
 // knight-family pieces: [extra step directions, how far they reach, camel jump (3+1 leap)?, move-only slide directions]
 const HORSE = { H: [R_DIR, 1], M: [B_DIR, 1], S: [R_DIR, 2], C: [B_DIR, 2], T: [R_DIR, 2, 1], D: [B_DIR, 2, 1], E: [R_DIR, 7, 1], X: [B_DIR, 7, 1],
@@ -507,7 +507,7 @@ class Chess {
   kingSq(color) { // Evolution: an evolved king (К = Strong king) is still the king
     const W = color === "w", s = this.b.indexOf(W ? "K" : "k");
     if (s >= 0 || this.rule !== "evo") return s;
-    for (const k of W ? "КГЛПЙ" : "кглпй") { const e = this.b.indexOf(k); if (e >= 0) return e; }
+    for (const k of W ? "КГЛПЙЫЗЪ" : "кглпйызъ") { const e = this.b.indexOf(k); if (e >= 0) return e; }
     return -1;
   }
   attacked(sq, by) { // is sq attacked by color `by`
@@ -523,8 +523,9 @@ class Chess {
       // knight-family evolutions: knight jumps + a short straight or diagonal reach (HORSE)
       for (const [df, dr] of N_OFF) { const x = at(f + df, r + dr); if (x && HORSE[x.toUpperCase()] && colorOf(x) === by) return true; if (x === (W ? "F" : "f") || x === (W ? "O" : "o") || x === (W ? "Ω" : "ω") || x === (W ? "Φ" : "φ") || x === (W ? "Ψ" : "ψ") || x === (W ? "Ц" : "ц") || x === (W ? "Б" : "б") || x === (W ? "Д" : "д")) return true; if ((at(f + 2 * df, r + 2 * dr) === (W ? "Ψ" : "ψ") || at(f + 2 * df, r + 2 * dr) === (W ? "Д" : "д")) && x === null) return true; }
       for (const [df, dr] of CAMEL) { const x = at(f + df, r + dr); if (x === (W ? "O" : "o") || (x && colorOf(x) === by && "ΘΞΠΩЧБД".includes(x.toUpperCase()))) return true; }
-      for (const [df, dr] of B_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "К" : "к") || x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й"))) return true; } // Strong kings (blocked by a piece in between): 2 squares diagonally
-      for (const [df, dr] of R_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й"))) return true; } // Even stronger king: 2 squares orthogonally
+      for (const [df, dr] of B_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "К" : "к") || x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й") || x === (W ? "Ы" : "ы") || x === (W ? "З" : "з") || x === (W ? "Ъ" : "ъ") || x === (W ? "Є" : "є") || x === (W ? "Ґ" : "ґ"))) return true; } // Strong kings (and empty ones) (blocked by a piece in between): 2 squares diagonally
+      for (const [df, dr] of R_DIR) { const x = at(f + 2 * df, r + 2 * dr); if (!at(f + df, r + dr) && (x === (W ? "Г" : "г") || x === (W ? "Л" : "л") || x === (W ? "П" : "п") || x === (W ? "Й" : "й") || x === (W ? "Ы" : "ы") || x === (W ? "З" : "з") || x === (W ? "Ъ" : "ъ") || x === (W ? "Ґ" : "ґ"))) return true; } // Even stronger king: 2 squares orthogonally
+      for (const [df, dr] of B_DIR.concat(R_DIR)) if (!at(f + df, r + dr) && !at(f + 2 * df, r + 2 * dr) && at(f + 3 * df, r + 3 * dr) === (W ? "Ы" : "ы")) return true; // Sniper king: 3 squares in a straight line, nothing in between
       for (const [df, dr] of R_DIR) for (let k = 1; ; k++) { // Reaper bishop: rook captures
         const x = at(f + df * k, r + dr * k);
         if (x === undefined || this.holes.has((r + dr * k) * 8 + f + df * k)) break;
@@ -698,6 +699,12 @@ class Chess {
           if (ff < 0 || ff > 7 || rr < (us === "w" ? 1 : 2) || rr > (us === "w" ? 5 : 6) || b[to] || this.holes.has(to)) continue; // ranks 2-6 for white, 3-7 for black: not on your 7th rank
           out.push({ from: s, to, promo: null, summon: "P" });
         }
+        // Summoner king: 5 pawns next to it; Empty king summoner: 2 empty kings next to it (lv = 8 per empty king)
+        if ((t === "З" && this.lv[s] < 5) || (t === "Ъ" && this.lv[s] < 16)) for (const [df, dr] of K_OFF) {
+          const ff = f + df, rr = r + dr, to = rr * 8 + ff, pawn = t === "З";
+          if (ff < 0 || ff > 7 || rr < (pawn ? (us === "w" ? 1 : 2) : 0) || rr > (pawn ? (us === "w" ? 5 : 6) : 7) || b[to] || this.holes.has(to)) continue;
+          out.push({ from: s, to, promo: null, summon: pawn ? "P" : "Ь" });
+        }
         if (t === "И" && this.lv[s] < 16) for (const [df, dr] of N_OFF) { // Knight summoning queen: a knight where a knight from here could land (2 in all)
           const ff = f + df, rr = r + dr, to = rr * 8 + ff;
           if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || b[to] || this.holes.has(to)) continue;
@@ -709,10 +716,15 @@ class Chess {
           const q = b[to];
           if (q && colorOf(q) === us && !(q.toUpperCase() === "P" && (r === 0 || r === 7))) out.push({ from: s, to, promo: null, swap: true }); // no pawn onto the first/last rank
         }
-        if (t === "К" || t === "Г" || t === "Л" || t === "П" || t === "Й") for (const [df, dr] of t !== "К" ? B_DIR.concat(R_DIR) : B_DIR) { // Strong king: captures (only) 2 squares away diagonally, if the square between is empty; Even stronger king: also orthogonally
+        if (t === "К" || t === "Г" || t === "Л" || t === "П" || t === "Й" || t === "Ы" || t === "З" || t === "Ъ" || t === "Є" || t === "Ґ") for (const [df, dr] of t !== "К" && t !== "Є" ? B_DIR.concat(R_DIR) : B_DIR) { // Strong king: captures (only) 2 squares away diagonally, if the square between is empty; Even stronger king: also orthogonally
           const ff = f + 2 * df, rr = r + 2 * dr, to = rr * 8 + ff;
           if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to) || b[(r + dr) * 8 + f + df]) continue; // blocked by a piece in between
-          if (b[to] && colorOf(b[to]) !== us) { out.push({ from: s, to, promo: null }); if (t === "Л" || t === "П" || t === "Й") out.push({ from: s, to, promo: null, stay: true }); } // Stronger stronger king: or a ranged capture, staying put
+          if (b[to] && colorOf(b[to]) !== us) { out.push({ from: s, to, promo: null }); if (t === "Л" || t === "П" || t === "Й" || t === "Ы") out.push({ from: s, to, promo: null, stay: true }); } // Stronger stronger king: or a ranged capture, staying put
+        }
+        if (t === "Ы") for (const [df, dr] of B_DIR.concat(R_DIR)) { // Sniper king: also captures 3 squares away in a straight line (move in or ranged), if both squares between are empty
+          const ff = f + 3 * df, rr = r + 3 * dr, to = rr * 8 + ff;
+          if (ff < 0 || ff > 7 || rr < 0 || rr > 7 || this.holes.has(to) || b[(r + dr) * 8 + f + df] || b[(r + 2 * dr) * 8 + f + 2 * df]) continue;
+          if (b[to] && colorOf(b[to]) !== us) { out.push({ from: s, to, promo: null }); out.push({ from: s, to, promo: null, stay: true }); }
         }
         if (t === "Λ" || t === "Φ" || t === "Ψ" || t === "Ц" || t === "Б" || t === "Д") for (const [df, dr] of N_OFF) { // Amazon: queen + knight // Almost chancellor: knight moves onto empty squares only; Chancellor: knight moves and captures
           const ff = f + df, rr = r + dr, to = rr * 8 + ff;
@@ -858,7 +870,7 @@ class Chess {
     }
     if (u.lv && !m.special && !m.castle) {
       const lv = this.lv;
-      if (m.summon) { lv[m.from] += m.summon === "N" ? 8 : 1; lv[m.to] = 0; } // the Summoning queen used one summon
+      if (m.summon) { lv[m.from] += m.summon === "N" || m.summon === "Ь" ? 8 : 1; lv[m.to] = 0; } // the Summoning queen used one summon
       else if (m.swap) { const a = lv[m.from]; lv[m.from] = lv[m.to]; lv[m.to] = m.evo ? 0 : a; }
       else if (!m.stay) {
         lv[m.to] = m.evo && m.evo.toUpperCase() === "Я" ? 1 : m.evo && t !== "Э" ? 0 : lv[m.from]; lv[m.from] = 0; // a new Life rook starts with 1 life // a Summoning queen keeps its count when it evolves
@@ -1054,11 +1066,11 @@ class Chess {
     return u.m;
   }
   // uci: e2e4 · e7e8q · Evolution: e4d5! (capture and stay) · e2e4^a (evolve to Pawn+) · boss: @del:e4
-  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || "") + (m.stay ? "!" : "") + (m.summon ? (m.summon === "N" ? "*n" : "*") : "") + (m.evo ? "^" + m.evo.toLowerCase() : ""); }
+  uci(m) { return m.special ? "@" + m.special + ":" + sqName(m.sq) : sqName(m.from) + sqName(m.to) + (m.promo || "") + (m.stay ? "!" : "") + (m.summon ? (m.summon === "N" ? "*n" : m.summon === "Ь" ? "*e" : "*") : "") + (m.evo ? "^" + m.evo.toLowerCase() : ""); }
   fromUci(s) {
     if (s[0] === "@") { const [k, q] = s.slice(1).split(":"), sq = sqFrom(q); return this.specials().find(m => m.special === k && m.sq === sq) || null; }
     if (s.length > 5 || /[!^*]/.test(s)) {
-      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), summon = rest.includes("*n") ? "N" : rest.includes("*") ? "P" : null, ev = (rest.match(/\^([a-zα-ωа-я])/) || [])[1];
+      const rest = s.slice(4), pr = /^[qrbn]/.test(rest) ? rest[0] : null, stay = rest.includes("!"), summon = rest.includes("*n") ? "N" : rest.includes("*e") ? "Ь" : rest.includes("*") ? "P" : null, ev = (rest.match(/\^([a-zα-ωа-яєґ])/) || [])[1];
       const from = sqFrom(s.slice(0, 2)), to = sqFrom(s.slice(2, 4)), evo = ev ? ev.toUpperCase() : undefined;
       return this.legal().find(m => m.from === from && m.to === to && (m.promo || null) === pr && !!m.stay === stay && (m.summon || null) === summon && m.evo === evo) || null;
     }
@@ -1070,7 +1082,7 @@ class Chess {
     let s;
     if (m.special) return ({ del: "🕳", steal: "🕵x", pawn: "♟@" })[m.special] + sqName(m.sq);
     else if (m.castle) s = m.castle.toUpperCase() === "K" ? "O-O" : "O-O-O";
-    else if (m.summon) s = (m.summon === "N" ? "♞@" : "♟@") + sqName(m.to);
+    else if (m.summon) s = (m.summon === "N" ? "♞@" : m.summon === "Ь" ? "♔@" : "♟@") + sqName(m.to);
     else if (m.swap) s = t + "⇄" + sqName(m.to);
     else if (t === "K" && Math.abs(m.to - m.from) === 2 && !this.c960) s = m.to > m.from ? "O-O" : "O-O-O";
     else if (t === "A" || t === "G") // Evolution: P+ = Pawn+, GP = Grand pawn; ↺ = captured without moving
@@ -1091,14 +1103,14 @@ class Chess {
         s = t + dis + (cap ? "x" : "") + sqName(m.to);
       }
     }
-    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang", S: "Stallion", C: "Bronco", T: "Sandstorm", D: "Dune runner", E: "Pegasus", X: "Phantom", L: "Celestial", W: "Wraith", Y: "Two-colored bishop", Z: "Ranged bishop", V: "Vaulting bishop", U: "Shepherd bishop", F: "Golden bishop", J: "Silver bishop", O: "Sun bishop", I: "Moon bishop", "Γ": "Guardian bishop", "Δ": "Crimson bishop", "Θ": "Warden bishop", "Ξ": "Wanderer bishop", "Π": "Reaper bishop", "Ω": "Supreme bishop", "Λ": "Almost chancellor", "Φ": "Chancellor", "Ψ": "Chancellor+", "Ж": "Jumping rook", "Ш": "Jumping rook 2", "Щ": "Jumping master rook", "Ю": "Jumping master rook 2", "Я": "Life rook", "Ц": "Amazon", "Ч": "Camel queen", "Ф": "Queen of queens", "Б": "Mega queen", "Д": "Double knight camel queen", "Э": "Summoning queen", "И": "Knight summoning queen", "К": "Strong king", "Г": "Even stronger king", "Л": "Stronger stronger king", "П": "Swap king", "Й": "Swap king 2" })[m.evo];
+    if (m.evo) s += "⇧" + ({ A: "P+", G: "GP", H: "Arabian", M: "Mustang", S: "Stallion", C: "Bronco", T: "Sandstorm", D: "Dune runner", E: "Pegasus", X: "Phantom", L: "Celestial", W: "Wraith", Y: "Two-colored bishop", Z: "Ranged bishop", V: "Vaulting bishop", U: "Shepherd bishop", F: "Golden bishop", J: "Silver bishop", O: "Sun bishop", I: "Moon bishop", "Γ": "Guardian bishop", "Δ": "Crimson bishop", "Θ": "Warden bishop", "Ξ": "Wanderer bishop", "Π": "Reaper bishop", "Ω": "Supreme bishop", "Λ": "Almost chancellor", "Φ": "Chancellor", "Ψ": "Chancellor+", "Ж": "Jumping rook", "Ш": "Jumping rook 2", "Щ": "Jumping master rook", "Ю": "Jumping master rook 2", "Я": "Life rook", "Ц": "Amazon", "Ч": "Camel queen", "Ф": "Queen of queens", "Б": "Mega queen", "Д": "Double knight camel queen", "Э": "Summoning queen", "И": "Knight summoning queen", "К": "Strong king", "Г": "Even stronger king", "Л": "Stronger stronger king", "П": "Swap king", "Й": "Swap king 2", "Ы": "Sniper king", "З": "Summoner king", "Ъ": "Empty king summoner", "Є": "Empty strong king", "Ґ": "Empty even stronger king" })[m.evo];
     const u = this._apply(m);
     const chk = this.inCheck(), mate = chk && this.legal().length === 0;
     this._undo(u);
     return s + (mate ? "#" : chk ? "+" : "");
   }
   insufficient() {
-    const pcs = this.b.map((p, s) => [p, s]).filter(([p]) => p && !"KКГЛПЙ".includes(p.toUpperCase()));
+    const pcs = this.b.map((p, s) => [p, s]).filter(([p]) => p && !"KКГЛПЙЫЗЪ".includes(p.toUpperCase()));
     if (pcs.length === 0) return true;
     if (pcs.length === 1 && "NBnb".includes(pcs[0][0])) return true;
     if (pcs.every(([p]) => "Bb".includes(p))) {
@@ -1472,7 +1484,7 @@ function predictMaia(net, game) {
 
 // Variant bot for rules the neural nets never learned (Shapeshift): a small alpha-beta search on material,
 // deeper and less noisy for stronger levels. Returns {move, depth, nodes, score}.
-const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420, S: 560, C: 520, T: 660, D: 620, E: 1000, X: 820, L: 1080, W: 920, Y: 430, Z: 470, V: 540, U: 600, F: 720, J: 680, O: 820, I: 760, "Γ": 480, "Δ": 560, "Θ": 680, "Ξ": 760, "Π": 800, "Ω": 1500, "Λ": 620, "Φ": 850, "Ψ": 1000, "Ж": 580, "Ш": 680, "Щ": 740, "Ю": 820, "Я": 560, "Ц": 1200, "Ч": 1000, "Ф": 900, "Б": 1300, "Д": 1400, "Э": 1000, "И": 1100, "К": 0, "Г": 0, "Л": 0, "П": 0, "Й": 0 };
+const VAL = { P: 100, N: 300, B: 320, R: 500, Q: 900, K: 0, A: 170, G: 200, H: 440, M: 420, S: 560, C: 520, T: 660, D: 620, E: 1000, X: 820, L: 1080, W: 920, Y: 430, Z: 470, V: 540, U: 600, F: 720, J: 680, O: 820, I: 760, "Γ": 480, "Δ": 560, "Θ": 680, "Ξ": 760, "Π": 800, "Ω": 1500, "Λ": 620, "Φ": 850, "Ψ": 1000, "Ж": 580, "Ш": 680, "Щ": 740, "Ю": 820, "Я": 560, "Ц": 1200, "Ч": 1000, "Ф": 900, "Б": 1300, "Д": 1400, "Э": 1000, "И": 1100, "К": 0, "Г": 0, "Л": 0, "П": 0, "Й": 0, "Ы": 0, "З": 0, "Ъ": 0, "Ь": 250, "Є": 330, "Ґ": 380 };
 function evalMaterial(g) { // from the side to move's view; centre bonus for knights/pawns keeps play sensible
   let s = 0;
   for (let q = 0; q < 64; q++) {
@@ -1620,7 +1632,7 @@ function lstate(extra){const g=LG.game,o=g.outcome();let over=null;
   last:last?g.uci(last):null,check:g.inCheck(),sans:LG.sans.slice(),over,you:LG.color,base:LG.base,inc:LG.inc,
   start:LG.back?startFen960(LG.back):null,rule:LG.rule,
   holes:[...g.holes].map(sqName),boss:g.boss?{side:g.boss.side=='w'?'white':'black'}:null,
-  specials:g.boss?g.specials().map(m=>g.uci(m)):[],guilt:LG.rule=='guilt'?Object.fromEntries(g.gu.map((v,s)=>[sqName(s),v]).filter(([s,v])=>v)):null,lives:LG.rule=='evo'?Object.fromEntries(g.b.map((p,s)=>!p?null:p.toUpperCase()=='Я'&&g.lv[s]?[sqName(s),'❤'+g.lv[s]]:p.toUpperCase()=='Э'?[sqName(s),'♟'+(7-g.lv[s]%8)]:p.toUpperCase()=='И'?[sqName(s),'♟'+(7-g.lv[s]%8)+' ♞'+(2-Math.floor(g.lv[s]/8))]:null).filter(x=>x)):null,
+  specials:g.boss?g.specials().map(m=>g.uci(m)):[],guilt:LG.rule=='guilt'?Object.fromEntries(g.gu.map((v,s)=>[sqName(s),v]).filter(([s,v])=>v)):null,lives:LG.rule=='evo'?Object.fromEntries(g.b.map((p,s)=>!p?null:p.toUpperCase()=='Я'&&g.lv[s]?[sqName(s),'❤'+g.lv[s]]:p.toUpperCase()=='Э'?[sqName(s),'♟'+(7-g.lv[s]%8)]:p.toUpperCase()=='И'?[sqName(s),'♟'+(7-g.lv[s]%8)+' ♞'+(2-Math.floor(g.lv[s]/8))]:p.toUpperCase()=='З'?[sqName(s),'♟'+(5-g.lv[s])]:p.toUpperCase()=='Ъ'?[sqName(s),'♔'+(2-Math.floor(g.lv[s]/8))]:null).filter(x=>x)):null,
   hk:LG.rule=='hidden'?{mine:g.hk[LG.color[0]]>=0?sqName(g.hk[LG.color[0]]):null,theirs:o&&g.hk[LG.color=='white'?'b':'w']>=0?sqName(g.hk[LG.color=='white'?'b':'w']):null,taken:g.hkLost?g.hkLostP:null}:null,castles:Object.fromEntries(g.legal().filter(m=>m.castle).map(m=>[g.uci(m),sqName(m.kTo)]))},extra||{})}
 function startFen960(back){const rf=[...back].map((p,i)=>p=='R'?'abcdefgh'[i]:'').join('');
  return back.toLowerCase()+'/pppppppp/8/8/8/8/PPPPPPPP/'+back+' w '+rf.toUpperCase()+rf+' - 0 1'}
@@ -1983,6 +1995,12 @@ var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time
  Г:['K','♚','evEk','💪💪 Even stronger king','Everything the Strong king does, and it can also capture a piece 2 squares away orthogonally, if the square between is empty. It can only capture those ways, not move there. It is still your king.'],
  Л:['K','♚','evSs','⚡ Stronger stronger king','Everything the Even stronger king does, and its captures 2 squares away (diagonally and orthogonally) can now be ranged: it can take the piece and stay where it is, or jump in. It is still your king.'],
  П:['K','♚','evSw','🔄 Swap king','Everything the Stronger stronger king does, and it can swap places with one of your own pieces on a square next to it (no pawn onto the first or last rank). It is still your king.'],
+ Ь:['K','♚','evE0','👻 Empty king','Summoned by the Empty king summoner. Moves and captures like a king, but it is a normal piece: it can\'t be checked, and losing it doesn\'t lose the game.'],
+ Є:['K','♚','evE1','👻💪 Empty strong king','An empty king that also captures a piece 2 squares away diagonally, if the square between is empty (capture only). Still just a normal piece, not your king.'],
+ Ґ:['K','♚','evE2','👻💪💪 Empty even stronger king','Everything the Empty strong king does, and it also captures 2 squares away orthogonally. The last empty king evolution. Still just a normal piece.'],
+ З:['K','♚','evSm','🪄 Summoner king','Everything the Even stronger king does. Instead of moving, it can wave its wand and summon one of your pawns on an empty square next to it (not on your first rank, your 7th rank or the last rank). It can summon 5 pawns in all. It is still your king.'],
+ Ъ:['K','♚','evEs','👻 Empty king summoner','Everything the Summoner king does, but now it summons empty kings instead of pawns: 2 in all, on empty squares next to it. An empty king moves and captures like a king, but it is just a normal piece: it can\'t be checked, and losing it doesn\'t lose the game.'],
+ Ы:['K','♚','evSn','🎯 Sniper king','Everything the Stronger stronger king does, and it can also capture a piece 3 squares away in a straight line (diagonally or orthogonally), jumping in or with a ranged capture, if both squares between are empty. It is still your king.'],
  Й:['K','♚','evS2','🔄🔄 Swap king 2','Everything the Swap king does, and it can also swap places with one of your pieces 2 squares away orthogonally. The last king evolution. It is still your king.'],
  Y:['B','◐','evY','◐ Two-colored bishop','Moves like a bishop, and can also move or capture one square orthogonally, so it can switch square colour.'],
  U:['B','◐','evU','🔀 Shepherd bishop','Everything the Vaulting bishop does, and it can swap places with one of your own pieces: the first piece on one of its diagonals (where a normal bishop could see it), like castling. A pawn can\'t be swapped onto the first or last rank.'],
@@ -2037,6 +2055,12 @@ var EVART={
  К:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/>'},
  Г:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/><g transform="translate(45 0) scale(-1 1)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g>'},
  Л:{b:'K',a:'#f6f3ea',plain:1,u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/><g transform="translate(45 0) scale(-1 1)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g>',o:'<g transform="translate(12.6 15.4) scale(.72)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g><path fill="#ffd23a" stroke="$S" stroke-width=".7" d="M41.6 1.4l-3.4 4.4h2.4l-1.8 3.8 4.4-5h-2.4l1.8-3.2z"/><g transform="translate(45 0) scale(-1 1)"><path fill="#ffd23a" stroke="$S" stroke-width=".7" d="M41.6 1.4l-3.4 4.4h2.4l-1.8 3.8 4.4-5h-2.4l1.8-3.2z"/></g>'},
+ З:{b:'K',a:'#9b59d0',u:'<path fill="none" stroke="$S" stroke-width="3.2" d="M38.6 41.6L36.2 15"/><path fill="none" stroke="$a" stroke-width="1.6" d="M38.6 41.6L36.2 15"/><g transform="translate(26.6 -1.4) scale(.42)" fill="$F" stroke="$S" stroke-width="2.6">'+ST.P+'</g>',o:'<path fill="$a" stroke="none" d="M31 5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM41.6 9.6l.5 1.1 1.1.5-1.1.5-.5 1.1-.5-1.1-1.1-.5 1.1-.5z"/>'},
+ Ъ:{b:'K',a:'#5b8fd0',u:'<path fill="none" stroke="$S" stroke-width="3.2" d="M38.6 41.6L36.2 15"/><path fill="none" stroke="$a" stroke-width="1.6" d="M38.6 41.6L36.2 15"/><g transform="translate(26.4 -1.8) scale(.42)" fill="$F" fill-opacity=".35" stroke="$S" stroke-width="2.6">'+ST.K.replace(/class="h"[^/]*/g,'fill="none"')+'</g>',o:'<path fill="$a" stroke="none" d="M31 5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6zM41.6 9.6l.5 1.1 1.1.5-1.1.5-.5 1.1-.5-1.1-1.1-.5 1.1-.5z"/>'},
+ Ь:{b:'K',a:'#9a9a9a',plain:1,op:'.35'},
+ Є:{b:'K',a:'#f6f3ea',plain:1,op:'.35',u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/>'},
+ Ґ:{b:'K',a:'#f6f3ea',plain:1,op:'.35',u:'<path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/><g transform="translate(45 0) scale(-1 1)"><path fill="$F" stroke="$S" stroke-width="1.2" d="M27 31H41.8c1.8 0 2.9-1.3 2.8-3.1L44 14.4h-6.2l.5 6.8c-1.8-4-5.2-5.8-8.8-4.2-2.2 1-3.4 3.4-3.2 6z"/><path fill="$F" stroke="$S" stroke-width="1.2" d="M37.2 15.2c-.7-3.4.9-6.2 3.8-6.4 2.9-.2 4.6 2 4.2 5.1l-.4 1.6z"/><path fill="none" stroke="$S" stroke-width=".9" d="M38 11.8h5.6M37.8 13.6h5.8M31.6 21.2c1.6-1 3.6-1 5 .2"/></g>'},
+ Ы:{b:'K',a:'#d63a3a',o:'<g fill="none" stroke="$S" stroke-width="3.2"><circle cx="36" cy="8" r="5"/><path d="M36 1v4M36 11v4M29 8h4M39 8h4"/></g><g fill="none" stroke="$a" stroke-width="1.6"><circle cx="36" cy="8" r="5"/><path d="M36 1v4M36 11v4M29 8h4M39 8h4"/></g><circle cx="36" cy="8" r="1.2" fill="$a"/>'},
  П:{b:'K',a:'#3a9be0',o:'<path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/>'},
  Й:{b:'K',a:'#7b3fd1',o:'<path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><g transform="translate(45 0) scale(-1 1)"><path fill="none" stroke="$S" stroke-width="3" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/><path fill="none" stroke="$a" stroke-width="1.5" d="M30.5 4.6h10.4M38.4 2l2.6 2.6-2.6 2.6M41.6 10.2H31.2M33.8 7.6l-2.6 2.6 2.6 2.6"/></g>'},
  Ч:{b:'Q',a:'#d6a04a',o:'<path $A d="M31 30.5v-3.2c-1.6-.2-2.6-1.4-2.4-3 .4-2.4 2.6-3.6 4.2-2.6.8-2.4 3.4-3.2 4.8-1.4.8-1.4 2.6-1.6 3.4-.4l1.4 2.2-1.6.4-.6 3.4c-.4 1.4-1.2 2.2-2.4 2.4v2.2h-1.4v-2.2h-3.4v2.2z"/>'},
@@ -2085,9 +2109,9 @@ function myColor(){return S?S.you:'white'}
 const START='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 function applyUci(b,u){if(u[0]=='@'){const [k,q]=u.slice(1).split(':');if(k=='pawn'){const w=S&&S.boss&&S.boss.side=='white';b[q]=w?'P':'p'}else delete b[q];return} // boss powers
  const f=u.slice(0,2),t=u.slice(2,4),p=b[f];if(!p)return;
-  if(u.includes('*')){const k=u.includes('*n')?'N':'P';b[t]=p==p.toUpperCase()?k:k.toLowerCase();return} // Evolution: a Summoning queen summoned a pawn or knight
+  if(u.includes('*')){const k=u.includes('*n')?'N':u.includes('*e')?'Ь':'P';b[t]=p==p.toUpperCase()?k:k.toLowerCase();return} // Evolution: a Summoning queen summoned a pawn or knight
   if(u.includes('!')){delete b[t];return} // Evolution: Pawn+ captured without moving
- const ev=(u.match(/\^([a-zα-ωа-я])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
+ const ev=(u.match(/\^([a-zα-ωа-яєґ])/)||[])[1],pr=/[qrbn]/.test(u[4]||'')?u[4]:null;
  if('UFJOIПЙ'.includes(p.toUpperCase())&&b[t]&&(b[t]==b[t].toUpperCase())==(p==p.toUpperCase())){const q=b[t];b[t]=ev?(p==p.toUpperCase()?ev.toUpperCase():ev):p;b[f]=q;return} // Shepherd bishop: swap
  if('ШЩЮ'.includes(p.toUpperCase())&&!b[t]){const df=Math.sign(t.charCodeAt(0)-f.charCodeAt(0)),dr=Math.sign(+t[1]-+f[1]),ov=[];for(let x=f.charCodeAt(0)+df,y=+f[1]+dr;x!=t.charCodeAt(0)||y!=+t[1];x+=df,y+=dr){const s=String.fromCharCode(x)+y;if(b[s])ov.push(s)}if(ov.length==1||p.toUpperCase()=='Ю')for(const s of ov)if((b[s]==b[s].toUpperCase())!=(p==p.toUpperCase()))delete b[s]} // jumping rooks take the enemy pieces they jump over (master: only when jumping one; master 2: always)
   if(ev){if(p.toUpperCase()=='P'&&f[0]!=t[0]&&!b[t])delete b[t[0]+f[1]];delete b[f];b[t]=p==p.toUpperCase()?ev.toUpperCase():ev;return} // the pawn evolved as it moved
@@ -2124,7 +2148,7 @@ function draw(){const B=$('board');B.innerHTML='';const rv=reviewOn(),n=rv?view:
   if(sq==sel&&!rv)d.classList.add('sel');
   if(targets.includes(sq))d.classList.add(p?'cap':'dot');
   if(p){d.innerHTML=visPiece(p,V);if(LV)d.insertAdjacentHTML('beforeend','<span class="lvb">'+LV+'</span>');
-   if(inChk&&!FOG&&'KКГЛПЙ'.includes(p.toUpperCase())&&((p==p.toUpperCase())==turnW))d.classList.add('chk')}
+   if(inChk&&!FOG&&'KКГЛПЙЫЗЪ'.includes(p.toUpperCase())&&((p==p.toUpperCase())==turnW))d.classList.add('chk')}
   if(r==7){const c=document.createElement('span');c.className='coord cf';c.textContent='abcdefgh'[file];d.appendChild(c)}
   if(f==0){const c=document.createElement('span');c.className='coord cr';c.textContent=rank+1;d.appendChild(c)}
   if(PREM&&(PREM.f==sq||PREM.t==sq))d.classList.add('pre');if(MK.h.includes(sq))d.classList.add('mk');
@@ -2632,13 +2656,14 @@ let HKP=null;
 function hkPick(){return new Promise(res=>{const my=gid;HKP={res,my};draw();msg('👑 Tap the piece that will be your secret king. Only you will know which one it is.')})}
 async function hkTap(sq){const p=CUR[sq];if(!p||(p==p.toUpperCase())!=(S.you=='white'))return;
  const r=await api('/api/hk',{sq});if(r.error)return;S=r;const h=HKP;HKP=null;draw();msg('👑 Your secret king: the '+PNAME[p.toUpperCase()]+' on '+sq+'.');h.res(h.my==gid)}
-const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang',S:'Stallion',C:'Bronco',T:'Sandstorm',D:'Dune runner',E:'Pegasus',X:'Phantom',L:'Celestial',W:'Wraith',Y:'Two-colored bishop',Z:'Two-colored ranged bishop',V:'Vaulting bishop',U:'Shepherd bishop',F:'Golden bishop',J:'Silver bishop',O:'Sun bishop',I:'Moon bishop','Γ':'Guardian bishop','Δ':'Crimson bishop','Θ':'Warden bishop','Ξ':'Wanderer bishop','Π':'Reaper bishop','Ω':'Supreme bishop','Λ':'Almost chancellor','Φ':'Chancellor','Ψ':'Chancellor+','Ж':'Jumping rook','Ш':'Jumping rook 2','Щ':'Jumping master rook','Ю':'Jumping master rook 2','Я':'Life rook','Ц':'Amazon','Ч':'Camel queen','Ф':'Queen of queens','Б':'Mega queen','Д':'Double knight camel queen','Э':'Summoning queen','И':'Knight summoning queen','К':'Strong king','Г':'Even stronger king','Л':'Stronger stronger king','П':'Swap king','Й':'Swap king 2'};
+const PNAME={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn',A:'Pawn+',G:'Grand pawn',H:'Arabian horse',M:'Mustang',S:'Stallion',C:'Bronco',T:'Sandstorm',D:'Dune runner',E:'Pegasus',X:'Phantom',L:'Celestial',W:'Wraith',Y:'Two-colored bishop',Z:'Two-colored ranged bishop',V:'Vaulting bishop',U:'Shepherd bishop',F:'Golden bishop',J:'Silver bishop',O:'Sun bishop',I:'Moon bishop','Γ':'Guardian bishop','Δ':'Crimson bishop','Θ':'Warden bishop','Ξ':'Wanderer bishop','Π':'Reaper bishop','Ω':'Supreme bishop','Λ':'Almost chancellor','Φ':'Chancellor','Ψ':'Chancellor+','Ж':'Jumping rook','Ш':'Jumping rook 2','Щ':'Jumping master rook','Ю':'Jumping master rook 2','Я':'Life rook','Ц':'Amazon','Ч':'Camel queen','Ф':'Queen of queens','Б':'Mega queen','Д':'Double knight camel queen','Э':'Summoning queen','И':'Knight summoning queen','К':'Strong king','Г':'Even stronger king','Л':'Stronger stronger king','П':'Swap king','Й':'Swap king 2','Ы':'Sniper king','З':'Summoner king','Ъ':'Empty king summoner','Ь':'Empty king','Є':'Empty strong king','Ґ':'Empty even stronger king'};
 // ---- Evolution: after moving a pawn you may evolve it; Pawn+ may capture without moving
 function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el){el=document.createElement('div');el.id='evopick';document.body.appendChild(el)}
  el.innerHTML='<div class="box"><b>'+title+'</b>'+list.map((o,i)=>'<button data-i="'+i+'">'+(o[3]?'<span class="evpic">'+piece(o[3])+'</span>':'')+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>').join('')+'</div>';el.style.display='flex';
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.style.display='none';res(list[+b.dataset.i][0])})})}
 async function evoMove(f,t,u){
-  {const su=S.legal.filter(x=>x.startsWith(f+t+'*'));if(su.length&&(!S.legal.includes(u)||await pickBox('🪄 Summoning queen',[['move','Move the queen here'],['summon','Summon a pawn here','The queen stays where she is.']])=='summon')){play(su[0]);return}}
+  {const su=S.legal.filter(x=>x.startsWith(f+t+'*'));const sw=su.length&&su[0].includes('*e')?'an empty king':su.length&&su[0].includes('*n')?'a knight':'a pawn',sk='KКГЛПЙЫЗЪ'.includes((CUR[f]||'').toUpperCase())?'king':'queen';
+  if(su.length&&(!S.legal.includes(u)||await pickBox('🪄 '+(PNAME[(CUR[f]||'Q').toUpperCase()]||'Summon'),[['move','Move the '+sk+' here'],['summon','Summon '+sw+' here','The '+sk+' stays where it is.']])=='summon')){play(su[0]);return}}
  if(S.legal.includes(f+t+'!')&&(!S.legal.some(x=>x==u||x.startsWith(u+'^'))||await pickBox((PNAME[(CUR[f]||'A').toUpperCase()]||'Pawn+')+' capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay'))u=f+t+'!'; // only the ranged capture is legal (moving in would be illegal): no question
  const forms=S.legal.filter(x=>x.startsWith(u+'^')).map(x=>x.slice(u.length+1)); // any piece that may evolve now
  if(forms.length){const nm=PNAME[(CUR[f]||'p').toUpperCase()]||'piece';
@@ -2688,17 +2713,17 @@ function hkReveal(){if(!S||!S.hk||!S.hk.theirs)return '';const p=parseFen(S.fen)
  return ' · 👑 Their secret king was '+(theirs?'the '+PNAME[p.toUpperCase()]+' on '+S.hk.theirs:tk&&(tk==tk.toUpperCase())!=(S.you=='white')?'the '+PNAME[tk.toUpperCase()]+' you took on '+S.hk.theirs:'on '+S.hk.theirs)}
 async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 // ---- Evolution tree: every branch, with move diagrams worked out by the engine itself
-const EVBASE={P:'Pawn',N:'Knight',B:'Bishop',R:'Rook',Q:'Queen',K:'King'};
-function evoDiag(k,big){const C=27,g=new Chess(undefined,'evo'),mv=new Set,cap=new Set,rng=new Set,sw=new Set,sp=new Set,sn=new Set;
+const EVBASE={P:'Pawn',N:'Knight',B:'Bishop',R:'Rook',Q:'Queen',K:'King','Ь':'Empty king'};
+function evoDiag(k,big){const C=27,g=new Chess(undefined,'evo'),se=new Set,mv=new Set,cap=new Set,rng=new Set,sw=new Set,sp=new Set,sn=new Set;
  const fresh=()=>{g.b.fill(null);g.castle={K:false,Q:false,k:false,q:false};g.ep=-1;g.turn='w';g.lv.fill(0);g.mc.fill(0);g.b[C]=k};
- fresh();for(const m of g.pseudo())if(m.from===C&&!m.evo){if(m.summon)(m.summon=='N'?sn:sp).add(m.to);else if(!m.swap&&!m.stay&&!m.castle)mv.add(m.to)}
+ fresh();for(const m of g.pseudo())if(m.from===C&&!m.evo){if(m.summon)(m.summon=='N'?sn:m.summon=='Ь'?se:sp).add(m.to);else if(!m.swap&&!m.stay&&!m.castle)mv.add(m.to)}
  for(let s=0;s<64;s++){if(s===C)continue;
   fresh();g.b[s]='n';for(const m of g.pseudo())if(m.from===C&&m.to===s&&!m.evo&&!m.summon&&!m.swap){if(m.stay)rng.add(s);else cap.add(s)}
   fresh();g.b[s]='N';for(const m of g.pseudo())if(m.from===C&&m.to===s&&m.swap)sw.add(s)}
  let h='<div class="et-b'+(big?' big':'')+'">';
  for(let r=7;r>=0;r--)for(let f=0;f<8;f++){const s=r*8+f,M=mv.has(s),X=cap.has(s);let c=(f+r)%2?'l':'d',tx='';
   if(s===C){c+=' me';tx=piece(k)}else{if(M&&X)c+=' mc';else if(M)c+=' mo';else if(X||rng.has(s))c+=' co';
-   if(rng.has(s))tx+='R';if(sw.has(s))tx+='⇄';if(sp.has(s))tx+='♟';if(sn.has(s))tx+='♞'}
+   if(rng.has(s))tx+='R';if(sw.has(s))tx+='⇄';if(sp.has(s))tx+='♟';if(sn.has(s))tx+='♞';if(se.has(s))tx+='♔'}
   h+='<i class="'+c+'">'+tx+'</i>'}
  return h+'</div>'}
 function evoTree(view){if(view!='list')return evoGraph();let el=$('evotree');if(!el){el=document.createElement('div');el.id='evotree';document.body.appendChild(el)}
@@ -2710,13 +2735,13 @@ function evoTree(view){if(view!='list')return evoGraph();let el=$('evotree');if(
   const kids=[];for(const [m,forms] of EVOLVE[k]||[])for(const f of forms)kids.push(node(f,m));
   if(kids.length)h+='<div class="et-kids">'+kids.join('')+'</div>';return h};
  const legend='<div class="et-leg"><span><i class="mc"></i>move or capture</span><span><i class="mo"></i>move only</span><span><i class="co"></i>capture only</span>'+
-  '<span><i class="co">R</i>ranged capture: takes it without moving</span><span><i>⇄</i>swap with your own piece</span><span><i>♟</i><i>♞</i>summon a pawn / knight</span><span><i class="me l">'+piece('B')+'</i>where the piece stands</span></div>'+
+  '<span><i class="co">R</i>ranged capture: takes it without moving</span><span><i>⇄</i>swap with your own piece</span><span><i>♟</i><i>♞</i><i>♔</i>summon a pawn / knight / empty king</span><span><i class="me l">'+piece('B')+'</i>where the piece stands</span></div>'+
   '<div class="small">Each branch shows how many moves the piece has to make before it can evolve. Jumps that need a piece in the way (vaulting bishops, jumping rooks, double knight jumps over a blocker) are explained in the text.</div>';
  el.innerHTML='<div class="et-box"><div class="et-head"><b>🌳 Evolution tree</b><span><button id="etg">🗺 Map view</button> <button id="etx">✕ Close</button></span></div>'+legend+
   Object.keys(EVBASE).map(k=>'<h3>'+EVBASE[k]+'s</h3>'+node(k,0)).join('')+'</div>';
  el.style.display='block';$('etx').onclick=()=>{el.style.display='none'};$('etg').onclick=()=>evoGraph();el.onclick=e=>{if(e.target===el)el.style.display='none'}}
 
-const EVLEG='<div class="et-leg"><span><i class="mc"></i>move or capture</span><span><i class="mo"></i>move only</span><span><i class="co"></i>capture only</span><span><i class="co">R</i>ranged capture (takes without moving)</span><span><i>⇄</i>swap</span><span><i>♟</i><i>♞</i>summon</span></div>';
+const EVLEG='<div class="et-leg"><span><i class="mc"></i>move or capture</span><span><i class="mo"></i>move only</span><span><i class="co"></i>capture only</span><span><i class="co">R</i>ranged capture (takes without moving)</span><span><i>⇄</i>swap</span><span><i>♟</i><i>♞</i><i>♔</i>summon</span></div>';
 function evoGraph(){let el=$('evotree');if(!el){el=document.createElement('div');el.id='evotree';document.body.appendChild(el)}
  const nmOf=k=>EVOP[k]?EVOP[k][3]:EVBASE[k],pos={},edges=[],heads=[],parents={};let row=0,maxD=0;
  const place=(k,d)=>{pos[k]={d,y:0};maxD=Math.max(maxD,d);const ys=[];
