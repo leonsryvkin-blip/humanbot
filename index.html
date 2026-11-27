@@ -2160,7 +2160,7 @@ function isMine(p){return p&&((p==p.toUpperCase())==(S.you=='white'))}
 function canPre(){return S&&gameOn&&!S.over&&!(GAME&&(GAME.bvb||GAME.lib))&&!reviewOn()&&S.turn!=S.you}
 function sqAt(x,y){const el=document.elementFromPoint(x,y),s=el&&el.closest?el.closest('#board .sq'):null;return s?s.dataset.sq:null}
 function tryMove(f,t,drag){let ms=S.legal.filter(m=>m.startsWith(f+t)&&!/[!^*]/.test(m));
- if(!ms.length&&S.legal.some(x=>x.startsWith(f+t+'*'))){noAnim=!!drag;evoMove(f,t,f+t);return true} // only a summon there
+ if(!ms.length&&S.legal.some(x=>x.startsWith(f+t+'*')||x.startsWith(f+t+'!'))){noAnim=!!drag;evoMove(f,t,f+t);return true} // only a summon or a ranged capture there
  if(!ms.length)ms=Object.entries(S.castles||{}).filter(([u,d])=>u.startsWith(f)&&d==t).map(([u])=>u); // 960: king to g/c castles
  if(!ms.length)return false;
  if(S.rule=='evo'&&ms.length==1){noAnim=!!drag;evoMove(f,t,ms[0]);return true}
@@ -2619,7 +2619,7 @@ function pickBox(title,list){return new Promise(res=>{let el=$('evopick');if(!el
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{el.style.display='none';res(list[+b.dataset.i][0])})})}
 async function evoMove(f,t,u){
   {const su=S.legal.filter(x=>x.startsWith(f+t+'*'));if(su.length&&(!S.legal.includes(u)||await pickBox('🪄 Summoning queen',[['move','Move the queen here'],['summon','Summon a pawn here','The queen stays where she is.']])=='summon')){play(su[0]);return}}
- if(S.legal.includes(f+t+'!')&&await pickBox((PNAME[(CUR[f]||'A').toUpperCase()]||'Pawn+')+' capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay')u=f+t+'!';
+ if(S.legal.includes(f+t+'!')&&(!S.legal.some(x=>x==u||x.startsWith(u+'^'))||await pickBox((PNAME[(CUR[f]||'A').toUpperCase()]||'Pawn+')+' capture',[['move','Capture and move in'],['stay','Capture and stay where it is']])=='stay'))u=f+t+'!'; // only the ranged capture is legal (moving in would be illegal): no question
  const forms=S.legal.filter(x=>x.startsWith(u+'^')).map(x=>x.slice(u.length+1)); // any piece that may evolve now
  if(forms.length){const nm=PNAME[(CUR[f]||'p').toUpperCase()]||'piece';
   const c=await pickBox('Evolve this '+nm+'?',[['','Keep it a '+nm,'You can evolve it after a later move.']].concat(forms.map(e=>{const E=EVOP[e.toUpperCase()];return [e,E[3],E[4],S.turn=='black'?e.toLowerCase():e.toUpperCase()]})));if(c)u+='^'+c}
