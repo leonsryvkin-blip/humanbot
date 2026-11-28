@@ -379,7 +379,7 @@
      </div>
     </div>
     <label class="tog"><input type="checkbox" id="show"> Show what the bot was considering</label>
-    <div class="small">Runs on this device · HumanBot 12x192 model, step 400,000 (with human thinking times) · built 27 Nov 2026</div>
+    <div class="small">Runs on this device · HumanBot 12x192 model, step 400,000 (with human thinking times) · built 28 Nov 2026</div>
    </details>
    <button class="play" id="start">Play</button>
   </div>
@@ -447,7 +447,7 @@ const colorOf = p => (p ? (isWhite(p) ? "w" : "b") : null);
 // T = Sandstorm, D = Dune runner (stage 3: + the camel jump), E = Pegasus, X = Phantom (stage 4: full rook / bishop reach).
 const EVOLVE = { P: [[1, ["A", "G"]]], N: [[2, ["H", "M"]]], H: [[2, ["S"]]], M: [[2, ["C"]]], S: [[3, ["T"]]], C: [[3, ["D"]]],
   T: [[4, ["E"]]], D: [[4, ["X"]]], E: [[5, ["L"]]], X: [[5, ["W"]]],
-  R: [[2, ["Λ", "Ж", "Я"]]], Q: [[6, ["Ц", "Ч", "Ф"]]], K: [[3, ["К"]]], "К": [[4, ["Г"]]], "Г": [[5, ["Л", "З"]]], "З": [[5, ["Ъ"]]], "Ь": [[3, ["Є"]]], "Є": [[4, ["Ґ"]]], "Л": [[5, ["П", "Ї"]]], "Ї": [[5, ["Ы"]]], "П": [[5, ["Й"]]], "Ц": [[6, ["Б"]]], "Ч": [[6, ["Б"]]], "Б": [[6, ["Д"]]], "Ф": [[6, ["Э"]]], "Э": [[6, ["И"]]], "Ж": [[6, ["Ш"]]], "Ш": [[6, ["Щ"]]], "Щ": [[6, ["Ю"]]], "Λ": [[4, ["Φ"]]], "Φ": [[6, ["Ψ"]]],
+  R: [[2, ["Λ", "Ж", "Я"]]], Q: [[6, ["Ц", "Ч", "Ф"]]], K: [[3, ["К"]]], "К": [[4, ["Г"]]], "Г": [[5, ["Л", "З"]]], "З": [[5, ["Ъ"]]], "Ь": [[3, ["Є"]]], "Є": [[4, ["Ґ"]]], "Л": [[5, ["П", "Ї"]]], "Ї": [[5, ["Ы"]]], "П": [[5, ["Й"]]], "Ц": [[6, ["Б"]]], "Ч": [[6, ["Б"]]], "Б": [[6, ["Д"]]], "Ф": [[6, ["Э"]]], "Э": [[6, ["И"]]], "Ж": [[4, ["Ш"]]], "Ш": [[6, ["Щ"]]], "Щ": [[6, ["Ю"]]], "Λ": [[4, ["Φ"]]], "Φ": [[6, ["Ψ"]]],
   B: [[2, ["Y"]]], Y: [[2, ["Z", "Γ"]]], "Γ": [[3, ["Δ"]]], "Δ": [[6, ["Θ"]]], "Θ": [[6, ["Ξ", "Π"]]], "Ξ": [[10, ["Ω"]]], "Π": [[10, ["Ω"]]], O: [[10, ["Ω"]]], I: [[10, ["Ω"]]], Z: [[2, ["V"]]], V: [[3, ["U"]]], U: [[2, ["F", "J"]]], F: [[3, ["O"]]], J: [[3, ["I"]]] };
 // other evolved sliders: piece -> list of [directions, reach] it moves and captures along (Y = Two-colored bishop)
 const SLIDERS = { Y: [[B_DIR, 7], [R_DIR, 1]], Z: [[B_DIR, 7], [R_DIR, 1]], V: [[B_DIR, 7], [R_DIR, 1]], U: [[B_DIR, 7], [R_DIR, 1]], F: [[B_DIR, 7], [R_DIR, 1]], J: [[B_DIR, 7], [R_DIR, 1]], O: [[B_DIR, 7], [R_DIR, 1]], I: [[B_DIR, 7], [R_DIR, 1]], "Γ": [[B_DIR, 7], [R_DIR, 1]], "Δ": [[B_DIR, 7], [R_DIR, 2]], "Θ": [[B_DIR, 7], [R_DIR, 2]], "Ξ": [[B_DIR, 7], [R_DIR, 2]], "Π": [[B_DIR, 7], [R_DIR, 2]], "Ω": [[B_DIR, 7], [R_DIR, 7]], "Λ": [[R_DIR, 7]], "Φ": [[R_DIR, 7]], "Ψ": [[R_DIR, 7]], "Ж": [[R_DIR, 7]], "Ш": [[R_DIR, 7]], "Щ": [[R_DIR, 7]], "Ю": [[R_DIR, 7]], "Я": [[R_DIR, 7]], "Ц": [[B_DIR, 7], [R_DIR, 7]], "Ч": [[B_DIR, 7], [R_DIR, 7]], "Ф": [[B_DIR, 7], [R_DIR, 7]], "Б": [[B_DIR, 7], [R_DIR, 7]], "Д": [[B_DIR, 7], [R_DIR, 7]], "Э": [[B_DIR, 7], [R_DIR, 7]], "И": [[B_DIR, 7], [R_DIR, 7]], "К": [[B_DIR, 1], [R_DIR, 1]], "Г": [[B_DIR, 1], [R_DIR, 1]], "Л": [[B_DIR, 1], [R_DIR, 1]], "П": [[B_DIR, 1], [R_DIR, 1]], "Й": [[B_DIR, 1], [R_DIR, 1]], "Ы": [[B_DIR, 1], [R_DIR, 1]], "Ї": [[B_DIR, 1], [R_DIR, 1]], "З": [[B_DIR, 1], [R_DIR, 1]], "Ъ": [[B_DIR, 1], [R_DIR, 1]], "Ь": [[B_DIR, 1], [R_DIR, 1]], "Є": [[B_DIR, 1], [R_DIR, 1]], "Ґ": [[B_DIR, 1], [R_DIR, 1]] };
@@ -919,10 +919,10 @@ class Chess {
       if (m.summon) { lv[m.from] += m.summon === "N" || m.summon === "Ь" ? 8 : 1; lv[m.to] = 0; } // the Summoning queen used one summon
       else if (m.swap) { const a = lv[m.from]; lv[m.from] = lv[m.to]; lv[m.to] = m.evo ? 0 : a; }
       else if (!m.stay) {
-        lv[m.to] = m.evo && m.evo.toUpperCase() === "Я" ? 1 : m.evo && t !== "Э" ? 0 : lv[m.from]; lv[m.from] = 0; // a new Life rook starts with 1 life // a Summoning queen keeps its count when it evolves
+        lv[m.to] = m.evo && t !== "Э" ? 0 : lv[m.from]; lv[m.from] = 0; // a new Life rook starts with no lives // a Summoning queen keeps its count when it evolves
         if (m.jcap >= 0) lv[m.jcap] = 0;
         if (m.jcap2 >= 0) lv[m.jcap2] = 0;
-        if (t === "Я" && !m.evo && this.mc[m.to] > 0 && this.mc[m.to] % 7 === 0) lv[m.to] = Math.min(4, lv[m.to] + 1);
+        if (t === "Я" && !m.evo && this.mc[m.to] > 0 && this.mc[m.to] % 8 === 0) lv[m.to] = Math.min(3, lv[m.to] + 1); // a life every 8 moves, at most 3
       } else lv[m.to] = 0;
     }
     if (m.stay) { // Evolution, Pawn+: capture without moving
@@ -2252,7 +2252,7 @@ var EVOP={A:['P','+','evA','➕ Pawn+','Moves 1 or 2 squares forward at any time
  Ш:['R','♜','evJ2','🌀🌀 Jumping rook 2','Everything the Jumping rook does, but when it jumps over an enemy piece it takes that piece (it still lands on an empty square). Jumping over your own piece takes nothing.'],
  Щ:['R','♜','evJm','🌀🌀🌀 Jumping master rook','Everything the Jumping rook 2 does, and it can also jump over two pieces on its line, landing on an empty square beyond them. Jumping over one enemy piece takes it; jumping over two pieces takes nothing.'],
  Ю:['R','♜','evJn','🌀🌀🌀 Jumping master rook 2','Everything the Jumping master rook does, and now it also takes the enemy pieces when it jumps over two pieces. Your own pieces are always jumped safely.'],
- Я:['R','♜','evLf','❤️ Life rook','Moves like a rook. It starts with 1 extra life and gains another every 7 moves (at most 4). If it is taken while it has a life, it loses one life and comes back on the empty square of your half of the board closest to your corner (on the side where it was taken).'],
+ Я:['R','♜','evLf','❤️ Life rook','Moves like a rook. It starts with no extra lives and gains one every 8 moves (at most 3). If it is taken while it has a life, it loses one life and comes back on the empty square of your half of the board closest to your corner (on the side where it was taken).'],
  Ц:['Q','♛','evAm','🐴 Amazon','Moves and captures like a queen and like a knight.'],
  Ч:['Q','♛','evCq','🐪 Camel queen','Moves and captures like a queen, plus the camel jump: 3 squares one way and 1 the other, over any pieces.'],
  Ф:['Q','♛','evQq','👑 Queen of queens','Moves like a normal queen for now. It is the start of a line whose next evolutions will make it really powerful.'],
