@@ -94,7 +94,8 @@
  #pedfen{width:100%;box-sizing:border-box;background:#1e1d1b;color:#ddd;border:1px solid #444;border-radius:6px;padding:6px;font:12px monospace}
  #pederr{min-height:18px;font-size:13px;color:#e8a33d;margin:4px 0}
  #posed .pgo{display:flex;gap:8px;margin-top:6px}#posed .pgo button{flex:1;padding:10px;border:0;border-radius:6px;font-weight:700;cursor:pointer;font-size:15px}
- #pedok{background:#81b64c;color:#fff}#pedok:disabled{opacity:.45;cursor:default}#pedno{background:#4b4847;color:#fff}
+ #pedok,#pedfr{background:#81b64c;color:#fff}#pedfr{background:#3d7bbf}#pedok:disabled,#pedfr:disabled{opacity:.45;cursor:default}#pedno{background:#4b4847;color:#fff;flex:.6!important}
+ #posed .pgo button{padding:10px 6px;font-size:14px}
  #evopick button{display:block;width:100%;margin-top:8px;padding:11px;border-radius:8px;border:0;background:var(--card2);color:#fff;font-weight:800;text-align:left;cursor:pointer}
  #evotree{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;overflow:auto;padding:14px}.et-box{max-width:880px;margin:0 auto;background:#262522;border-radius:10px;padding:14px 16px;color:#ddd}.et-head{display:flex;justify-content:space-between;align-items:center;font-size:19px}.et-head button{background:#3a3936;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:700}.et-box h3{margin:18px 0 4px;color:#81b64c}.et-n{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;background:#302e2b;border-radius:8px;padding:8px;margin:6px 0}.et-ref{color:#bab9b8;align-items:center}.et-pc{position:relative;width:46px;height:46px;flex:none}.et-t{flex:1;min-width:180px}.et-need{margin-left:8px;font-size:12px;background:#4a4844;border-radius:8px;padding:1px 7px;color:#ddd;white-space:nowrap}.et-kids{margin-left:16px;border-left:2px solid #55534e;padding-left:10px}.et-b{display:grid;grid-template-columns:repeat(8,15px);grid-auto-rows:15px;flex:none;border:1px solid #111;width:max-content}.et-b i,.et-leg i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:800;color:#1a1a1a;line-height:1}.et-b i.l{background:#f0d9b5}.et-b i.d{background:#b58863}.et-b i.mc,.et-leg i.mc{background:#4caf50;color:#fff}.et-b i.mo,.et-leg i.mo{background:#3d7fd6;color:#fff}.et-b i.co,.et-leg i.co{background:#d64545;color:#fff}.et-b i.me,.et-leg i.me{position:relative}.et-leg{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0 6px;font-size:13px}.et-leg span{display:flex;align-items:center;gap:5px}.et-leg i{width:16px;height:16px;background:#b58863}.et-head button,.eg-top button{background:#3a3936;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:700}.et-b.big{grid-template-columns:repeat(8,24px);grid-auto-rows:24px;margin:6px 0}.et-b.big i{font-size:13px}.eg-wrap{position:fixed;inset:10px;background:#211f1c;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;color:#ddd}.eg-top{padding:10px 14px 0}.eg-tip{padding:2px 14px 6px}.eg-view{flex:1;overflow:auto;cursor:grab;background:radial-gradient(circle,#2e2c28 1px,transparent 1.2px) 0 0/22px 22px}.eg-sz{position:relative}.eg-in{position:absolute;left:0;top:0;transform-origin:0 0}.eg-n{position:absolute;width:128px;height:56px;display:flex;align-items:center;gap:6px;background:#302e2b;border:2px solid #4a4844;border-radius:10px;padding:4px 6px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.35)}.eg-n:hover{border-color:#81b64c}.eg-n.on{border-color:#ffd23a;background:#3a372f}.eg-pc{position:relative;width:40px;height:40px;flex:none}.eg-nm{font-size:12px;font-weight:700;line-height:1.15;color:#eee}.eg-m{position:absolute;transform:translate(-50%,-50%);background:#81b64c;color:#fff;font-size:11px;font-weight:800;border-radius:9px;padding:1px 7px;white-space:nowrap;pointer-events:none}.eg-h{position:absolute;font-size:15px;font-weight:800;color:#81b64c}.eg-info{display:none;position:absolute;right:16px;bottom:16px;width:min(330px,calc(100% - 32px));max-height:calc(100% - 90px);overflow:auto;background:#2b2926;border:2px solid #4a4844;border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}.eg-ih{display:flex;align-items:center;gap:8px;font-size:16px}.eg-ix{float:right;background:#3a3936;color:#fff;border:0;border-radius:6px;padding:4px 9px;cursor:pointer}.eg-info a{color:#9fd36a}.lvb{position:absolute;right:2%;top:1%;font-size:clamp(8px,1.6vw,13px);font-weight:700;color:#fff;background:#c8243c;border-radius:8px;padding:0 4px;line-height:1.4;pointer-events:none;z-index:3}.evp svg{width:94%;height:94%;filter:drop-shadow(0 2px 1.5px #0006)}
  .evpic{float:left;width:46px;height:46px;margin:-6px 10px 0 -4px;background:#3b3a36;border-radius:8px}
@@ -2774,14 +2775,14 @@ function posEdit(){let el=$('posed');if(!el){el=document.createElement('div');el
   '<div class="prow"><button id="pedstart">Start position</button><button id="pedclear">Clear board</button><label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" id="pedcas"> Castling allowed</label></div>'+
   '<input id="pedfen" spellcheck="false" autocomplete="off" title="FEN: paste one here to load it"><div id="pederr"></div>'+
   '<div class="small" style="color:#aaa">Pick a piece, then tap squares to place it. Tap it again, or use 🗑, to clear a square.'+(evo?' Evolved pieces start with their move count at 0.':'')+'</div>'+
-  '<div class="pgo"><button id="pedno">Cancel</button><button id="pedok">Use this position</button></div></div>';
+  '<div class="pgo"><button id="pedno">Cancel</button><button id="pedok">🤖 Play a bot</button><button id="pedfr" class="pedok">👥 Play a friend</button></div></div>';
  el.style.display='flex';
  const refresh=keepFen=>{const B=$('pedb');let h='';for(let i=0;i<64;i++){const r=Math.floor(i/8),f=i%8,p=ED.a[i];h+='<div class="sq '+((r+f)%2?'d':'l')+'" data-i="'+i+'">'+(p?piece(p):'')+'</div>'}B.innerHTML=h;
   $('pedpal').innerHTML=[...base,'x'].map(t=>'<button data-t="'+t+'" class="set-'+opts.set+(ED.tool==t?' on':'')+'" title="'+(t=='x'?'Clear a square':'')+'">'+(t=='x'?'🗑':piece(ED.col=='w'?t:t.toLowerCase()))+'</button>').join('');
   el.querySelectorAll('#pedcol button').forEach(b=>b.classList.toggle('on',b.dataset.c==ED.col));
   el.querySelectorAll('#pedturn button').forEach(b=>b.classList.toggle('on',b.dataset.t==ED.turn));
   const ev=$('pedevo');if(ev)ev.value=extra.includes(ED.tool)?ED.tool:'';$('pedcas').checked=ED.cas;
-  const f=edFen();if(!keepFen)$('pedfen').value=f;const err=edErr(f);$('pederr').textContent=err?'⚠ '+err.charAt(0).toUpperCase()+err.slice(1)+'.':'';$('pedok').disabled=!!err};
+  const f=edFen();if(!keepFen)$('pedfen').value=f;const err=edErr(f);$('pederr').textContent=err?'⚠ '+err.charAt(0).toUpperCase()+err.slice(1)+'.':'';$('pedok').disabled=$('pedfr').disabled=!!err};
  $('pedb').onclick=e=>{const s=e.target.closest('.sq');if(!s)return;const i=+s.dataset.i,p=ED.tool=='x'?'':ED.col=='w'?ED.tool:ED.tool.toLowerCase();ED.a[i]=ED.a[i]==p?'':p;refresh()};
  $('pedpal').onclick=e=>{const b=e.target.closest('button');if(b){ED.tool=b.dataset.t;refresh()}};
  $('pedcol').onclick=e=>{const b=e.target.closest('button');if(b){ED.col=b.dataset.c;refresh()}};
@@ -2791,12 +2792,26 @@ function posEdit(){let el=$('posed');if(!el){el=document.createElement('div');el
  $('pedstart').onclick=()=>{ED.a=edArr(STARTFEN);ED.turn='w';ED.cas=true;refresh()};
  $('pedclear').onclick=()=>{ED.a=Array(64).fill('');refresh()};
  $('pedfen').oninput=e=>{const f=e.target.value.trim(),bad=typeof Chess=='function'?new Chess(undefined,evo?'evo':null).setFen(f):null;
-  if(bad){$('pederr').textContent='⚠ FEN: '+bad+'.';$('pedok').disabled=true;return}
+  if(bad){$('pederr').textContent='⚠ FEN: '+bad+'.';$('pedok').disabled=$('pedfr').disabled=true;return}
   ED.a=edArr(f);ED.turn=f.split(/\s+/)[1]=='b'?'b':'w';ED.cas=(f.split(/\s+/)[2]||'-')!='-';refresh(true)};
  $('pedno').onclick=()=>{el.style.display='none'};
  el.onclick=e=>{if(e.target==el)el.style.display='none'};
- $('pedok').onclick=()=>{const f=edFen();if(edErr(f))return;opts.setup=f==STARTFEN?null:f;el.style.display='none';posUI()};
+ const use=()=>{const f=edFen();if(edErr(f))return false;opts.setup=f==STARTFEN?null:f;el.style.display='none';posUI();return true};
+ $('pedok').onclick=()=>{if(!use())return;if(gameOn){homeGo('human');return}homeGo('human');$('start').click()}; // straight into a bot game (current bot, level, time)
+ $('pedfr').onclick=()=>{if(use())posFriend()};
  refresh()}
+// "Play a friend" from the editor: one step to an invite link or a game request to a friend
+async function posFriend(){homeGo('online');
+ try{if(!ON.fb)await fbLoad()}catch(e){}
+ if(!ON.user||!ON.prof){ON.err='Sign in first (above), then press 👥 Play a friend again in the position editor.';onUI();return}
+ if(ON.seek||ON.chal)await onStopSeek();
+ if(!FR.list)await frLoad(true).catch(()=>{});
+ const fr=(FR.list||[]).map(u=>{const on=u.seen&&Date.now()-u.seen<5*60e3;return ['u:'+u.uid,(on?'🟢 ':'')+u.name+' ('+u.rating+')',on?'On the site now: they get a pop-up':'They see it next time they open the site']});
+ const c=await pickBox('👥 Play this position with…',[['link','🔗 Get an invite link','Send it to anyone; the game starts when they open it']].concat(fr).concat([['','Cancel']]));
+ if(!c)return;ON.err='';
+ try{if(c=='link')await onChallenge();else{const u=FR.list.find(x=>'u:'+x.uid==c);await onChallenge({uid:u.uid,name:u.name})}
+  if(c=='link'){const i=$('onlink');if(i)try{await navigator.clipboard.writeText(i.value);ON.err='Invite link copied. Send it to your friend.'}catch(e){}}}
+ catch(e){ON.err=e.message}onUI()}
 $('posbtn').onclick=posEdit;
 $('posstd').onclick=e=>{e.preventDefault();opts.setup=null;posUI()};document.addEventListener('change',()=>setTimeout(startLbl,30));
 $('start').onclick=async()=>{addRecent(tcValue());
@@ -2891,7 +2906,7 @@ async function ccRefresh(force){const p=ON.prof;if(!p||!p.cc||!p.cc.user||!ON.us
  const {F,db}=ON.fb;await F.updateDoc(F.doc(db,'users',ON.user.uid),{cc:Object.assign({},p.cc,st,{at:Date.now()})})}
 setInterval(()=>ccRefresh().catch(()=>{}),10*60e3+5e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)ccRefresh().catch(()=>{})});
-BOTINFO.opp=['👤','#5a5754',''];BOTINFO.modes=['960','#6b4fa3',''];
+BOTINFO.opp=['👤','#5a5754',''];BOTINFO.setup=['🧩','#3d7bbf',''];BOTINFO.modes=['960','#6b4fa3',''];
 const ON={fb:null,user:null,prof:null,err:'',seek:null,seekUnsub:null,seekBeat:null,chal:null,gref:null,gunsub:null,applying:false,top:null,busy:false};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 async function fbLoad(){if(ON.fb)return ON.fb;if(!FBCFG)throw new Error('Online play is not switched on yet.');
@@ -2932,7 +2947,8 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
   else h+='<div class="small" style="margin-bottom:6px">Time: pick it under <b>Time</b> below (now '+esc(tl)+').</div>'+
    '<button class="play" id="onquick">Play online · '+esc(tl)+'</button>'+
    '<button class="play" id="onchal" style="background:#4b4847;margin-top:8px">Challenge a friend (link)</button>'+
-   (opts.setup?'<div class="small" style="margin-top:6px">🧩 Challenges and game requests start from your custom position (unrated). Play online always uses the normal start.</div>':'')+
+   '<button class="play" id="onpos" style="background:#3d7bbf;border-bottom-color:#2c5d93;margin-top:8px">🧩 '+(opts.setup?'Edit your custom position':'Play a friend from your own position')+'</button>'+
+   (opts.setup?'<div class="small" style="margin-top:6px">🧩 Challenges and game requests start from your custom position (unrated). Play online always uses the normal start. <a href="#" id="onposoff" style="color:#bab9b8">Use the normal start</a></div>':'')+
    (isMod(ON.user.uid)?'<details class="more" id="bossbox" style="margin-top:12px"'+(ON.bossOpen?' open':'')+'><summary>👑 Boss duel (mods only)</summary>'+
     '<div class="small" style="margin:6px 0">The Boss gets only a king and one pawn, plus free powers on their turn (they don\'t end it, no limits): 🕳 delete any square, 🕵 steal any piece, ♟ put the pawn back after losing it. The other side plays normal chess with a full army. Time: as picked below.</div>'+
     '<div class="lbl">Who is the Boss</div><div class="row" id="bwho"></div><div class="lbl">My colour</div><div class="row" id="bcol"></div>'+
@@ -2950,7 +2966,7 @@ function onUI(loading){const el=$('online');if(!el)return;let h='';
  B('onout',async()=>{await onStopSeek();await AU.signOut(au)});
  B('onsave',async()=>{const n=($('onname').value||'').trim();if(!/^[A-Za-z0-9_]{3,20}$/.test(n))throw new Error('Use 3–20 letters, numbers or _.');
   const {F,db}=ON.fb;await F.setDoc(F.doc(db,'users',ON.user.uid),{name:n,rating:1200,w:0,d:0,l:0,games:0,created:F.serverTimestamp()})});
- B('onquick',onQuick);B('onchal',()=>onChallenge());frUI();frLoad().catch(()=>{});B('oncancel',onStopSeek);B('onboss',onBossChallenge);
+ B('onquick',onQuick);B('onchal',()=>onChallenge());B('onpos',async()=>posEdit());B('onposoff',async()=>{opts.setup=null;posUI()});frUI();frLoad().catch(()=>{});B('oncancel',onStopSeek);B('onboss',onBossChallenge);
  if($('bwho')){opts.bossWho=LS('bossWho','me');opts.bossCol=LS('bossCol','white');
   chips($('bwho'),[['me','Me'],['them','My opponent']],'bossWho');chips($('bcol'),[['white','White'],['black','Black'],['random','Random']],'bossCol');
   $('bossbox').ontoggle=()=>{ON.bossOpen=$('bossbox').open}}
@@ -3312,7 +3328,8 @@ function homeUI(){const fen=[];for(const row of HOMEPOS.split('/'))for(const ch 
   ['opp','Play online','Real opponents, ratings and a leaderboard',()=>homeGo('online')],
   ['gm','Masters','Famous games, explained move by move',()=>homeGo('lib')],
   ['modes','Game modes','Chess960 and visualization training',()=>homeGo('modes')],
-  ['stockfish','Bot vs bot','Pit any two bots against each other',()=>homeGo('bots')]].forEach(([v,n,t,f])=>$('hmore').appendChild(card(v,n,t,f)));
+  ['stockfish','Bot vs bot','Pit any two bots against each other',()=>homeGo('bots')],
+  ['setup','Set up a position','Any position, vs a bot or a friend',()=>{homeGo('human');posEdit()}]].forEach(([v,n,t,f])=>$('hmore').appendChild(card(v,n,t,f)));
  const R=REC(),s=Object.values(R).reduce((a,c)=>({w:a.w+c.w,d:a.d+c.d,l:a.l+c.l}),{w:0,d:0,l:0}),n=s.w+s.d+s.l;
  $('hstats').innerHTML=n?'Your games vs bots on this device: <b style="color:#81b64c">'+s.w+'</b> wins · <b>'+s.d+'</b> draws · <b style="color:#e05a4f">'+s.l+'</b> losses':''}
 function homeGo(vs,bot){$('home').style.display='none';if(!gameOn)showView('setup');
